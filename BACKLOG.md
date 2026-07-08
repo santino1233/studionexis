@@ -3,7 +3,7 @@ Old system = feature source of truth (/opt/studionexis). One slice per
 iteration: implement → build → restart nexis-next → verify live at
 https://new.nexis.revsports.ca → commit → log → next.
 
-- [ ] V1 Feature inventory: crawl the old codebase (controllers, pages) and
+- [x] V1 Feature inventory: crawl the old codebase (controllers, pages) and
       write SPEC.md — every feature/endpoint/flow v2 must reach. Parity list.
 - [ ] V2 Data layer: Postgres (docker, new container, own volume) + Prisma
       schema — tenants, users, clients, class types, classes, bookings,
