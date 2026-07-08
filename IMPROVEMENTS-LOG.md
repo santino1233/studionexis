@@ -120,3 +120,16 @@
 - Process note: a syntax error shipped mid-iteration briefly 502'd the
   preview because I restarted on a failed build — rule now: never restart
   unless the build exited 0.
+
+## 2026-07-08 · V11 Public booking page (live)
+- /book/<studio> — no login needed, studio-branded (name, initial mark,
+  brand color drives buttons/accents), next 7 days of classes grouped by
+  day with spots-left pills, price/duration/instructor per class.
+- Inline booking: name + phone/email → matches an existing client by
+  contact info or creates one (channel=website), uses their package credit
+  if they have one, waitlists full classes. Friendly success/waitlist/
+  error banners. Suspended studios and bad slugs 404.
+- Middleware now whitelists /book + /api/public; admin stays locked.
+- Verified live: anon page 200 + classes listed, booking created a
+  "website" client, duplicate + missing-contact guards fire, admin still
+  redirects anonymously.

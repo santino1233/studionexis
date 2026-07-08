@@ -19,7 +19,7 @@ https://new.nexis.revsports.ca → commit → log → next.
 - [x] V9 Analytics: KPI strip + orange area chart + purple donut (reference).
 - [x] V10 Settings + onboarding wizard (studio identity, currency, timezone,
       policies) — simplified from the old 8-step flow.
-- [ ] V11 Public tenant booking page + website (light, studio-branded).
+- [x] V11 Public tenant booking page + website (light, studio-branded).
 - [ ] V12 Signup + tenant provisioning + trial plans; Stripe subscriptions.
 - [ ] V13 Super-admin portal (secret host): studios, plans, finances.
 - [ ] V14 Cutover plan: data migration from Mongo, domain swap, retire old.
