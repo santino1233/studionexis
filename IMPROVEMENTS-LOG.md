@@ -12,3 +12,14 @@
   customer + instructor portals) and wrote SPEC.md — the tiered parity list
   (T1 cutover-required, T2 full parity, T3 optional modules) that every
   v2 iteration builds against.
+
+## 2026-07-08 · V2 Data layer live (Postgres + Prisma end-to-end)
+- New postgres:16 container (nexis-postgres, 127.0.0.1:5599, own volume).
+- Prisma 7 schema: Tenant, User, Client, ClassType, ClassSession, Booking,
+  Package, ClientPackage, Product, Order/OrderItem, Expense — with tenant
+  scoping, cascade deletes, money as Decimal, booking-status + policy enums.
+  (Prisma 7 gotcha: datasource url lives in prisma.config.ts, client needs
+  the pg driver adapter.)
+- Seeded dev-studio tenant (class types, packages, clients); Clients page is
+  the first REAL page — server-rendered from Postgres, reference styling
+  (avatars, channel pills, credits, member-since). Verified live.

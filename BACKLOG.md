@@ -5,7 +5,7 @@ https://new.nexis.revsports.ca → commit → log → next.
 
 - [x] V1 Feature inventory: crawl the old codebase (controllers, pages) and
       write SPEC.md — every feature/endpoint/flow v2 must reach. Parity list.
-- [ ] V2 Data layer: Postgres (docker, new container, own volume) + Prisma
+- [x] V2 Data layer: Postgres (docker, new container, own volume) + Prisma
       schema — tenants, users, clients, class types, classes, bookings,
       packages/credits, products, orders/invoices, staff, settings.
 - [ ] V3 Auth: Auth.js credentials login, session, tenant scoping by
