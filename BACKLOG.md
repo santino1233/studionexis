@@ -14,7 +14,7 @@ https://new.nexis.revsports.ca → commit → log → next.
       stats, packages, session history).
 - [x] V5 Class types + classes + schedule (week calendar w/ colored chips).
 - [x] V6 Bookings: create/cancel/check-in, waitlist, credit deduction.
-- [ ] V7 POS: product/package grid + cart + checkout (cash/at-studio first).
+- [x] V7 POS: product/package grid + cart + checkout (cash/at-studio first).
 - [ ] V8 Products & Packages management; Invoices list from orders.
 - [ ] V9 Analytics: KPI strip + orange area chart + purple donut (reference).
 - [ ] V10 Settings + onboarding wizard (studio identity, currency, timezone,

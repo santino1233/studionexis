@@ -70,3 +70,15 @@
 - Schedule chips now click through to the roster.
 - Verified live: credit deduct → waitlist → cancel/restore/promote →
   check-in → double-book guard, all correct in DB.
+
+## 2026-07-08 · V7 Point of Sale (live, fully verified)
+- POS page per the reference: tappable catalog tiles (packages = orange
+  tinted icon, products = blue, price + credits/stock meta) with a
+  right-hand cart — client picker, quantity lines, cash/transfer/card
+  toggle, big Charge button, success banner with order number.
+- Checkout API, fully transactional and server-priced (client can never
+  set prices): sequential order numbers per studio, order + line items,
+  package purchases mint client credits with expiry, product sales
+  decrement stock. Guards: insufficient stock, package without a client.
+- Verified live: mixed cart charged correctly (45 + 2×2.50 = 50.00), Ava
+  received 3 credits, stock 20→18, both guards rejected bad carts.
