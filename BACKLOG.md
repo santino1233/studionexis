@@ -71,7 +71,7 @@ https://new.nexis.revsports.ca → commit → log → next.
       shown on the public booking page like the old ClassBlueprints).
 - [x] P3 Recurring classes: "repeat weekly for N weeks" on add-class
       (old system had recurring schedules).
-- [ ] P4 Dashboard depth: Today/Week/Month period toggle on Business
+- [x] P4 Dashboard depth: Today/Week/Month period toggle on Business
       Summary + wire the sales-mix donut (old dashboard had both).
 - [ ] P5 Client profile depth: tags, birthday, referral source (old
       Client entity) + show on profile header.

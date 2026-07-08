@@ -334,3 +334,11 @@
   (verified: 4 weekly sessions created on consecutive dates).
 - P4–P7 queued (dashboard periods+donut, client tags/birthday/referral,
   expense categories, custom photo uploads).
+
+## 2026-07-08 · P4 Dashboard depth (live)
+- Business Summary gained the old system's Today / Week / Month toggle
+  (chip buttons); all six tiles (revenue, orders, packages sold, new
+  clients, bookings made, classes held) recompute per period in studio tz.
+- "What's Driving Revenue" donut is real: sales mix by kind for the chosen
+  period with center total + legend (verified $54.50 = sum of orders).
+- Getting-started card now hides once all six steps are complete.
