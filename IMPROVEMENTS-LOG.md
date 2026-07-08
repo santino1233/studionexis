@@ -203,3 +203,16 @@
 - Instructors blocked (middleware + API). Zero-amount guard.
 - Verified live: 50.00 revenue − 17.75 expenses = 32.25 profit rendered,
   category bars present, guards firing.
+
+## 2026-07-08 · W4 Email notifications (live; SMTP-ready no-op)
+- Mailer (nodemailer): without SMTP env vars every send is logged in the
+  new EmailLog table as "skipped" — flip on real email later with just
+  SMTP_HOST/PORT/USER/PASS/FROM + restart, zero code changes.
+- Booking confirmations: public bookings with an email get a confirmation
+  (or waitlist notice) with a manage-booking link.
+- Reminders: /api/cron/reminders (CRON_TOKEN-guarded, hit hourly by
+  /etc/cron.d/nexis-reminders) emails clients whose class starts within
+  24h; remindedAt stamp makes it idempotent.
+- Verified live: confirmation logged on booking, reminder run reminded 1
+  then 0 on rerun, bad token 403. (Middleware initially swallowed the
+  cron route — whitelisted /api/cron, it has its own token guard.)

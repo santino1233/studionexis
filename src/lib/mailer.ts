@@ -1,0 +1,35 @@
+import nodemailer from "nodemailer";
+import { db } from "@/lib/db";
+
+// SMTP is optional. Without SMTP_HOST every send is recorded in EmailLog
+// as "skipped" so the product behaves identically and flipping on real
+// email later is just env vars + restart.
+function transport() {
+  if (!process.env.SMTP_HOST) return null;
+  return nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: Number(process.env.SMTP_PORT ?? 587),
+    secure: process.env.SMTP_SECURE === "true",
+    auth: process.env.SMTP_USER ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS } : undefined,
+  });
+}
+
+export async function sendEmail(opts: { tenantId: string; to: string; subject: string; body: string }) {
+  const t = transport();
+  let status = "skipped";
+  if (t) {
+    try {
+      await t.sendMail({
+        from: process.env.SMTP_FROM ?? "no-reply@nexis.revsports.ca",
+        to: opts.to,
+        subject: opts.subject,
+        text: opts.body,
+      });
+      status = "sent";
+    } catch {
+      status = "failed";
+    }
+  }
+  await db.emailLog.create({ data: { ...opts, status } });
+  return status;
+}

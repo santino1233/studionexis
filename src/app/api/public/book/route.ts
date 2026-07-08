@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { externalUrl } from "@/lib/request-url";
+import { sendEmail } from "@/lib/mailer";
+import { timeInTz } from "@/lib/tz";
 
 export async function POST(req: Request) {
   const form = await req.formData();
@@ -56,9 +58,20 @@ export async function POST(req: Request) {
           clientPackageId: usePkg ? pkg!.id : null,
         },
       });
-      return full ? "waitlist" : "booked";
+      return { outcome: full ? "waitlist" : "booked", client, session };
     });
-    return NextResponse.redirect(externalUrl(req, `${back}?ok=${result}`), 303);
+
+    if (result.client.email) {
+      const s = result.session;
+      const cls = await db.classType.findUnique({ where: { id: s.classTypeId } });
+      await sendEmail({
+        tenantId: tenant.id,
+        to: result.client.email,
+        subject: `${result.outcome === "booked" ? "Booking confirmed" : "You're on the waitlist"} — ${cls?.name ?? "class"} at ${tenant.name}`,
+        body: `Hi ${result.client.name},\n\n${result.outcome === "booked" ? "You're booked for" : "You're waitlisted for"} ${cls?.name ?? "class"} on ${s.startsAt.toLocaleDateString("en-US", { timeZone: tenant.timezone, weekday: "long", month: "long", day: "numeric" })} at ${timeInTz(s.startsAt, tenant.timezone)}.\n\nManage your bookings: https://new.nexis.revsports.ca/book/${tenant.slug}/me\n\n${tenant.name}`,
+      });
+    }
+    return NextResponse.redirect(externalUrl(req, `${back}?ok=${result.outcome}`), 303);
   } catch (e) {
     const dup = e instanceof Error && e.message.includes("Unique constraint");
     return NextResponse.redirect(externalUrl(req, `${back}?err=${dup ? "already" : "failed"}&s=${sessionId}`), 303);

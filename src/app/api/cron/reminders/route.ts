@@ -1,0 +1,36 @@
+import { NextResponse } from "next/server";
+import { db } from "@/lib/db";
+import { sendEmail } from "@/lib/mailer";
+import { timeInTz } from "@/lib/tz";
+
+// Hit hourly by system cron with the shared secret. Emails clients whose
+// class starts within the next 24h and hasn't been reminded yet.
+export async function POST(req: Request) {
+  if (new URL(req.url).searchParams.get("token") !== process.env.CRON_TOKEN) {
+    return NextResponse.json({ error: "forbidden" }, { status: 403 });
+  }
+
+  const due = await db.booking.findMany({
+    where: {
+      status: "BOOKED",
+      remindedAt: null,
+      client: { email: { not: null } },
+      session: { startsAt: { gt: new Date(), lt: new Date(Date.now() + 24 * 3600_000) }, status: "SCHEDULED" },
+    },
+    include: { client: true, session: { include: { classType: true } }, tenant: true },
+    take: 200,
+  });
+
+  let sent = 0;
+  for (const b of due) {
+    await sendEmail({
+      tenantId: b.tenantId,
+      to: b.client.email!,
+      subject: `Reminder: ${b.session.classType.name} at ${b.tenant.name}`,
+      body: `Hi ${b.client.name},\n\nSee you at ${b.session.classType.name} — ${b.session.startsAt.toLocaleDateString("en-US", { timeZone: b.tenant.timezone, weekday: "long", month: "long", day: "numeric" })} at ${timeInTz(b.session.startsAt, b.tenant.timezone)}.\n\nNeed to change plans? Manage your booking: https://new.nexis.revsports.ca/book/${b.tenant.slug}/me\n\n${b.tenant.name}`,
+    });
+    await db.booking.update({ where: { id: b.id }, data: { remindedAt: new Date() } });
+    sent++;
+  }
+  return NextResponse.json({ ok: true, reminded: sent });
+}
