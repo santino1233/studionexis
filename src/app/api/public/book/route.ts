@@ -36,7 +36,7 @@ export async function POST(req: Request) {
   try {
     const result = await db.$transaction(async (tx) => {
       const session = await tx.classSession.findFirstOrThrow({
-        where: { id: sessionId, tenantId: tenant.id, status: "SCHEDULED", startsAt: { gt: new Date() } },
+        where: { id: sessionId, tenantId: tenant.id, status: "SCHEDULED", isPublic: true, startsAt: { gt: new Date() } },
         include: { _count: { select: { bookings: { where: { status: { in: ["BOOKED", "CHECKED_IN"] } } } } } },
       });
 

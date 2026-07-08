@@ -495,3 +495,12 @@
   $50 ≈ 5,476, $100 ≈ 10,952) + "≈ 109 texts per $1" hint for custom
   amounts, derived from the effective SMS_RATE so estimates always track
   the configured carrier estimate.
+
+## 2026-07-08 · Wave 10 begins (video spec) — X1 session lifecycle
+- Watched + transcribed the owner's 9-min recording (VIDEO-SPEC.md).
+- X1 shipped: Block this class (striped + 🔒 on calendar, hidden from
+  public booking, guest bookings rejected, one-click Unblock), Mark class
+  completed (✓ green), "Visible on public booking page" per session
+  (hidden = internal-only booking, 🙈 marker), override note, reschedule
+  (date/time/duration) from the manage card, Color-by Class/Status
+  toggle, status legend. All verified live incl. tz-correct reschedule.

@@ -128,6 +128,7 @@ enum SessionStatus {
   SCHEDULED
   COMPLETED
   CANCELLED
+  BLOCKED
 }
 
 model ClassSession {
@@ -143,6 +144,8 @@ model ClassSession {
   capacity     Int
   location     String?
   status       SessionStatus @default(SCHEDULED)
+  isPublic     Boolean       @default(true)
+  note         String?
 
   bookings Booking[]
 

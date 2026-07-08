@@ -38,7 +38,7 @@ export default async function BookPage({ params, searchParams }: {
   const selected = d && days.includes(d) ? d : todayKey;
 
   const all = await db.classSession.findMany({
-    where: { tenantId: tenant.id, status: "SCHEDULED", startsAt: { gt: new Date(), lt: new Date(Date.now() + 15 * 86400_000) } },
+    where: { tenantId: tenant.id, status: "SCHEDULED", isPublic: true, startsAt: { gt: new Date(), lt: new Date(Date.now() + 15 * 86400_000) } },
     include: { classType: true, instructor: true, _count: { select: { bookings: { where: { status: { in: ["BOOKED", "CHECKED_IN"] } } } } } },
     orderBy: { startsAt: "asc" },
   });

@@ -35,7 +35,7 @@ export default async function StudioSite({ params, searchParams }: {
   const [packages, sessions] = await Promise.all([
     db.package.findMany({ where: { tenantId: tenant.id, active: true }, orderBy: { price: "asc" }, take: 6 }),
     db.classSession.findMany({
-      where: { tenantId: tenant.id, status: "SCHEDULED", startsAt: { gt: new Date(), lt: new Date(Date.now() + 7 * 86400_000) } },
+      where: { tenantId: tenant.id, status: "SCHEDULED", isPublic: true, startsAt: { gt: new Date(), lt: new Date(Date.now() + 7 * 86400_000) } },
       include: { classType: true, instructor: true },
       orderBy: { startsAt: "asc" },
       take: 8,

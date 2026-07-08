@@ -21,8 +21,9 @@ const statusLabel: Record<string, string> = {
   CANCELLED: "Cancelled", LATE_CANCEL: "Late cancel", NO_SHOW: "No show",
 };
 
-export default async function SchedulePage({ searchParams }: { searchParams: Promise<{ w?: string; i?: string; sel?: string }> }) {
-  const { w, i: instructorFilter, sel } = await searchParams;
+export default async function SchedulePage({ searchParams }: { searchParams: Promise<{ w?: string; i?: string; sel?: string; c?: string }> }) {
+  const { w, i: instructorFilter, sel, c } = await searchParams;
+  const colorBy = c === "status" ? "status" : "format";
   const offset = Number(w ?? 0) || 0;
   const tenant = await getCurrentTenant();
   const days = weekDays(tenant.timezone, offset);
@@ -33,7 +34,7 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
 
   const qs = (over: Record<string, string | number | undefined>) => {
     const p = new URLSearchParams();
-    const merged = { w: offset || undefined, i: instructorFilter, sel, ...over };
+    const merged = { w: offset || undefined, i: instructorFilter, sel, c: c === "status" ? "status" : undefined, ...over };
     for (const [k, v] of Object.entries(merged)) if (v !== undefined && v !== "" && v !== 0) p.set(k, String(v));
     const s = p.toString();
     return s ? `/schedule?${s}` : "/schedule";
@@ -103,6 +104,13 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
         </div>
       </div>
 
+      {/* Color mode */}
+      <div className="mb-2 flex items-center justify-end gap-1.5 text-[11px] font-bold uppercase tracking-wider text-muted">
+        Color by
+        <Link href={qs({ c: undefined })} className={`rounded-full px-3 py-1 text-[11.5px] font-bold normal-case tracking-normal ${colorBy === "format" ? "bg-ink text-canvas" : "bg-line-2 text-ink-2"}`}>Class</Link>
+        <Link href={qs({ c: "status" })} className={`rounded-full px-3 py-1 text-[11.5px] font-bold normal-case tracking-normal ${colorBy === "status" ? "bg-ink text-canvas" : "bg-line-2 text-ink-2"}`}>Status</Link>
+      </div>
+
       {/* Instructor filter */}
       {instructors.length > 1 && (
         <div className="mb-4 flex flex-wrap gap-2">
@@ -154,20 +162,29 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
                       const active = s.bookings.filter((b) => b.status !== "WAITLIST").length;
                       const names = s.bookings.filter((b) => b.status !== "WAITLIST").slice(0, 2).map((b) => b.client.name.split(" ")[0]);
                       const isSel = sel === s.id;
+                      const blocked = s.status === "BLOCKED";
+                      const completed = s.status === "COMPLETED";
+                      const tone = colorBy === "status"
+                        ? blocked ? "#E5484D" : completed ? "#22A565" : active >= s.capacity ? "#F97316" : "#3B82F6"
+                        : s.classType.color;
                       return (
                         <Link
                           key={s.id}
                           href={qs({ sel: isSel ? undefined : s.id })}
-                          className={`absolute inset-x-1 z-20 overflow-hidden rounded-lg border-l-[3px] px-2 py-1.5 transition-all hover:z-30 hover:shadow-md ${isSel ? "z-30 ring-2 ring-brand" : ""}`}
+                          className={`absolute inset-x-1 z-20 overflow-hidden rounded-lg border-l-[3px] px-2 py-1.5 transition-all hover:z-30 hover:shadow-md ${isSel ? "z-30 ring-2 ring-brand" : ""} ${blocked ? "opacity-80" : ""}`}
                           style={{
                             top, height,
-                            background: `color-mix(in srgb, ${s.classType.color} 14%, var(--color-surface))`,
-                            borderLeftColor: s.classType.color,
+                            background: blocked
+                              ? `repeating-linear-gradient(45deg, color-mix(in srgb, #E5484D 12%, var(--color-surface)), color-mix(in srgb, #E5484D 12%, var(--color-surface)) 6px, var(--color-surface) 6px, var(--color-surface) 12px)`
+                              : `color-mix(in srgb, ${tone} 14%, var(--color-surface))`,
+                            borderLeftColor: blocked ? "#E5484D" : tone,
                             marginLeft: (idx % 2) * 3,
                           }}
                         >
                           <div className="truncate text-[10px] font-semibold text-muted">{timeInTz(s.startsAt, tenant.timezone)} – {timeInTz(s.endsAt, tenant.timezone)}</div>
-                          <div className="truncate text-[11.5px] font-bold leading-tight" style={{ color: s.classType.color }}>{s.classType.name}</div>
+                          <div className="truncate text-[11.5px] font-bold leading-tight" style={{ color: blocked ? "#E5484D" : tone }}>
+                            {blocked ? "🔒 " : completed ? "✓ " : !s.isPublic ? "🙈 " : ""}{s.classType.name}
+                          </div>
                           {height > 56 && (
                             <div className="mt-0.5 flex items-center gap-1.5 text-[10px] font-semibold text-ink-2">
                               {s.instructor && <span className="inline-flex items-center gap-1"><span className="grid size-3.5 place-items-center rounded-full text-[7px] font-bold text-white" style={{ background: s.classType.color }}>{s.instructor.name[0]}</span>{s.instructor.name.split(" ")[0]}</span>}
@@ -197,6 +214,9 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
                   <span className="rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white" style={{ background: selected.classType.color }}>{selected.classType.kind}</span>
                   {selected.classType.difficulty !== "ALL_LEVELS" && <span className="rounded-full bg-line-2 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-ink-2">{selected.classType.difficulty}</span>}
                   {selActive.length >= selected.capacity && <span className="rounded-full bg-brand-wash px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-brand">Full</span>}
+                  {selected.status === "BLOCKED" && <span className="rounded-full bg-rose/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-rose">Blocked</span>}
+                  {selected.status === "COMPLETED" && <span className="rounded-full bg-green-wash px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-green">Completed</span>}
+                  {!selected.isPublic && <span className="rounded-full bg-line-2 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-ink-2">Hidden from public</span>}
                 </div>
               </div>
               <Link href={qs({ sel: undefined })} className="grid size-8 place-items-center rounded-lg text-muted hover:bg-line-2 hover:text-ink"><X className="size-4" /></Link>
@@ -208,7 +228,21 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
               <div>👥 <b className="text-ink">{selActive.length} / {selected.capacity}</b> booked{selWaitlist.length > 0 ? ` · ${selWaitlist.length} waitlisted` : ""}</div>
               {selected.location && <div>📍 {selected.location}</div>}
             </div>
-            <div className="flex gap-2 border-b border-line-2 p-4">
+            <div className="flex flex-wrap gap-2 border-b border-line-2 p-4">
+              {selected.status === "SCHEDULED" && (
+                <form method="post" action={`/api/sessions/${selected.id}`} className="w-full">
+                  <input type="hidden" name="action" value="complete" />
+                  <input type="hidden" name="back" value={qs({})} />
+                  <button className="w-full rounded-xl bg-green-wash px-3 py-2 text-[12px] font-bold text-green hover:brightness-95">✓ Mark class completed</button>
+                </form>
+              )}
+              <form method="post" action={`/api/sessions/${selected.id}`} className="w-full">
+                <input type="hidden" name="action" value={selected.status === "BLOCKED" ? "unblock" : "block"} />
+                <input type="hidden" name="back" value={qs({})} />
+                <button className={`w-full rounded-xl px-3 py-2 text-[12px] font-bold ${selected.status === "BLOCKED" ? "bg-line-2 text-ink-2 hover:brightness-95" : "bg-rose/10 text-rose hover:brightness-95"}`}>
+                  {selected.status === "BLOCKED" ? "🔓 Unblock this class" : "🔒 Block this class (hide from booking)"}
+                </button>
+              </form>
               <Link href={`/schedule/${selected.id}`} className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-brand px-3 py-2.5 text-[12.5px] font-bold text-white hover:bg-brand-ink"><Pencil className="size-3.5" /> Edit Session</Link>
               {selActive.some((b) => b.status === "BOOKED") && (
                 <form method="post" action={`/api/sessions/${selected.id}`} className="flex-1">
@@ -255,6 +289,9 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
               <span className="size-2.5 rounded-full" style={{ background: t.color }} /> {t.name}
             </span>
           ))}
+          <span className="ml-2 inline-flex items-center gap-1.5 text-[11.5px] font-semibold text-muted">✓ Completed</span>
+          <span className="inline-flex items-center gap-1.5 text-[11.5px] font-semibold text-muted">🔒 Blocked</span>
+          <span className="inline-flex items-center gap-1.5 text-[11.5px] font-semibold text-muted">🙈 Hidden from public</span>
         </div>
       )}
 

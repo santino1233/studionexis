@@ -4,7 +4,7 @@ import { ArrowLeft, UserCheck, X } from "lucide-react";
 import { Card, CardHeader } from "@/components/ui/card";
 import { db } from "@/lib/db";
 import { getCurrentTenant } from "@/lib/tenant";
-import { timeInTz } from "@/lib/tz";
+import { timeInTz, dayKeyInTz } from "@/lib/tz";
 
 export const dynamic = "force-dynamic";
 
@@ -135,6 +135,18 @@ export default async function SessionPage({ params, searchParams }: { params: Pr
               <input type="hidden" name="action" value="update" />
               <div className="grid grid-cols-2 gap-3">
                 <div>
+                  <label className="mb-1 block text-[11px] font-bold uppercase tracking-wider text-muted">Date</label>
+                  <input name="date" type="date" defaultValue={dayKeyInTz(session.startsAt, tenant.timezone)} className="h-10 w-full rounded-[10px] border border-line bg-surface px-3 text-sm outline-none focus:border-brand" />
+                </div>
+                <div>
+                  <label className="mb-1 block text-[11px] font-bold uppercase tracking-wider text-muted">Start</label>
+                  <input name="time" type="time" defaultValue={session.startsAt.toLocaleTimeString("en-GB", { timeZone: tenant.timezone, hour: "2-digit", minute: "2-digit", hour12: false })} className="h-10 w-full rounded-[10px] border border-line bg-surface px-3 text-sm outline-none focus:border-brand" />
+                </div>
+                <div>
+                  <label className="mb-1 block text-[11px] font-bold uppercase tracking-wider text-muted">Minutes</label>
+                  <input name="durationMin" type="number" min={10} defaultValue={Math.round((session.endsAt.getTime() - session.startsAt.getTime()) / 60000)} className="h-10 w-full rounded-[10px] border border-line bg-surface px-3 text-sm outline-none focus:border-brand" />
+                </div>
+                <div>
                   <label className="mb-1 block text-[11px] font-bold uppercase tracking-wider text-muted">Spots</label>
                   <input name="capacity" type="number" min={1} defaultValue={session.capacity} className="h-10 w-full rounded-[10px] border border-line bg-surface px-3 text-sm outline-none focus:border-brand" />
                 </div>
@@ -147,6 +159,11 @@ export default async function SessionPage({ params, searchParams }: { params: Pr
                 <option value="">Unassigned</option>
                 {instructors.map((i) => <option key={i.id} value={i.id}>{i.name}</option>)}
               </select>
+              <input name="note" defaultValue={session.note ?? ""} placeholder="Override note (reason for changes)" className="h-10 w-full rounded-[10px] border border-line bg-surface px-3 text-sm outline-none focus:border-brand" />
+              <label className="flex items-center gap-2 text-[13px] font-medium text-ink">
+                <input type="checkbox" name="isPublic" defaultChecked={session.isPublic} className="size-4 accent-[#F97316]" />
+                Visible on public booking page
+              </label>
               <button className="w-full rounded-[10px] border border-line bg-surface py-2.5 text-sm font-semibold text-ink-2 hover:bg-raised">Save changes</button>
             </form>
             <form method="post" action={`/api/sessions/${session.id}`} className="border-t border-line-2 p-5">

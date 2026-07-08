@@ -144,7 +144,7 @@ https://new.nexis.revsports.ca → commit → log → next.
       (?preview, ?d day-strip etc. previously dropped on tenant hosts).
 
 ## Wave 10 — video spec (VIDEO-SPEC.md): calendar depth + blueprints + booking detail
-- [ ] X1 Session lifecycle: isPublic toggle + BLOCKED handling per session
+- [x] X1 Session lifecycle: isPublic toggle + BLOCKED handling per session
       ("Block this class" hides from public + unbookable, striped on
       calendar, unblock restores); Edit Session modal (instructor, time,
       duration, capacity, status incl No Show, note, public checkbox);

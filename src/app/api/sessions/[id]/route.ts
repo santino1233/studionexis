@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { externalUrl } from "@/lib/request-url";
+import { utcFromZoned } from "@/lib/tz";
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const auth = await getSession();
@@ -14,6 +15,12 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   if (!session) return NextResponse.redirect(externalUrl(req, "/schedule"), 303);
   const backRaw = String(form.get("back") ?? "");
   const back = backRaw.startsWith("/") && !backRaw.startsWith("//") ? backRaw : null;
+
+  if (action === "block" || action === "unblock" || action === "complete") {
+    const status = action === "block" ? "BLOCKED" : action === "complete" ? "COMPLETED" : "SCHEDULED";
+    await db.classSession.update({ where: { id }, data: { status } });
+    return NextResponse.redirect(externalUrl(req, back ?? `/schedule/${id}`), 303);
+  }
 
   if (action === "checkin-all") {
     const bookings = await db.booking.findMany({ where: { sessionId: id, status: "BOOKED" }, select: { id: true, clientId: true } });
@@ -49,12 +56,29 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       const ok = await db.user.findFirst({ where: { id: instructorId, tenantId: auth.tenantId } });
       if (!ok) return NextResponse.redirect(externalUrl(req, back ?? `/schedule/${id}`), 303);
     }
+    // Optional reschedule (date + time in studio tz) and duration change
+    const tenant = await db.tenant.findUniqueOrThrow({ where: { id: auth.tenantId } });
+    const date = String(form.get("date") ?? "");
+    const time = String(form.get("time") ?? "");
+    let startsAt = session.startsAt;
+    if (/^\d{4}-\d{2}-\d{2}$/.test(date) && /^\d{2}:\d{2}$/.test(time)) {
+      startsAt = utcFromZoned(date, time, tenant.timezone);
+    }
+    const durMin = Number(form.get("durationMin"));
+    const endsAt = Number.isFinite(durMin) && durMin >= 10
+      ? new Date(startsAt.getTime() + durMin * 60_000)
+      : new Date(startsAt.getTime() + (session.endsAt.getTime() - session.startsAt.getTime()));
+
     await db.classSession.update({
       where: { id },
       data: {
         capacity: Number.isFinite(capacity) && capacity >= 1 ? capacity : session.capacity,
         instructorId,
         location: String(form.get("location") ?? "").trim() || null,
+        startsAt,
+        endsAt,
+        isPublic: form.get("isPublic") === "on",
+        note: String(form.get("note") ?? "").trim() || null,
       },
     });
   }
