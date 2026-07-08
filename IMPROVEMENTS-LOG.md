@@ -45,3 +45,13 @@
   lifetime value from paid orders, credits left, last visit), health &
   notes card, active packages card, session history table. Tenant-scoped.
 - Verified live: search narrows correctly, create → profile renders.
+
+## 2026-07-08 · V5 Class types + schedule week view (live)
+- Class Types page: list (color dot, kind, duration, capacity, price in the
+  studio currency, session count) + add form with color picker.
+- Schedule: Monday-start week view in the STUDIO TIMEZONE — colored class
+  chips (type color at 8% tint), time, booked/capacity, instructor first
+  name; today highlighted; prev/Today/next week navigation.
+- Add-class form: class type, date+time (entered in studio tz, stored UTC —
+  verified 18:00 Bangkok → 11:00Z), instructor, spots override, room.
+- New tz helpers (src/lib/tz.ts): utcFromZoned / dayKeyInTz / weekDays.
