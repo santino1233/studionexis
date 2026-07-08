@@ -106,7 +106,7 @@ https://new.nexis.revsports.ca → commit → log → next.
 - [x] S3 Commerce loop: online reserve → PENDING order → staff "Mark paid"
       in Invoices grants the credits → member one-click booking spends
       them. Verified end-to-end across both hosts.
-- [ ] S4 At cutover: flip old wildcard vhost to v2 (middleware already
+- [x] S4 (custom-domain automation shipped; wildcard flip still the cutover step) At cutover: flip old wildcard vhost to v2 (middleware already
       handles every subdomain); add per-studio "connect" for more studios
       pre-cutover by appending server_names to v2-subdomains conf.
 - [x] S5 Calendar to the original's design: rich blocks (time range, name,

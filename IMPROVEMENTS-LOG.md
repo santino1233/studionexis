@@ -417,3 +417,15 @@
   discounted $28.80/$39.20/$60), plan cards, add-ons (SMS PAYG "coming
   soon", custom website → Settings). Plan choice persists (growth/annual
   verified in DB). Stripe/Twilio wiring awaits owner keys.
+
+## 2026-07-08 · Automatic custom-domain deployment — VERIFIED with a real cert
+- scripts/domain-provisioner.sh + /etc/cron.d/nexis-domains (every 5 min):
+  pending domains → DNS check → nginx vhost → Let's Encrypt cert →
+  listen-IP fix → smoke test → status LIVE in policies.domain; failures
+  → ERROR with reason; removed domains → vhost auto-cleanup. Settings
+  card shows Waiting for DNS / Live / Problem and stamps PENDING_DNS on
+  save. connect-domain.sh superseded.
+- END-TO-END PROVEN: real Let's Encrypt cert issued automatically for a
+  test hostname (CN=studio-test.nexis.revsports.ca, LIVE in ~30s), then
+  auto-cleaned after removal. App-side custom-domain resolution
+  re-verified separately (~host path serves the right studio).
