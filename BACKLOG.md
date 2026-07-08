@@ -62,3 +62,20 @@ https://new.nexis.revsports.ca → commit → log → next.
       pills, rows link to the roster.
 - [x] N4 Plan & Billing real: plan name, trial countdown bar, what's
       included, support contact (Stripe self-serve still owner-gated).
+
+## Wave 5 — port the old system's richness (owner: "carry elements over")
+- [x] P1 Old system's studio photography (hero + 10 gallery shots) copied
+      as v2 defaults; /s/<slug> now has a photo hero w/ brand overlay and
+      an "Inside the studio" gallery.
+- [x] P2 Class-type depth: description + difficulty level (form + API +
+      shown on the public booking page like the old ClassBlueprints).
+- [x] P3 Recurring classes: "repeat weekly for N weeks" on add-class
+      (old system had recurring schedules).
+- [ ] P4 Dashboard depth: Today/Week/Month period toggle on Business
+      Summary + wire the sales-mix donut (old dashboard had both).
+- [ ] P5 Client profile depth: tags, birthday, referral source (old
+      Client entity) + show on profile header.
+- [ ] P6 Settings depth: expense-category editor (old system had custom
+      categories per studio).
+- [ ] P7 Custom photo uploads for hero/gallery (needs media storage —
+      currently defaults only).

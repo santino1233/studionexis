@@ -22,19 +22,24 @@ export async function POST(req: Request) {
   }
 
   const startsAt = utcFromZoned(date, time, tenant.timezone);
-  const endsAt = new Date(startsAt.getTime() + classType.durationMin * 60_000);
   const instructorId = String(form.get("instructorId") ?? "") || null;
+  const repeatWeeks = Math.min(12, Math.max(1, Number(form.get("repeatWeeks") ?? 1) || 1));
+  const capacity = Math.max(1, Number(form.get("capacity") ?? classType.capacity) || classType.capacity);
+  const location = String(form.get("location") ?? "").trim() || null;
 
-  await db.classSession.create({
-    data: {
-      tenantId: tenant.id,
-      classTypeId: classType.id,
-      instructorId,
-      startsAt,
-      endsAt,
-      capacity: Math.max(1, Number(form.get("capacity") ?? classType.capacity) || classType.capacity),
-      location: String(form.get("location") ?? "").trim() || null,
-    },
+  await db.classSession.createMany({
+    data: Array.from({ length: repeatWeeks }, (_, w) => {
+      const s = new Date(startsAt.getTime() + w * 7 * 86400_000);
+      return {
+        tenantId: tenant.id,
+        classTypeId: classType.id,
+        instructorId,
+        startsAt: s,
+        endsAt: new Date(s.getTime() + classType.durationMin * 60_000),
+        capacity,
+        location,
+      };
+    }),
   });
   return NextResponse.redirect(externalUrl(req, "/schedule"), 303);
 }

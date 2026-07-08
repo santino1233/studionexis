@@ -64,9 +64,18 @@ export default async function NewSessionPage({ searchParams }: { searchParams: P
               <input name="capacity" type="number" min={1} className={field} placeholder="from class type" />
             </div>
           </div>
-          <div>
-            <label className={label}>Room / location</label>
-            <input name="location" className={field} placeholder="e.g. Main studio" />
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className={label}>Room / location</label>
+              <input name="location" className={field} placeholder="e.g. Main studio" />
+            </div>
+            <div>
+              <label className={label}>Repeat weekly</label>
+              <select name="repeatWeeks" className={field} defaultValue="1">
+                <option value="1">Just this once</option>
+                {[2,3,4,6,8,12].map(n => <option key={n} value={n}>{`For ${n} weeks`}</option>)}
+              </select>
+            </div>
           </div>
           <div className="flex justify-end gap-2 pt-2">
             <Link href="/schedule" className="rounded-[10px] border border-line bg-surface px-4 py-2.5 text-sm font-semibold text-ink-2 hover:bg-raised">Cancel</Link>

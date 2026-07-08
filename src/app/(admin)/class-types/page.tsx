@@ -57,6 +57,13 @@ export default async function ClassTypesPage() {
           <CardHeader title="Add class type" sub="Name, length and size" />
           <form method="post" action="/api/class-types" className="space-y-3.5 p-5">
             <input name="name" required placeholder="e.g. Reformer Flow" className={`${field} w-full`} />
+            <textarea name="description" rows={2} placeholder="What clients should expect (shows on your booking page)" className="w-full rounded-[10px] border border-line bg-surface px-3 py-2.5 text-sm outline-none placeholder:text-muted focus:border-brand focus:ring-4 focus:ring-brand/10" />
+            <select name="difficulty" className={`${field} w-full`}>
+              <option value="ALL_LEVELS">All levels</option>
+              <option value="BEGINNER">Beginner</option>
+              <option value="INTERMEDIATE">Intermediate</option>
+              <option value="ADVANCED">Advanced</option>
+            </select>
             <div className="grid grid-cols-2 gap-3">
               <select name="kind" className={field}>
                 <option value="GROUP">Group</option>

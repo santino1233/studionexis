@@ -322,3 +322,15 @@
 - Note: migration rehearsal attempted on owner's "continue" — safety
   classifier requires more explicit authorization for reading production
   client data; asked owner directly, no preference given, left parked.
+
+## 2026-07-08 · Wave 5 begins: porting the old system's richness (P1–P3)
+- Owner: v2 feels bare-bones vs the old system — carry elements over.
+- P1: copied the old system's 2.4MB of studio photography (hero + 10
+  gallery shots) as v2 defaults; studio websites now open with a photo
+  hero under a brand-tinted gradient + an "Inside the studio" gallery.
+- P2: class types got description + difficulty (Beginner→Advanced), shown
+  on the public booking page under each class like old ClassBlueprints.
+- P3: recurring classes — add-class can repeat weekly up to 12 weeks
+  (verified: 4 weekly sessions created on consecutive dates).
+- P4–P7 queued (dashboard periods+donut, client tags/birthday/referral,
+  expense categories, custom photo uploads).

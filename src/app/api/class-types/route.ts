@@ -17,6 +17,8 @@ export async function POST(req: Request) {
       name,
       color: String(form.get("color") ?? "#F97316"),
       kind: form.get("kind") === "PRIVATE" ? "PRIVATE" : "GROUP",
+      description: String(form.get("description") ?? "").trim() || null,
+      difficulty: ["BEGINNER", "INTERMEDIATE", "ADVANCED", "ALL_LEVELS"].includes(String(form.get("difficulty"))) ? String(form.get("difficulty")) : "ALL_LEVELS",
       durationMin: Math.max(10, Number(form.get("durationMin") ?? 60) || 60),
       capacity: Math.max(1, Number(form.get("capacity") ?? 10) || 10),
       price: String(Number(form.get("price") ?? 0) || 0),

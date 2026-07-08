@@ -84,7 +84,9 @@ export default async function PublicBookingPage({ params, searchParams }: {
                           <div className="text-[12.5px] text-muted">
                             {timeInTz(x.startsAt, tenant.timezone)} · {x.classType.durationMin} min
                             {x.instructor ? ` · ${x.instructor.name}` : ""} · {fmt.format(Number(x.classType.price))}
+                            {x.classType.difficulty !== "ALL_LEVELS" ? ` · ${x.classType.difficulty.toLowerCase()}` : ""}
                           </div>
+                          {x.classType.description && <p className="mt-1 max-w-[440px] text-[12px] leading-relaxed text-muted">{x.classType.description}</p>}
                         </div>
                       </div>
                       <span className={`rounded-full px-3 py-1 text-[11.5px] font-bold ${spotsLeft > 0 ? "bg-green-wash text-green" : "bg-line-2 text-muted"}`}>
