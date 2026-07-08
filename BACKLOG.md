@@ -77,5 +77,5 @@ https://new.nexis.revsports.ca → commit → log → next.
       Client entity) + show on profile header.
 - [x] P6 Settings depth: expense-category editor (old system had custom
       categories per studio).
-- [ ] P7 Custom photo uploads for hero/gallery (needs media storage —
+- [x] P7 Custom photo uploads for hero/gallery (needs media storage —
       currently defaults only).

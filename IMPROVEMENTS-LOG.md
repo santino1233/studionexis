@@ -355,3 +355,14 @@
   blank = standard list); the expense form uses the studio's own list.
 - Merge-safe: saving categories preserved cancel windows + waitlist flag
   in the same policies blob (verified in DB).
+
+## 2026-07-08 · P7 Custom website photos — WAVE 5 COMPLETE
+- Settings → "Website photos": upload your own hero (one shot, replaces
+  old file) and up to 8 gallery photos (JPG/PNG/WebP ≤5MB) with per-photo
+  remove; site falls back to the ported default photography when unset.
+- Storage on disk per tenant (/opt/nexis/uploads, git-ignored, now
+  included in the nightly backup as a tarball); served via /api/media
+  with mime allowlist + basename()-guarded paths.
+- Verified live: upload → stored → served → rendered on the site; remove
+  works; anon blocked; wrong types rejected; traversal 404s. Test studio
+  reset to defaults afterward.

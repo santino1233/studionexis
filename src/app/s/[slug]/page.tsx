@@ -13,7 +13,9 @@ export default async function StudioSite({ params }: { params: Promise<{ slug: s
   if (!tenant || tenant.status === "SUSPENDED") notFound();
 
   const brand = tenant.brandColor || "#F97316";
-  const w = (tenant.website ?? {}) as Record<string, string>;
+  const w = (tenant.website ?? {}) as Record<string, string> & { galleryImages?: string[] };
+  const hero = w.heroImage || "/studio/hero.jpg";
+  const gallery = w.galleryImages?.length ? w.galleryImages : ["gallery1", "gallery2", "gallery3", "gallery4", "gallery5", "gallery6"].map((g) => `/studio/${g}.jpg`);
   const fmt = moneyFormatter(tenant.currency);
 
   const [packages, sessions] = await Promise.all([
@@ -32,7 +34,7 @@ export default async function StudioSite({ params }: { params: Promise<{ slug: s
     <div className="min-h-screen bg-canvas">
       {/* Hero — studio photography with a brand-tinted overlay */}
       <div className="relative overflow-hidden">
-        <img src="/studio/hero.jpg" alt="" className="absolute inset-0 h-full w-full object-cover" />
+        <img src={hero} alt="" className="absolute inset-0 h-full w-full object-cover" />
         <div className="absolute inset-0" style={{ background: `linear-gradient(120deg, ${brand}F2 0%, ${brand}B3 45%, rgba(23,24,28,0.55) 100%)` }} />
         <div className="relative mx-auto max-w-[860px] px-5 pb-16 pt-12 text-white">
           <div className="mb-10 flex items-center justify-between">
@@ -94,10 +96,10 @@ export default async function StudioSite({ params }: { params: Promise<{ slug: s
         <section className="mb-12">
           <h2 className="mb-4 font-display text-[22px] font-extrabold tracking-tight text-ink">Inside the studio</h2>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-            {["gallery1", "gallery2", "gallery3", "gallery4", "gallery5", "gallery6"].map((g, i) => (
+            {gallery.map((g, i) => (
               <img
                 key={g}
-                src={`/studio/${g}.jpg`}
+                src={g}
                 alt="Studio"
                 loading="lazy"
                 className={`h-40 w-full rounded-2xl object-cover shadow-[var(--shadow-card)] sm:h-48 ${i === 0 ? "col-span-2 h-56 sm:col-span-1 sm:h-48" : ""}`}

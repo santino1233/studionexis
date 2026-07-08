@@ -93,6 +93,50 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
       </Card>
 
       <Card className="mt-5">
+        <CardHeader eyebrow="Public" title="Website photos" sub="Replace the default photography with your own studio shots" />
+        <div className="space-y-5 p-6">
+          {error === "phototype" && <div className="rounded-xl border border-rose/20 bg-rose/5 px-3.5 py-2.5 text-[13px] font-medium text-rose">Photos must be JPG, PNG or WebP under 5MB.</div>}
+          {(() => {
+            const w = (tenant.website ?? {}) as { heroImage?: string; galleryImages?: string[] };
+            return (
+              <>
+                <div className="flex flex-wrap items-center gap-4">
+                  <img src={w.heroImage ?? "/studio/hero.jpg"} alt="Hero" className="h-20 w-32 rounded-xl object-cover" />
+                  <form method="post" action="/api/media/upload" encType="multipart/form-data" className="flex items-center gap-2">
+                    <input type="hidden" name="kind" value="hero" />
+                    <input name="photos" type="file" accept="image/jpeg,image/png,image/webp" required className="text-[12.5px] text-ink-2 file:mr-2 file:rounded-lg file:border-0 file:bg-line-2 file:px-3 file:py-1.5 file:text-[12px] file:font-bold file:text-ink-2" />
+                    <button className="rounded-[10px] bg-brand px-4 py-2 text-[13px] font-bold text-white hover:bg-brand-ink">Set hero</button>
+                  </form>
+                </div>
+                <div>
+                  <div className="mb-2 text-[12.5px] font-semibold text-ink-2">Gallery {w.galleryImages?.length ? `(${w.galleryImages.length}/8)` : "— using default photos"}</div>
+                  {!!w.galleryImages?.length && (
+                    <div className="mb-3 flex flex-wrap gap-2.5">
+                      {w.galleryImages.map((u) => (
+                        <div key={u} className="relative">
+                          <img src={u} alt="" className="h-16 w-24 rounded-lg object-cover" />
+                          <form method="post" action="/api/media/upload" className="absolute -right-1.5 -top-1.5">
+                            <input type="hidden" name="kind" value="remove" />
+                            <input type="hidden" name="url" value={u} />
+                            <button className="grid size-5 place-items-center rounded-full bg-rose text-[10px] font-bold text-white" aria-label="Remove">×</button>
+                          </form>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <form method="post" action="/api/media/upload" encType="multipart/form-data" className="flex items-center gap-2">
+                    <input type="hidden" name="kind" value="gallery" />
+                    <input name="photos" type="file" multiple accept="image/jpeg,image/png,image/webp" required className="text-[12.5px] text-ink-2 file:mr-2 file:rounded-lg file:border-0 file:bg-line-2 file:px-3 file:py-1.5 file:text-[12px] file:font-bold file:text-ink-2" />
+                    <button className="rounded-[10px] border border-line bg-surface px-4 py-2 text-[13px] font-semibold text-ink-2 hover:bg-raised">Add photos</button>
+                  </form>
+                </div>
+              </>
+            );
+          })()}
+        </div>
+      </Card>
+
+      <Card className="mt-5">
         <CardHeader eyebrow="Add-on" title="Custom domain" sub="Serve your website on your own domain" />
         <form method="post" action="/api/settings" className="space-y-4 p-6">
           <input type="hidden" name="section" value="domain" />
