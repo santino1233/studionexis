@@ -1,5 +1,87 @@
-import { PageStub } from "@/components/ui/page-stub";
+import { Card, CardHeader } from "@/components/ui/card";
+import { getCurrentTenant } from "@/lib/tenant";
 
-export default function Page() {
-  return <PageStub title="Settings" sub="How your studio runs" />;
+export const dynamic = "force-dynamic";
+
+const CURRENCIES = ["USD", "EUR", "GBP", "AUD", "CAD", "SGD", "THB", "VND", "IDR", "PHP", "MYR", "JPY", "KRW", "AED", "INR"];
+const TIMEZONES = [
+  "Asia/Bangkok", "Asia/Ho_Chi_Minh", "Asia/Singapore", "Asia/Jakarta", "Asia/Manila", "Asia/Kuala_Lumpur",
+  "Asia/Tokyo", "Asia/Seoul", "Asia/Dubai", "Asia/Kolkata", "Australia/Sydney", "Europe/London", "Europe/Paris",
+  "Europe/Berlin", "America/New_York", "America/Chicago", "America/Denver", "America/Los_Angeles", "America/Toronto",
+];
+
+const field = "h-11 w-full rounded-[10px] border border-line bg-surface px-3.5 text-sm outline-none focus:border-brand focus:ring-4 focus:ring-brand/10";
+const label = "mb-1.5 block text-[12.5px] font-semibold text-ink-2";
+
+export default async function SettingsPage({ searchParams }: { searchParams: Promise<{ saved?: string; error?: string }> }) {
+  const { saved, error } = await searchParams;
+  const tenant = await getCurrentTenant();
+  const pol = (tenant.policies ?? {}) as { cancelWindowGroupHours?: number; cancelWindowPrivateHours?: number; waitlistEnabled?: boolean };
+
+  return (
+    <div className="mx-auto max-w-[760px]">
+      <h1 className="font-display text-[30px] font-extrabold tracking-tight text-ink">Settings</h1>
+      <p className="mt-1 text-sm text-muted">Your identity flows through everything — receipts, booking pages, money and times.</p>
+
+      {saved && <div className="mt-4 rounded-xl border border-green/20 bg-green-wash px-3.5 py-2.5 text-[13px] font-bold text-green">Saved.</div>}
+      {error === "tz" && <div className="mt-4 rounded-xl border border-rose/20 bg-rose/5 px-3.5 py-2.5 text-[13px] font-medium text-rose">That timezone wasn&apos;t recognized.</div>}
+
+      <Card className="mt-6">
+        <CardHeader eyebrow="Identity" title="Studio identity" sub="Name, money and time — applied everywhere instantly" />
+        <form method="post" action="/api/settings" className="space-y-4 p-6">
+          <input type="hidden" name="section" value="identity" />
+          <div>
+            <label className={label}>Studio name</label>
+            <input name="name" defaultValue={tenant.name} className={field} />
+          </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <div>
+              <label className={label}>Currency</label>
+              <select name="currency" defaultValue={tenant.currency} className={field}>
+                {CURRENCIES.map((c) => <option key={c}>{c}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className={label}>Timezone</label>
+              <select name="timezone" defaultValue={tenant.timezone} className={field}>
+                {TIMEZONES.map((t) => <option key={t}>{t}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className={label}>Brand color</label>
+              <input name="brandColor" type="color" defaultValue={tenant.brandColor} className="h-11 w-full cursor-pointer rounded-[10px] border border-line bg-surface p-1" />
+            </div>
+          </div>
+          <div className="flex justify-end">
+            <button className="rounded-[10px] bg-brand px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-brand-ink">Save identity</button>
+          </div>
+        </form>
+      </Card>
+
+      <Card className="mt-5">
+        <CardHeader eyebrow="Rules" title="Booking policies" sub="What clients feel — cancellation windows and waitlists" />
+        <form method="post" action="/api/settings" className="space-y-4 p-6">
+          <input type="hidden" name="section" value="policies" />
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+              <label className={label}>Free-cancel window — group (hours)</label>
+              <input name="cancelWindowGroupHours" type="number" min={0} defaultValue={pol.cancelWindowGroupHours ?? 3} className={field} />
+            </div>
+            <div>
+              <label className={label}>Free-cancel window — private (hours)</label>
+              <input name="cancelWindowPrivateHours" type="number" min={0} defaultValue={pol.cancelWindowPrivateHours ?? 3} className={field} />
+            </div>
+          </div>
+          <p className="text-[12px] text-muted">Cancel closer to class start than the window and the credit is forfeited (enforcement lands with the customer booking portal).</p>
+          <label className="flex items-center gap-2.5 text-[13.5px] font-medium text-ink">
+            <input name="waitlistEnabled" type="checkbox" defaultChecked={pol.waitlistEnabled ?? true} className="size-4 accent-[#F97316]" />
+            Waitlist full classes automatically
+          </label>
+          <div className="flex justify-end">
+            <button className="rounded-[10px] bg-brand px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-brand-ink">Save policies</button>
+          </div>
+        </form>
+      </Card>
+    </div>
+  );
 }

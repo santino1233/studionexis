@@ -17,7 +17,7 @@ https://new.nexis.revsports.ca → commit → log → next.
 - [x] V7 POS: product/package grid + cart + checkout (cash/at-studio first).
 - [x] V8 Products & Packages management; Invoices list from orders.
 - [x] V9 Analytics: KPI strip + orange area chart + purple donut (reference).
-- [ ] V10 Settings + onboarding wizard (studio identity, currency, timezone,
+- [x] V10 Settings + onboarding wizard (studio identity, currency, timezone,
       policies) — simplified from the old 8-step flow.
 - [ ] V11 Public tenant booking page + website (light, studio-branded).
 - [ ] V12 Signup + tenant provisioning + trial plans; Stripe subscriptions.

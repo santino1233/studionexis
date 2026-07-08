@@ -104,3 +104,19 @@
 - Month navigation (← July 2026 →) computed in the studio timezone.
 - Verified live: all 4 KPI cards, $50 revenue, both charts render, June
   shows the empty state.
+
+## 2026-07-08 · V10 Settings + onboarding (live)
+- Settings: Studio identity card (name, currency, timezone, brand color) +
+  Booking policies card (per-kind free-cancel windows, waitlist toggle)
+  stored as a MERGED json blob (never replaced wholesale — old system's
+  PATCH-replace bug class avoided by design).
+- Per-studio currency proven end-to-end: switching to EUR re-rendered all
+  POS/analytics/invoice money as € instantly (then reverted to USD).
+- /welcome: simplified one-page guided setup (identity → first class type →
+  first package, blank sections skip) replacing the old 8-step wizard.
+- Dashboard is now fully real: getting-started checklist derived from
+  actual data (each item links to its fix), KPI row + Business Summary
+  computed from orders/bookings/sessions in the studio timezone.
+- Process note: a syntax error shipped mid-iteration briefly 502'd the
+  preview because I restarted on a failed build — rule now: never restart
+  unless the build exited 0.
