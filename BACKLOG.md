@@ -52,3 +52,13 @@ https://new.nexis.revsports.ca → commit → log → next.
       customer auth) — basic per-IP throttle.
 - [x] H5 Friendly 404/error pages (currently Next defaults).
 - [x] H6 Admin mobile pass: sidebar drawer + responsive tables.
+
+## Wave 4 — no dead UI (everything clickable does something)
+- [x] N1 Topbar search actually searches clients; "+" adds a class;
+      dead bell removed; avatar shows the signed-in user's initial.
+- [x] N2 Sidebar: dead dark-mode toggle + fake referral card removed;
+      replaced with a live "Your booking page" link (opens /s/<slug>).
+- [x] N3 Classes page real: upcoming/past tabs, booked counts, status
+      pills, rows link to the roster.
+- [x] N4 Plan & Billing real: plan name, trial countdown bar, what's
+      included, support contact (Stripe self-serve still owner-gated).

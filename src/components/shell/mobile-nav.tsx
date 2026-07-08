@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { Sidebar } from "@/components/shell/sidebar";
 
-export function MobileNav() {
+export function MobileNav({ slug = "" }: { slug?: string }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
@@ -26,7 +26,7 @@ export function MobileNav() {
         <div className="fixed inset-0 z-50 lg:hidden">
           <div className="absolute inset-0 bg-ink/30 backdrop-blur-[2px]" onClick={() => setOpen(false)} />
           <div className="absolute inset-y-0 left-0 w-[280px] shadow-2xl">
-            <Sidebar mobile />
+            <Sidebar mobile slug={slug} />
             <button
               onClick={() => setOpen(false)}
               className="absolute right-3 top-4 grid size-9 place-items-center rounded-xl text-ink-2 hover:bg-line-2"

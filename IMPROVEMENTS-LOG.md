@@ -312,3 +312,13 @@
   W8 Stripe keys · W9 migration rehearsal go-ahead · real-domain dry run
   (W7 script) · SMTP credentials (W4) · owner mobile QA on a real device.
   Loop stopping cleanly; nightly agent remains scheduled.
+
+## 2026-07-08 · Wave 4: no dead UI (live)
+- Every control in the shell now does something: topbar search filters
+  clients, "+" opens add-class, dead bell/dark-mode/referral-card removed,
+  sidebar gained a real "Your booking page" link (per-studio slug).
+- Classes page rebuilt (upcoming/past, booked counts, links to rosters);
+  Plan & Billing rebuilt (plan, trial countdown, inclusions, support).
+- Note: migration rehearsal attempted on owner's "continue" — safety
+  classifier requires more explicit authorization for reading production
+  client data; asked owner directly, no preference given, left parked.

@@ -26,8 +26,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const tenant = await getCurrentTenant();
   return (
     <div className="flex h-screen overflow-hidden bg-canvas">
-      <Sidebar />
-      <MobileNav />
+      <Sidebar slug={tenant.slug} />
+      <MobileNav slug={tenant.slug} />
       <div className="flex min-w-0 flex-1 flex-col">
         <PlanBanner status={tenant.status} trialEndsAt={tenant.trialEndsAt} />
         <Topbar />

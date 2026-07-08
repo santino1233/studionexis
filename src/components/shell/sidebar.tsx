@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/cn";
 import {
   LayoutGrid, Calendar, Star, ClipboardList, BookOpen, Users, CreditCard,
-  Hexagon, FileText, UserCog, LineChart, Settings, Wallet, Moon, LogOut, Gift,
+  Hexagon, FileText, UserCog, LineChart, Settings, Wallet, LogOut, Globe,
 } from "lucide-react";
 
 type Item = { href: string; label: string; icon: React.ComponentType<{ className?: string }> };
@@ -36,7 +36,7 @@ const groups: Group[] = [
   ]},
 ];
 
-export function Sidebar({ mobile = false }: { mobile?: boolean }) {
+export function Sidebar({ mobile = false, slug = "" }: { mobile?: boolean; slug?: string }) {
   const pathname = usePathname();
   return (
     <aside className={cn("w-[236px] shrink-0 flex-col border-r border-line bg-surface", mobile ? "flex h-full" : "hidden lg:flex")}>
@@ -73,13 +73,10 @@ export function Sidebar({ mobile = false }: { mobile?: boolean }) {
       </nav>
 
       <div className="border-t border-line px-3 py-3">
-        <div className="mb-2 rounded-2xl border border-[#fce6d6] bg-gradient-to-br from-brand/[0.07] to-brand/[0.02] p-3">
-          <div className="flex items-center gap-2 text-[13px] font-bold text-ink"><Gift className="size-4 text-brand" /> Grow your business</div>
-          <div className="mt-1 text-[11.5px] text-muted">Invite a friend and get a month free.</div>
-        </div>
-        <button className="flex w-full items-center gap-3 rounded-[10px] px-3 py-2 text-sm font-medium text-ink-2 hover:bg-line-2 hover:text-ink">
-          <Moon className="size-[18px]" /> Dark mode
-        </button>
+        <a href={`/s/${slug}`} target="_blank" className="mb-2 block rounded-2xl border border-[#fce6d6] bg-gradient-to-br from-brand/[0.07] to-brand/[0.02] p-3 transition-transform hover:-translate-y-px">
+          <div className="flex items-center gap-2 text-[13px] font-bold text-ink"><Globe className="size-4 text-brand" /> Your booking page</div>
+          <div className="mt-1 text-[11.5px] text-muted">See what your clients see →</div>
+        </a>
         <form method="post" action="/api/logout">
           <button className="flex w-full items-center gap-3 rounded-[10px] px-3 py-2 text-sm font-medium text-ink-2 hover:bg-line-2 hover:text-ink">
             <LogOut className="size-[18px]" /> Sign out
