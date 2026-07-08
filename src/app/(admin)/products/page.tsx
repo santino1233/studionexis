@@ -10,9 +10,10 @@ const microLabel = "mb-1 block text-[11px] font-bold uppercase tracking-wider te
 export default async function ProductsPage() {
   const tenant = await getCurrentTenant();
   const fmt = moneyFormatter(tenant.currency);
-  const [packages, products] = await Promise.all([
+  const [packages, products, vouchers] = await Promise.all([
     db.package.findMany({ where: { tenantId: tenant.id, active: true }, orderBy: { price: "asc" }, include: { _count: { select: { purchases: true } } } }),
     db.product.findMany({ where: { tenantId: tenant.id, active: true }, orderBy: { name: "asc" } }),
+    db.voucher.findMany({ where: { tenantId: tenant.id, active: true }, orderBy: { createdAt: "desc" }, take: 20 }),
   ]);
 
   return (
@@ -103,6 +104,56 @@ export default async function ProductsPage() {
               <div><label className={microLabel}>Stock</label><input name="stock" type="number" min={0} defaultValue={0} className={`${field} w-full`} /></div>
             </div>
             <button className="w-full rounded-[10px] bg-brand py-2.5 text-sm font-bold text-white transition-colors hover:bg-brand-ink">Add product</button>
+          </form>
+        </Card>
+      </div>
+
+      {/* Vouchers */}
+      <div className="mt-6 grid grid-cols-1 gap-5 lg:grid-cols-3">
+        <Card className="lg:col-span-2">
+          <CardHeader eyebrow="Promotions" title="Voucher codes" sub="Discount codes staff can apply at the register" />
+          <table className="w-full text-left">
+            <thead>
+              <tr className="border-b border-line-2">
+                {["Code", "Discount", "Used", "Expires"].map((h) => (
+                  <th key={h} className="px-[18px] py-[13px] text-[10.5px] font-bold uppercase tracking-[0.08em] text-muted">{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {vouchers.map((v) => (
+                <tr key={v.id} className="border-b border-line-2 last:border-0 hover:bg-raised">
+                  <td className="px-[18px] py-[14px] font-mono text-[13.5px] font-bold tracking-wider text-ink">{v.code}</td>
+                  <td className="px-[18px] py-[14px] text-[13px] font-semibold text-ink">
+                    {v.type === "PERCENT" ? `${Number(v.value)}% off` : `${fmt.format(Number(v.value))} off`}
+                  </td>
+                  <td className="px-[18px] py-[14px] text-[13px] text-ink-2">{v.usedCount} / {v.maxUses}</td>
+                  <td className="px-[18px] py-[14px] text-[13px] text-muted">
+                    {v.expiresAt ? v.expiresAt.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "Never"}
+                  </td>
+                </tr>
+              ))}
+              {vouchers.length === 0 && <tr><td colSpan={4} className="px-[18px] py-10 text-center text-sm text-muted">No voucher codes yet.</td></tr>}
+            </tbody>
+          </table>
+        </Card>
+
+        <Card>
+          <CardHeader title="Create voucher" />
+          <form method="post" action="/api/vouchers" className="space-y-3.5 p-5">
+            <input name="code" required placeholder="e.g. WELCOME10" className={`${field} w-full uppercase`} />
+            <div className="grid grid-cols-2 gap-3">
+              <select name="type" className={field}>
+                <option value="PERCENT">% off</option>
+                <option value="FIXED">Amount off</option>
+              </select>
+              <input name="value" type="number" step="0.01" min="0.01" required placeholder="Value" className={`${field} w-full`} />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><label className={microLabel}>Max uses</label><input name="maxUses" type="number" min={1} defaultValue={100} className={`${field} w-full`} /></div>
+              <div><label className={microLabel}>Expires</label><input name="expiresAt" type="date" className={`${field} w-full`} /></div>
+            </div>
+            <button className="w-full rounded-[10px] bg-brand py-2.5 text-sm font-bold text-white transition-colors hover:bg-brand-ink">Create voucher</button>
           </form>
         </Card>
       </div>

@@ -216,3 +216,14 @@
 - Verified live: confirmation logged on booking, reminder run reminded 1
   then 0 on rerun, bad token 403. (Middleware initially swallowed the
   cron route — whitelisted /api/cron, it has its own token guard.)
+
+## 2026-07-08 · W5 Vouchers & promotions (live)
+- Voucher codes: % or fixed-amount off, max uses, optional expiry; managed
+  from Products & Packages (create form + usage table). Codes are unique
+  per studio, normalized to UPPERCASE.
+- POS cart has a voucher field; validation + consumption happen INSIDE the
+  checkout transaction (server-side prices + server-side discount, atomic
+  usedCount). Success banner shows amount charged and amount saved.
+- Orders store discount + voucher link for reporting.
+- Verified live: 10% code took 2.50→2.25, usage 1/2, third use rejected
+  ("fully used"), invalid code rejected, management card renders.

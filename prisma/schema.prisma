@@ -236,6 +236,9 @@ model Order {
   client    Client?     @relation(fields: [clientId], references: [id])
   number    Int
   total     Decimal     @db.Decimal(12, 2)
+  discount  Decimal     @default(0) @db.Decimal(12, 2)
+  voucherId String?
+  voucher   Voucher?    @relation(fields: [voucherId], references: [id])
   method    String // cash / transfer / card / online
   status    OrderStatus @default(PAID)
   createdAt DateTime    @default(now())
@@ -283,4 +286,26 @@ model EmailLog {
   createdAt DateTime @default(now())
 
   @@index([tenantId, createdAt])
+}
+
+enum VoucherType {
+  PERCENT
+  FIXED
+}
+
+model Voucher {
+  id        String      @id @default(cuid())
+  tenantId  String
+  code      String
+  type      VoucherType @default(PERCENT)
+  value     Decimal     @db.Decimal(12, 2)
+  maxUses   Int         @default(100)
+  usedCount Int         @default(0)
+  expiresAt DateTime?
+  active    Boolean     @default(true)
+  createdAt DateTime    @default(now())
+
+  orders Order[]
+
+  @@unique([tenantId, code])
 }

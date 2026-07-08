@@ -12,8 +12,9 @@ export function PosClient({ sellables, clients, currency }: { sellables: Sellabl
   const [clientId, setClientId] = useState("");
   const [method, setMethod] = useState("cash");
   const [busy, setBusy] = useState(false);
-  const [done, setDone] = useState<number | null>(null);
+  const [done, setDone] = useState<{ number: number; discount: number; total: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [voucher, setVoucher] = useState("");
 
   const byId = useMemo(() => new Map(sellables.map((s) => [s.id, s])), [sellables]);
   const lines = [...cart.entries()].map(([id, qty]) => ({ item: byId.get(id)!, qty }));
@@ -29,11 +30,12 @@ export function PosClient({ sellables, clients, currency }: { sellables: Sellabl
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ clientId: clientId || undefined, method, items: lines.map((l) => ({ kind: l.item.kind, refId: l.item.id, qty: l.qty })) }),
+        body: JSON.stringify({ clientId: clientId || undefined, method, voucherCode: voucher || undefined, items: lines.map((l) => ({ kind: l.item.kind, refId: l.item.id, qty: l.qty })) }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Checkout failed");
-      setDone(data.number); setCart(new Map());
+      setDone({ number: data.number, discount: data.discount ?? 0, total: data.total ?? 0 });
+      setCart(new Map()); setVoucher("");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Checkout failed");
     } finally {
@@ -107,15 +109,22 @@ export function PosClient({ sellables, clients, currency }: { sellables: Sellabl
             </div>
           </div>
 
+          <input
+            value={voucher}
+            onChange={(e) => setVoucher(e.target.value.toUpperCase())}
+            placeholder="Voucher code (optional)"
+            className="h-10 w-full rounded-[10px] border border-line bg-surface px-3 text-[13px] uppercase tracking-wide outline-none placeholder:normal-case placeholder:tracking-normal placeholder:text-muted focus:border-brand"
+          />
+
           <div className="flex items-center justify-between border-t border-line-2 pt-4">
-            <span className="text-[13px] font-semibold text-ink-2">Total</span>
+            <span className="text-[13px] font-semibold text-ink-2">Total{voucher && " (before code)"}</span>
             <span className="font-display text-[22px] font-extrabold text-ink">{fmt.format(total)}</span>
           </div>
 
           {error && <div className="rounded-xl border border-rose/20 bg-rose/5 px-3 py-2 text-[12.5px] font-medium text-rose">{error}</div>}
           {done !== null && (
             <div className="flex items-center gap-2 rounded-xl border border-green/20 bg-green-wash px-3 py-2.5 text-[13px] font-bold text-green">
-              <CheckCircle2 className="size-4" /> Paid — order #{done}
+              <CheckCircle2 className="size-4" /> Paid {fmt.format(done.total)} — order #{done.number}{done.discount > 0 ? ` (saved ${fmt.format(done.discount)})` : ""}
             </div>
           )}
 

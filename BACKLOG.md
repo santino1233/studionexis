@@ -33,7 +33,7 @@ https://new.nexis.revsports.ca → commit → log → next.
       (revenue from orders − expenses).
 - [x] W4 Email notifications: booking confirmation + reminder (SMTP env),
       graceful no-op without credentials.
-- [ ] W5 Promotions & vouchers (discount codes at POS/public checkout).
+- [x] W5 Promotions & vouchers (discount codes at POS/public checkout).
 - [ ] W6 Studio website: simple public studio page (about, photos, pricing)
       layered on the booking page.
 - [ ] W7 Custom domains: tenant domain field + connect script (nginx+certbot).
