@@ -34,6 +34,29 @@
   --shadow-card-hover: 0 1px 2px rgb(17 17 19 / 0.05), 0 10px 30px rgb(17 17 19 / 0.06);
 }
 
+/* ── Dark mode (admin only, opt-in via the sidebar toggle) ─────────────
+   Utilities resolve var(--color-*) at the element, so overriding the
+   variables on the admin wrapper re-skins everything inside it. */
+html[data-theme="dark"] .nx-admin {
+  --color-canvas: #101114;
+  --color-surface: #17181c;
+  --color-raised: #1d1f25;
+  --color-ink: #f2f3f6;
+  --color-ink-2: #b7bcc5;
+  --color-muted: #7f8694;
+  --color-line: #272a31;
+  --color-line-2: #1f2127;
+
+  --color-brand-wash: #34220f;
+  --color-purple-wash: #262040;
+  --color-green-wash: #12291c;
+  --color-blue-wash: #16263c;
+
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.5), 0 1px 3px rgb(0 0 0 / 0.4);
+  --shadow-card-hover: 0 1px 2px rgb(0 0 0 / 0.5), 0 10px 30px rgb(0 0 0 / 0.55);
+  color-scheme: dark;
+}
+
 html,
 body {
   height: 100%;

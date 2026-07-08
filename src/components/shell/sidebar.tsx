@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/cn";
+import { ThemeToggle } from "@/components/shell/theme-toggle";
 import {
   LayoutGrid, Calendar, Star, ClipboardList, BookOpen, Users, CreditCard,
   Hexagon, FileText, UserCog, LineChart, Settings, Wallet, LogOut, Globe,
@@ -73,10 +74,11 @@ export function Sidebar({ mobile = false, slug = "" }: { mobile?: boolean; slug?
       </nav>
 
       <div className="border-t border-line px-3 py-3">
-        <a href={`/s/${slug}`} target="_blank" className="mb-2 block rounded-2xl border border-[#fce6d6] bg-gradient-to-br from-brand/[0.07] to-brand/[0.02] p-3 transition-transform hover:-translate-y-px">
+        <a href={`/s/${slug}`} target="_blank" className="mb-2 block rounded-2xl border border-brand/25 bg-gradient-to-br from-brand/[0.07] to-brand/[0.02] p-3 transition-transform hover:-translate-y-px">
           <div className="flex items-center gap-2 text-[13px] font-bold text-ink"><Globe className="size-4 text-brand" /> Your booking page</div>
           <div className="mt-1 text-[11.5px] text-muted">See what your clients see →</div>
         </a>
+        <ThemeToggle />
         <form method="post" action="/api/logout">
           <button className="flex w-full items-center gap-3 rounded-[10px] px-3 py-2 text-sm font-medium text-ink-2 hover:bg-line-2 hover:text-ink">
             <LogOut className="size-[18px]" /> Sign out

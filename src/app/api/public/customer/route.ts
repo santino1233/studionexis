@@ -56,6 +56,20 @@ export async function POST(req: Request) {
     return NextResponse.redirect(externalUrl(req, me), 303);
   }
 
+  if (mode === "password") {
+    const session = await getCustomerSession();
+    if (!session || session.slug !== slug) return NextResponse.redirect(externalUrl(req, me), 303);
+    const current = String(form.get("currentPassword") ?? "");
+    const next = String(form.get("newPassword") ?? "");
+    if (next.length < 6) return NextResponse.redirect(externalUrl(req, `${me}?error=missing`), 303);
+    const c = await db.client.findFirst({ where: { id: session.clientId, tenantId: session.tenantId } });
+    if (!c?.passwordHash || !(await bcrypt.compare(current, c.passwordHash))) {
+      return NextResponse.redirect(externalUrl(req, `${me}?error=badpw`), 303);
+    }
+    await db.client.update({ where: { id: c.id }, data: { passwordHash: await bcrypt.hash(next, 10) } });
+    return NextResponse.redirect(externalUrl(req, `${me}?ok=pw`), 303);
+  }
+
   // login / register
   const tenant = await tenantBySlugOrDomain(slug);
   if (!tenant || tenant.status === "SUSPENDED") return NextResponse.redirect(externalUrl(req, "/login"), 303);

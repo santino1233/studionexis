@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
-import { Card } from "@/components/ui/card";
 import { db } from "@/lib/db";
 import { getCurrentTenant } from "@/lib/tenant";
 import { dayKeyInTz, timeInTz, weekDays } from "@/lib/tz";
 
 export const dynamic = "force-dynamic";
+
+const PX_PER_HOUR = 60;
 
 export default async function SchedulePage({ searchParams }: { searchParams: Promise<{ w?: string }> }) {
   const { w } = await searchParams;
@@ -13,7 +14,7 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
   const tenant = await getCurrentTenant();
   const days = weekDays(tenant.timezone, offset);
   const rangeStart = new Date(`${days[0]}T00:00:00Z`);
-  rangeStart.setUTCDate(rangeStart.getUTCDate() - 1); // tz slack
+  rangeStart.setUTCDate(rangeStart.getUTCDate() - 1);
   const rangeEnd = new Date(`${days[6]}T00:00:00Z`);
   rangeEnd.setUTCDate(rangeEnd.getUTCDate() + 2);
 
@@ -22,17 +23,49 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
     include: { classType: true, instructor: true, _count: { select: { bookings: { where: { status: { in: ["BOOKED", "CHECKED_IN"] } } } } } },
     orderBy: { startsAt: "asc" },
   });
-  const byDay = new Map<string, typeof sessions>();
+
+  // Wall-clock minutes in the studio tz for grid positioning
+  const minutesInTz = (d: Date) => {
+    const [h, m] = d
+      .toLocaleTimeString("en-GB", { timeZone: tenant.timezone, hour: "2-digit", minute: "2-digit", hour12: false })
+      .split(":").map(Number);
+    return h * 60 + m;
+  };
+
+  type Item = { id: string; name: string; color: string; top: number; height: number; time: string; booked: number; capacity: number; instructor?: string };
+  const byDay = new Map<string, Item[]>();
+  let minH = 8, maxH = 20;
   for (const s of sessions) {
     const k = dayKeyInTz(s.startsAt, tenant.timezone);
-    byDay.set(k, [...(byDay.get(k) ?? []), s]);
+    const startMin = minutesInTz(s.startsAt);
+    const durMin = Math.max(30, (s.endsAt.getTime() - s.startsAt.getTime()) / 60_000);
+    minH = Math.min(minH, Math.floor(startMin / 60));
+    maxH = Math.max(maxH, Math.ceil((startMin + durMin) / 60));
+    byDay.set(k, [
+      ...(byDay.get(k) ?? []),
+      {
+        id: s.id,
+        name: s.classType.name,
+        color: s.classType.color,
+        top: (startMin / 60) * PX_PER_HOUR,
+        height: Math.max(34, (durMin / 60) * PX_PER_HOUR - 3),
+        time: timeInTz(s.startsAt, tenant.timezone),
+        booked: s._count.bookings,
+        capacity: s.capacity,
+        instructor: s.instructor?.name.split(" ")[0],
+      },
+    ]);
   }
+  const hours = Array.from({ length: maxH - minH }, (_, i) => minH + i);
+  const gridH = hours.length * PX_PER_HOUR;
   const todayKey = dayKeyInTz(new Date(), tenant.timezone);
+  const nowMin = minutesInTz(new Date());
   const monthLabel = new Date(`${days[0]}T12:00:00Z`).toLocaleDateString("en-US", { month: "long", year: "numeric" });
+  const hourLabel = (h: number) => new Date(Date.UTC(2000, 0, 1, h)).toLocaleTimeString("en-US", { hour: "numeric", timeZone: "UTC" });
 
   return (
-    <div className="mx-auto max-w-[1300px]">
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+    <div className="mx-auto max-w-[1360px]">
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="font-display text-[30px] font-extrabold tracking-tight text-ink">Schedule</h1>
           <p className="mt-1 text-sm text-muted">{monthLabel} · all times in {tenant.timezone.replace("_", " ")}</p>
@@ -47,35 +80,83 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-7">
-        {days.map((d) => {
-          const date = new Date(`${d}T12:00:00Z`);
-          const isToday = d === todayKey;
-          const daySessions = byDay.get(d) ?? [];
-          return (
-            <Card key={d} className={isToday ? "ring-2 ring-brand/30" : ""}>
-              <div className="border-b border-line-2 px-3.5 py-3">
-                <div className={`text-[10.5px] font-bold uppercase tracking-[0.08em] ${isToday ? "text-brand" : "text-muted"}`}>
-                  {date.toLocaleDateString("en-US", { weekday: "short" })}
+      <div className="overflow-x-auto rounded-2xl border border-line-2 bg-surface shadow-[var(--shadow-card)]">
+        <div className="min-w-[860px]">
+          {/* Day headers */}
+          <div className="grid border-b border-line-2" style={{ gridTemplateColumns: "56px repeat(7, 1fr)" }}>
+            <div />
+            {days.map((d) => {
+              const date = new Date(`${d}T12:00:00Z`);
+              const isToday = d === todayKey;
+              return (
+                <div key={d} className={`border-l border-line-2 px-3 py-2.5 ${isToday ? "bg-brand-wash" : ""}`}>
+                  <div className={`text-[10.5px] font-bold uppercase tracking-[0.08em] ${isToday ? "text-brand" : "text-muted"}`}>
+                    {date.toLocaleDateString("en-US", { weekday: "short" })}
+                  </div>
+                  <div className={`font-display text-[17px] font-extrabold leading-tight ${isToday ? "text-brand" : "text-ink"}`}>{date.getUTCDate()}</div>
                 </div>
-                <div className={`font-display text-lg font-extrabold ${isToday ? "text-brand" : "text-ink"}`}>{date.getUTCDate()}</div>
-              </div>
-              <div className="min-h-[120px] space-y-2 p-2.5">
-                {daySessions.map((s) => (
-                  <Link href={`/schedule/${s.id}`} key={s.id} className="block rounded-xl border px-3 py-2.5 transition-transform hover:-translate-y-px" style={{ background: `${s.classType.color}14`, borderColor: `${s.classType.color}33` }}>
-                    <div className="text-[12.5px] font-bold" style={{ color: s.classType.color }}>{s.classType.name}</div>
-                    <div className="mt-0.5 text-[11.5px] font-medium text-ink-2">{timeInTz(s.startsAt, tenant.timezone)}</div>
-                    <div className="mt-0.5 text-[11px] text-muted">
-                      {s._count.bookings}/{s.capacity} booked{s.instructor ? ` · ${s.instructor.name.split(" ")[0]}` : ""}
+              );
+            })}
+          </div>
+
+          {/* Time grid */}
+          <div className="grid" style={{ gridTemplateColumns: "56px repeat(7, 1fr)" }}>
+            {/* Hour gutter */}
+            <div className="relative" style={{ height: gridH }}>
+              {hours.map((h, i) => (
+                <div key={h} className="absolute right-2 -translate-y-1/2 text-[10.5px] font-semibold text-muted" style={{ top: i * PX_PER_HOUR }}>
+                  {i > 0 && hourLabel(h)}
+                </div>
+              ))}
+            </div>
+
+            {days.map((d) => {
+              const isToday = d === todayKey;
+              return (
+                <div key={d} className={`relative border-l border-line-2 ${isToday ? "bg-brand/[0.025]" : ""}`} style={{ height: gridH }}>
+                  {/* hour lines */}
+                  {hours.map((h, i) => i > 0 && (
+                    <div key={h} className="absolute inset-x-0 border-t border-line-2" style={{ top: i * PX_PER_HOUR }} />
+                  ))}
+                  {/* now line */}
+                  {isToday && nowMin >= minH * 60 && nowMin <= maxH * 60 && (
+                    <div className="absolute inset-x-0 z-10 border-t-2 border-brand" style={{ top: (nowMin / 60 - minH) * PX_PER_HOUR }}>
+                      <span className="absolute -left-1 -top-[5px] size-2 rounded-full bg-brand" />
                     </div>
-                  </Link>
-                ))}
-                {daySessions.length === 0 && <div className="px-2 py-4 text-center text-[11.5px] text-muted">—</div>}
-              </div>
-            </Card>
-          );
-        })}
+                  )}
+                  {/* class blocks */}
+                  {(byDay.get(d) ?? []).map((s, i) => (
+                    <Link
+                      key={s.id}
+                      href={`/schedule/${s.id}`}
+                      className="absolute inset-x-1 z-20 overflow-hidden rounded-lg border-l-[3px] px-2 py-1 transition-all hover:z-30 hover:shadow-md"
+                      style={{
+                        top: s.top - minH * PX_PER_HOUR,
+                        height: s.height,
+                        background: `color-mix(in srgb, ${s.color} 14%, var(--color-surface))`,
+                        borderLeftColor: s.color,
+                        marginLeft: (i % 2) * 3,
+                      }}
+                    >
+                      <div className="truncate text-[11.5px] font-bold leading-tight" style={{ color: s.color }}>{s.name}</div>
+                      <div className="truncate text-[10.5px] font-medium text-ink-2">{s.time}{s.instructor ? ` · ${s.instructor}` : ""}</div>
+                      {s.height > 52 && (
+                        <div className="mt-0.5 text-[10px] font-semibold text-muted">
+                          {s.booked}/{s.capacity} booked
+                        </div>
+                      )}
+                    </Link>
+                  ))}
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </div>
+
+      {sessions.length === 0 && (
+        <p className="mt-4 text-center text-sm text-muted">Nothing on the calendar this week — <Link href="/schedule/new" className="font-bold text-brand hover:underline">add a class</Link>.</p>
+      )}
     </div>
   );
 }

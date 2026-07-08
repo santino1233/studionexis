@@ -25,7 +25,7 @@ function PlanBanner({ status, trialEndsAt }: { status: string; trialEndsAt: Date
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const tenant = await getCurrentTenant();
   return (
-    <div className="flex h-screen overflow-hidden bg-canvas">
+    <div className="nx-admin flex h-screen overflow-hidden bg-canvas text-ink">
       <Sidebar slug={tenant.slug} />
       <MobileNav slug={tenant.slug} />
       <div className="flex min-w-0 flex-1 flex-col">

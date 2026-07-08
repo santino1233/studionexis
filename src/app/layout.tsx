@@ -13,7 +13,14 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${inter.variable} ${manrope.variable} h-full`}>
-      <body className="min-h-full">{children}</body>
+      <body className="min-h-full">
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{var t=localStorage.getItem("nx2-theme");if(t==="dark")document.documentElement.dataset.theme="dark"}catch(e){}`,
+          }}
+        />
+        {children}
+      </body>
     </html>
   );
 }

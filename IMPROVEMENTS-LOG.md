@@ -366,3 +366,18 @@
 - Verified live: upload → stored → served → rendered on the site; remove
   works; anon blocked; wrong types rejected; traversal 404s. Test studio
   reset to defaults afterward.
+
+## 2026-07-08 · Wave 6: owner's three asks (calendar, portal, dark mode)
+- O1 Schedule redesigned as a true week time-grid: hour gutter, class
+  blocks positioned/sized by start+duration in studio tz, color-coded
+  with left accent + fill counts, today column tinted, live "now" line.
+- O2 Customer portal rebuilt to old-system depth: credits/attended/member
+  stat strip, every package with usage progress bar (frozen/expired
+  badges), upcoming with policy-aware cancel, 30-session history with
+  friendly statuses, account section with change-password (bcrypt-
+  verified current password).
+- O3 Dark mode for the admin: variable overrides scoped to the admin
+  wrapper (public booking/site pages stay light + studio-branded),
+  LIGHT default, explicit sidebar toggle persisted in localStorage,
+  pre-paint script prevents flash. KPI washes, shadows and lines all
+  have dark values.

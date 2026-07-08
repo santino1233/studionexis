@@ -79,3 +79,13 @@ https://new.nexis.revsports.ca → commit → log → next.
       categories per studio).
 - [x] P7 Custom photo uploads for hero/gallery (needs media storage —
       currently defaults only).
+
+## Wave 6 — owner requests (2026-07-08 evening)
+- [x] O1 Real time-grid week calendar (hour gutter, positioned blocks w/
+      class colors, today tint, "now" line) replacing stacked chips.
+- [x] O2 Client portal like the original: stat strip (credits, attended,
+      member since), packages w/ usage bars + frozen/expired states,
+      upcoming w/ policy-aware cancel, session history, account card w/
+      change-password (verified incl. wrong-current-password guard).
+- [x] O3 Dark mode: admin-scoped (public pages stay studio-branded light),
+      light default, sidebar toggle persists, pre-paint script = no flash.
