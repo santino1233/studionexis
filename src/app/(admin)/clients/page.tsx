@@ -1,16 +1,29 @@
+import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { db } from "@/lib/db";
 import { getCurrentTenant } from "@/lib/tenant";
-import { UserPlus } from "lucide-react";
+import { UserPlus, Search } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
 const avatarTones = ["bg-brand-wash text-brand", "bg-purple-wash text-purple", "bg-green-wash text-green", "bg-blue-wash text-blue"];
 
-export default async function ClientsPage() {
+export default async function ClientsPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
+  const { q } = await searchParams;
   const tenant = await getCurrentTenant();
   const clients = await db.client.findMany({
-    where: { tenantId: tenant.id },
+    where: {
+      tenantId: tenant.id,
+      ...(q
+        ? {
+            OR: [
+              { name: { contains: q, mode: "insensitive" as const } },
+              { phone: { contains: q } },
+              { email: { contains: q, mode: "insensitive" as const } },
+            ],
+          }
+        : {}),
+    },
     orderBy: { createdAt: "desc" },
     take: 100,
     include: { packages: { where: { creditsLeft: { gt: 0 }, expiresAt: { gt: new Date() } } } },
@@ -23,10 +36,20 @@ export default async function ClientsPage() {
           <h1 className="font-display text-[30px] font-extrabold tracking-tight text-ink">Clients</h1>
           <p className="mt-1 text-sm text-muted">{clients.length} member{clients.length === 1 ? "" : "s"} in your studio</p>
         </div>
-        <button className="inline-flex items-center gap-2 rounded-xl bg-brand px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-ink">
+        <Link href="/clients/new" className="inline-flex items-center gap-2 rounded-xl bg-brand px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-ink">
           <UserPlus className="size-4" /> Add client
-        </button>
+        </Link>
       </div>
+
+      <form method="get" className="relative mb-4 max-w-[360px]">
+        <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted" />
+        <input
+          name="q"
+          defaultValue={q ?? ""}
+          placeholder="Search name, phone or email…"
+          className="h-10 w-full rounded-xl border border-line-2 bg-surface pl-9 pr-3 text-sm outline-none placeholder:text-muted focus:border-brand focus:ring-4 focus:ring-brand/10"
+        />
+      </form>
 
       <Card>
         <table className="w-full text-left">
@@ -45,7 +68,7 @@ export default async function ClientsPage() {
                     <div className={`grid size-9 shrink-0 place-items-center rounded-full text-sm font-bold ${avatarTones[i % avatarTones.length]}`}>
                       {c.name.charAt(0).toUpperCase()}
                     </div>
-                    <span className="text-[14px] font-semibold text-ink">{c.name}</span>
+                    <Link href={`/clients/${c.id}`} className="text-[14px] font-semibold text-ink hover:text-brand">{c.name}</Link>
                   </div>
                 </td>
                 <td className="px-[18px] py-[15px] text-[13.5px] text-ink-2">

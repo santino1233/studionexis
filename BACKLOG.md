@@ -10,7 +10,7 @@ https://new.nexis.revsports.ca → commit → log → next.
       packages/credits, products, orders/invoices, staff, settings.
 - [x] V3 Auth: Auth.js credentials login, session, tenant scoping by
       subdomain host (middleware), roles (owner/staff/superadmin).
-- [ ] V4 Clients CRM: list + profile pages on real data (search, avatars,
+- [x] V4 Clients CRM: list + profile pages on real data (search, avatars,
       stats, packages, session history).
 - [ ] V5 Class types + classes + schedule (week calendar w/ colored chips).
 - [ ] V6 Bookings: create/cancel/check-in, waitlist, credit deduction.

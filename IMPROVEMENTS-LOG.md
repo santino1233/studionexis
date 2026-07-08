@@ -35,3 +35,13 @@
   localhost:3105 — now built from X-Forwarded-Host (also added to vhost).
 - Verified live end-to-end: redirect-when-logged-out, reject bad password,
   login lands on dashboard, authed pages render, logout locks again.
+
+## 2026-07-08 · V4 Clients CRM (list + add + profile, live)
+- Clients list: server-side search (name/phone/email), clickable rows.
+- Add-client form (/clients/new): name-only minimum, channel picker,
+  notes + private health notes; POST /api/clients → redirects to profile.
+- Client profile (/clients/[id]): reference header (avatar, name, inline
+  contact row, Sell package / Edit buttons), stat row (member since,
+  lifetime value from paid orders, credits left, last visit), health &
+  notes card, active packages card, session history table. Tenant-scoped.
+- Verified live: search narrows correctly, create → profile renders.
