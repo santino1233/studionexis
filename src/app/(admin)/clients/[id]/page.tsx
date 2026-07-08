@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Mail, MessageCircle, Phone, Plus, Pencil } from "lucide-react";
+import { ArrowLeft, Mail, MessageCircle, Phone, Plus, Pencil, Cake } from "lucide-react";
 import { Card, CardHeader } from "@/components/ui/card";
 import { db } from "@/lib/db";
 import { getCurrentTenant, moneyFormatter } from "@/lib/tenant";
@@ -49,11 +49,17 @@ export default async function ClientProfilePage({ params }: { params: Promise<{ 
             {client.name.charAt(0).toUpperCase()}
           </div>
           <div>
-            <h1 className="font-display text-[28px] font-extrabold tracking-tight text-ink">{client.name}</h1>
+            <div className="flex flex-wrap items-center gap-2.5">
+              <h1 className="font-display text-[28px] font-extrabold tracking-tight text-ink">{client.name}</h1>
+              {client.tags.map((t) => (
+                <span key={t} className="rounded-full bg-brand-wash px-2.5 py-1 text-[11px] font-bold text-brand">{t}</span>
+              ))}
+            </div>
             <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-[13.5px] text-ink-2">
               {client.phone && <span className="inline-flex items-center gap-1.5"><Phone className="size-3.5 text-muted" />{client.phone}</span>}
               {client.email && <span className="inline-flex items-center gap-1.5"><Mail className="size-3.5 text-muted" />{client.email}</span>}
               {client.channel && <span className="inline-flex items-center gap-1.5 capitalize"><MessageCircle className="size-3.5 text-muted" />{client.channel}</span>}
+              {client.birthday && <span className="inline-flex items-center gap-1.5"><Cake className="size-3.5 text-muted" />{client.birthday.toLocaleDateString("en-US", { timeZone: "UTC", month: "long", day: "numeric" })}</span>}
             </div>
           </div>
         </div>

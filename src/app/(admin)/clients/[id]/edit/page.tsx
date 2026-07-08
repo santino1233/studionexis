@@ -47,6 +47,16 @@ export default async function EditClientPage({ params, searchParams }: {
               {["walk-in", "instagram", "facebook", "zalo", "referral", "website"].map((c) => <option key={c} value={c}>{c}</option>)}
             </select>
           </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+              <label className={label}>Tags (comma-separated)</label>
+              <input name="tags" defaultValue={client.tags.join(", ")} placeholder="VIP, prenatal, morning" className={field} />
+            </div>
+            <div>
+              <label className={label}>Birthday</label>
+              <input name="birthday" type="date" defaultValue={client.birthday ? client.birthday.toISOString().slice(0, 10) : ""} className={field} />
+            </div>
+          </div>
           <div>
             <label className={label}>Notes</label>
             <textarea name="notes" rows={3} defaultValue={client.notes ?? ""} className="w-full rounded-[10px] border border-line bg-surface px-3.5 py-2.5 text-sm outline-none focus:border-brand focus:ring-4 focus:ring-brand/10" />

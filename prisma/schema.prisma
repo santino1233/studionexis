@@ -79,6 +79,8 @@ model Client {
   email        String?
   passwordHash String? // set when the client creates a portal account
   channel      String?   // zalo / instagram / walk-in …
+  tags         String[]  @default([])
+  birthday     DateTime?
   medicalNotes String?
   notes        String?
   memberSince  DateTime  @default(now())

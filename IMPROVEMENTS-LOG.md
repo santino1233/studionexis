@@ -342,3 +342,10 @@
 - "What's Driving Revenue" donut is real: sales mix by kind for the chosen
   period with center total + legend (verified $54.50 = sum of orders).
 - Getting-started card now hides once all six steps are complete.
+
+## 2026-07-08 · P5 Client profile depth (live)
+- Clients gained tags (up to 8, comma-entered, shown as brand pills next
+  to the name like the old system's VIP badge) and birthday (cake icon in
+  the contact row — birthday lists/automations can build on this).
+- Wired through add + edit forms and both APIs; verified live (VIP +
+  prenatal pills and "March 14" render on Ava's profile, form prefills).

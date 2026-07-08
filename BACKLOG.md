@@ -73,7 +73,7 @@ https://new.nexis.revsports.ca → commit → log → next.
       (old system had recurring schedules).
 - [x] P4 Dashboard depth: Today/Week/Month period toggle on Business
       Summary + wire the sales-mix donut (old dashboard had both).
-- [ ] P5 Client profile depth: tags, birthday, referral source (old
+- [x] P5 Client profile depth: tags, birthday, referral source (old
       Client entity) + show on profile header.
 - [ ] P6 Settings depth: expense-category editor (old system had custom
       categories per studio).

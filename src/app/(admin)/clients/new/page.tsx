@@ -48,6 +48,16 @@ export default async function NewClientPage({ searchParams }: { searchParams: Pr
               <option value="website">Website</option>
             </select>
           </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+              <label className={label}>Tags (comma-separated)</label>
+              <input name="tags" placeholder="VIP, prenatal, morning" className={field} />
+            </div>
+            <div>
+              <label className={label}>Birthday</label>
+              <input name="birthday" type="date" className={field} />
+            </div>
+          </div>
           <div>
             <label className={label}>Notes</label>
             <textarea name="notes" rows={3} className="w-full rounded-[10px] border border-line bg-surface px-3.5 py-2.5 text-sm outline-none placeholder:text-muted focus:border-brand focus:ring-4 focus:ring-brand/10" placeholder="Anything worth remembering" />

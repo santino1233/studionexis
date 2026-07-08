@@ -11,6 +11,10 @@ export async function POST(req: Request) {
   const name = String(form.get("name") ?? "").trim();
   if (!name) return NextResponse.redirect(externalUrl(req, "/clients/new?error=name"), 303);
 
+  const tags = String(form.get("tags") ?? "")
+    .split(",").map((t) => t.trim()).filter(Boolean).slice(0, 8);
+  const birthdayRaw = String(form.get("birthday") ?? "");
+  const birthday = /^\d{4}-\d{2}-\d{2}$/.test(birthdayRaw) ? new Date(`${birthdayRaw}T12:00:00Z`) : null;
   const client = await db.client.create({
     data: {
       tenantId: session.tenantId,
@@ -20,6 +24,8 @@ export async function POST(req: Request) {
       channel: String(form.get("channel") ?? "").trim() || null,
       notes: String(form.get("notes") ?? "").trim() || null,
       medicalNotes: String(form.get("medicalNotes") ?? "").trim() || null,
+      tags,
+      birthday,
     },
   });
   return NextResponse.redirect(externalUrl(req, `/clients/${client.id}`), 303);
