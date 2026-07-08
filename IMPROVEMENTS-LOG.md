@@ -55,3 +55,18 @@
 - Add-class form: class type, date+time (entered in studio tz, stored UTC —
   verified 18:00 Bangkok → 11:00Z), instructor, spots override, room.
 - New tz helpers (src/lib/tz.ts): utcFromZoned / dayKeyInTz / weekDays.
+
+## 2026-07-08 · V6 Booking engine (live, fully verified)
+- Session roster page (/schedule/[id]): class header, big booked/capacity
+  counter, roster with status pills + Check in / Cancel actions, book-a-
+  client panel (auto-detects full → waitlist).
+- Booking rules, all transactional: books with a package credit when the
+  client has one (credit decremented) else "pay at studio"; full class →
+  WAITLIST; cancel restores the credit and PROMOTES the oldest waitlisted
+  client (who then pays by their own credit if available); check-in stamps
+  the client's last-visit; double-booking blocked by unique constraint.
+  (Late-cancel forfeit windows come with the policies iteration.)
+- Bookings page: latest reservations across classes with status pills.
+- Schedule chips now click through to the roster.
+- Verified live: credit deduct → waitlist → cancel/restore/promote →
+  check-in → double-book guard, all correct in DB.

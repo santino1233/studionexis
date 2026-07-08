@@ -62,13 +62,13 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
               </div>
               <div className="min-h-[120px] space-y-2 p-2.5">
                 {daySessions.map((s) => (
-                  <div key={s.id} className="rounded-xl border px-3 py-2.5" style={{ background: `${s.classType.color}14`, borderColor: `${s.classType.color}33` }}>
+                  <Link href={`/schedule/${s.id}`} key={s.id} className="block rounded-xl border px-3 py-2.5 transition-transform hover:-translate-y-px" style={{ background: `${s.classType.color}14`, borderColor: `${s.classType.color}33` }}>
                     <div className="text-[12.5px] font-bold" style={{ color: s.classType.color }}>{s.classType.name}</div>
                     <div className="mt-0.5 text-[11.5px] font-medium text-ink-2">{timeInTz(s.startsAt, tenant.timezone)}</div>
                     <div className="mt-0.5 text-[11px] text-muted">
                       {s._count.bookings}/{s.capacity} booked{s.instructor ? ` · ${s.instructor.name.split(" ")[0]}` : ""}
                     </div>
-                  </div>
+                  </Link>
                 ))}
                 {daySessions.length === 0 && <div className="px-2 py-4 text-center text-[11.5px] text-muted">—</div>}
               </div>
