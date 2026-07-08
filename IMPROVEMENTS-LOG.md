@@ -394,3 +394,15 @@
 - New commerce loop: customers reserve packages online → studio marks
   paid at the desk (Invoices → Mark paid) → credits activate instantly.
   Full loop verified across both hosts including credit auto-spend.
+
+## 2026-07-08 · Calendar matched to the original (owner screenshot)
+- Blocks now carry the original's density: time range, class name in type
+  color, instructor mini-avatar chip, booked/capacity, first attendee
+  names when the block is tall enough.
+- Click a class → right-hand detail rail (like the original's): kind/level
+  /Full chips, date/time/instructor/booked facts, Edit Session,
+  Check In All, and per-attendee Arrived / No show / Remove controls that
+  return you to the calendar (safe `back` param on the action APIs;
+  NO_SHOW action added). Instructor filter chips + class-type legend +
+  today ring + live now-line. All server-rendered.
+- Verified live: panel actions update state and land back on the calendar.

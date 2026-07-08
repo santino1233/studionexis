@@ -12,6 +12,17 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   const action = String(form.get("action") ?? "");
   const session = await db.classSession.findFirst({ where: { id, tenantId: auth.tenantId } });
   if (!session) return NextResponse.redirect(externalUrl(req, "/schedule"), 303);
+  const backRaw = String(form.get("back") ?? "");
+  const back = backRaw.startsWith("/") && !backRaw.startsWith("//") ? backRaw : null;
+
+  if (action === "checkin-all") {
+    const bookings = await db.booking.findMany({ where: { sessionId: id, status: "BOOKED" }, select: { id: true, clientId: true } });
+    await db.$transaction([
+      db.booking.updateMany({ where: { sessionId: id, status: "BOOKED" }, data: { status: "CHECKED_IN" } }),
+      ...bookings.map((b) => db.client.update({ where: { id: b.clientId }, data: { lastVisitAt: new Date() } })),
+    ]);
+    return NextResponse.redirect(externalUrl(req, back ?? `/schedule/${id}`), 303);
+  }
 
   if (action === "cancel") {
     // Cancel the class: every active booking is cancelled and any package
@@ -36,7 +47,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     const instructorId = String(form.get("instructorId") ?? "") || null;
     if (instructorId) {
       const ok = await db.user.findFirst({ where: { id: instructorId, tenantId: auth.tenantId } });
-      if (!ok) return NextResponse.redirect(externalUrl(req, `/schedule/${id}`), 303);
+      if (!ok) return NextResponse.redirect(externalUrl(req, back ?? `/schedule/${id}`), 303);
     }
     await db.classSession.update({
       where: { id },
@@ -47,5 +58,5 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       },
     });
   }
-  return NextResponse.redirect(externalUrl(req, `/schedule/${id}`), 303);
+  return NextResponse.redirect(externalUrl(req, back ?? `/schedule/${id}`), 303);
 }

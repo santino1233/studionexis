@@ -13,9 +13,12 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
   const booking = await db.booking.findFirst({ where: { id, tenantId: auth.tenantId } });
   if (!booking) return NextResponse.redirect(externalUrl(req, "/bookings"), 303);
-  const back = `/schedule/${booking.sessionId}`;
+  const backRaw = String(form.get("back") ?? "");
+  const back = backRaw.startsWith("/") && !backRaw.startsWith("//") ? backRaw : `/schedule/${booking.sessionId}`;
 
-  if (action === "checkin") {
+  if (action === "noshow") {
+    await db.booking.update({ where: { id }, data: { status: "NO_SHOW" } });
+  } else if (action === "checkin") {
     await db.$transaction([
       db.booking.update({ where: { id }, data: { status: "CHECKED_IN" } }),
       db.client.update({ where: { id: booking.clientId }, data: { lastVisitAt: new Date() } }),

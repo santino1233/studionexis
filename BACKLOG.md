@@ -109,3 +109,8 @@ https://new.nexis.revsports.ca → commit → log → next.
 - [ ] S4 At cutover: flip old wildcard vhost to v2 (middleware already
       handles every subdomain); add per-studio "connect" for more studios
       pre-cutover by appending server_names to v2-subdomains conf.
+- [x] S5 Calendar to the original's design: rich blocks (time range, name,
+      instructor chip, fill, attendee names when tall), click → right
+      detail rail (chips, facts, Edit Session, Check In All, per-attendee
+      Arrived/No show/Remove), instructor filter chips, class-type legend,
+      today ring + now line. Server-rendered, zero client JS.
