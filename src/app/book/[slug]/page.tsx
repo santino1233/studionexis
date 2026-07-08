@@ -38,8 +38,11 @@ export default async function PublicBookingPage({ params, searchParams }: {
             <div className="font-display text-[22px] font-extrabold tracking-tight text-ink">{tenant.name}</div>
             <div className="text-[12px] text-muted">Book a class · times in {tenant.timezone.replace("_", " ")}</div>
           </div>
-          <div className="grid size-11 place-items-center rounded-2xl text-lg font-extrabold text-white" style={{ background: brand }}>
-            {tenant.name.charAt(0)}
+          <div className="flex items-center gap-4">
+            <a href={`/book/${slug}/me`} className="text-[13px] font-bold" style={{ color: brand }}>My account</a>
+            <div className="grid size-11 place-items-center rounded-2xl text-lg font-extrabold text-white" style={{ background: brand }}>
+              {tenant.name.charAt(0)}
+            </div>
           </div>
         </div>
       </header>

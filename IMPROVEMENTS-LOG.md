@@ -178,3 +178,20 @@
 - Verified live: add → login as instructor → blocked from POS, allowed on
   schedule → in dropdown → deactivate blocks login → API rejects
   instructor trying to add members.
+
+## 2026-07-08 · W2 Customer accounts on the public page (live)
+- /book/<slug>/me: sign-in + create-account (password on the Client;
+  registering with the phone/email you book with links your existing
+  history automatically). 90-day customer session, separate cookie from
+  staff auth. "My account" link on the booking page.
+- Portal shows credits (per package, expiry) and upcoming bookings with
+  status; Cancel button enforces the studio's cancellation-policy window
+  SERVER-SIDE (group/private hours from Settings) — inside the window the
+  portal refuses and shows "call the studio"; outside it, cancel restores
+  the credit and promotes the waitlist, same engine as staff cancels.
+- Verified live: register→linked to existing client, portal lists data,
+  out-of-window cancel OK, in-window cancel refused (BOOKED and WAITLIST),
+  wrong password rejected.
+- Fix en route: Prisma client types were stale after the migration —
+  explicit `prisma generate` now part of the schema-change routine (build
+  failed cleanly; no bad deploy thanks to the build-gate rule).
