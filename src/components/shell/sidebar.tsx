@@ -79,9 +79,11 @@ export function Sidebar() {
         <button className="flex w-full items-center gap-3 rounded-[10px] px-3 py-2 text-sm font-medium text-ink-2 hover:bg-line-2 hover:text-ink">
           <Moon className="size-[18px]" /> Dark mode
         </button>
-        <button className="flex w-full items-center gap-3 rounded-[10px] px-3 py-2 text-sm font-medium text-ink-2 hover:bg-line-2 hover:text-ink">
-          <LogOut className="size-[18px]" /> Sign out
-        </button>
+        <form method="post" action="/api/logout">
+          <button className="flex w-full items-center gap-3 rounded-[10px] px-3 py-2 text-sm font-medium text-ink-2 hover:bg-line-2 hover:text-ink">
+            <LogOut className="size-[18px]" /> Sign out
+          </button>
+        </form>
       </div>
     </aside>
   );

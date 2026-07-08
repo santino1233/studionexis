@@ -8,7 +8,7 @@ https://new.nexis.revsports.ca → commit → log → next.
 - [x] V2 Data layer: Postgres (docker, new container, own volume) + Prisma
       schema — tenants, users, clients, class types, classes, bookings,
       packages/credits, products, orders/invoices, staff, settings.
-- [ ] V3 Auth: Auth.js credentials login, session, tenant scoping by
+- [x] V3 Auth: Auth.js credentials login, session, tenant scoping by
       subdomain host (middleware), roles (owner/staff/superadmin).
 - [ ] V4 Clients CRM: list + profile pages on real data (search, avatars,
       stats, packages, session history).

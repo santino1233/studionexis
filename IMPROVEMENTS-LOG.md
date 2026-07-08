@@ -23,3 +23,15 @@
 - Seeded dev-studio tenant (class types, packages, clients); Clients page is
   the first REAL page — server-rendered from Postgres, reference styling
   (avatars, channel pills, credits, member-since). Verified live.
+
+## 2026-07-08 · V3 Auth live (login → session → tenant scoping)
+- Password login: bcrypt hashes, signed JWT session cookie (30d, httpOnly),
+  /api/login + /api/logout, reference-styled /login page with error state.
+- Middleware protects every app route (static assets excluded); logged-out
+  visits bounce to /login; sidebar Sign out wired.
+- Tenant now resolved from the session (login sets tenantId) — every page
+  query is tenant-scoped. Seeded owner: owner@dev-studio.com.
+- Gotcha fixed: behind nginx, route-handler redirects pointed at
+  localhost:3105 — now built from X-Forwarded-Host (also added to vhost).
+- Verified live end-to-end: redirect-when-logged-out, reject bad password,
+  login lands on dashboard, authed pages render, logout locks again.

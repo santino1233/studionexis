@@ -1,10 +1,14 @@
+import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
+import { getSession } from "@/lib/auth";
 
-// V3 will resolve the tenant from the request Host (subdomain / custom
-// domain). Until auth+middleware land, the dev tenant stands in.
+// Tenant comes from the signed session (set at login). Host-based
+// resolution for tenant subdomains/custom domains arrives at cutover.
 export async function getCurrentTenant() {
-  const tenant = await db.tenant.findUnique({ where: { slug: "dev-studio" } });
-  if (!tenant) throw new Error("Dev tenant missing — run: npx tsx prisma/seed.ts");
+  const session = await getSession();
+  if (!session) redirect("/login");
+  const tenant = await db.tenant.findUnique({ where: { id: session.tenantId } });
+  if (!tenant) redirect("/login");
   return tenant;
 }
 

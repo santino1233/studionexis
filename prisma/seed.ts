@@ -1,6 +1,7 @@
 import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
+import bcrypt from "bcryptjs";
 
 const db = new PrismaClient({
   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL }),
@@ -38,7 +39,18 @@ async function main() {
       },
     },
   });
-  console.log("seeded tenant:", tenant.slug, tenant.id);
+  const owner = await db.user.upsert({
+    where: { tenantId_email: { tenantId: tenant.id, email: "owner@dev-studio.com" } },
+    update: {},
+    create: {
+      tenantId: tenant.id,
+      email: "owner@dev-studio.com",
+      name: "Studio Owner",
+      role: "OWNER",
+      passwordHash: await bcrypt.hash("DevStudio-2026!", 10),
+    },
+  });
+  console.log("seeded tenant:", tenant.slug, tenant.id, "owner:", owner.email);
 }
 
 main().finally(() => db.$disconnect());
