@@ -91,3 +91,16 @@
   method, total, status pill, date in studio tz — plus a Collected total.
 - Verified live: added a package + product through the forms, both listed;
   invoices shows order #1 (Ava, $50.00) from the V7 test sale.
+
+## 2026-07-08 · V9 Analytics (reference KPIs + charts, live)
+- KPI strip with the reference tinted-icon cards: revenue (orange),
+  bookings (purple), avg occupancy (green, booked/capacity across the
+  month's sessions), new clients (blue) + secondary strip (classes held,
+  packages sold, orders, credits owed = outstanding liability).
+- Orange area chart: revenue per day of month (server-rendered SVG with
+  gradient fill, gridlines) — no chart library, zero JS weight.
+- Purple-led donut: revenue by kind (packages/merch/drop-ins) with center
+  total and legend; graceful empty state.
+- Month navigation (← July 2026 →) computed in the studio timezone.
+- Verified live: all 4 KPI cards, $50 revenue, both charts render, June
+  shows the empty state.
