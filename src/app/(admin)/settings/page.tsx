@@ -77,16 +77,19 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
               <>
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
                   {templates.map(([id, name, vibe, bg, fg, font]) => (
-                    <label key={id} className={`block cursor-pointer overflow-hidden rounded-xl border-2 transition-all ${current === id ? "border-brand shadow-md" : "border-line-2 hover:border-line"}`}>
-                      <input type="radio" name="template" value={id} defaultChecked={current === id} className="sr-only" />
-                      <div className="flex h-[74px] flex-col justify-between p-3" style={{ background: bg, color: fg }}>
-                        <span className={`text-[15px] font-bold ${font === "serif" ? "font-serif" : "font-display"}`}>Aa</span>
-                        <span className="block h-1.5 w-8 rounded-full" style={{ background: tenant.brandColor }} />
+                    <label key={id} className="relative block cursor-pointer">
+                      <input type="radio" name="template" value={id} defaultChecked={current === id} className="peer sr-only" />
+                      <div className="overflow-hidden rounded-xl border-2 border-line-2 transition-all hover:border-line peer-checked:border-brand peer-checked:shadow-md">
+                        <div className="flex h-[74px] flex-col justify-between p-3" style={{ background: bg, color: fg }}>
+                          <span className={`text-[15px] font-bold ${font === "serif" ? "font-serif" : "font-display"}`}>Aa</span>
+                          <span className="block h-1.5 w-8 rounded-full" style={{ background: tenant.brandColor }} />
+                        </div>
+                        <div className="border-t border-line-2 bg-surface px-3 py-2">
+                          <div className="text-[12.5px] font-bold text-ink">{name}</div>
+                          <div className="text-[10.5px] leading-tight text-muted">{vibe}</div>
+                        </div>
                       </div>
-                      <div className="border-t border-line-2 bg-surface px-3 py-2">
-                        <div className="text-[12.5px] font-bold text-ink">{name}</div>
-                        <div className="text-[10.5px] leading-tight text-muted">{vibe}</div>
-                      </div>
+                      <span className="pointer-events-none absolute -right-1.5 -top-1.5 hidden size-5 place-items-center rounded-full bg-brand text-[11px] font-bold text-white shadow peer-checked:grid">✓</span>
                     </label>
                   ))}
                 </div>
@@ -101,7 +104,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
                       </label>
                     ))}
                     <span className="mx-1 text-[12px] text-muted">or</span>
-                    <input type="color" name="accent" defaultValue={tenant.brandColor} className="h-9 w-14 cursor-pointer rounded-lg border border-line bg-surface p-1" title="Custom colour" />
+                    <input type="color" name="accentCustom" defaultValue={tenant.brandColor} className="h-9 w-14 cursor-pointer rounded-lg border border-line bg-surface p-1" title="Custom colour" />
                   </div>
                   <p className="mt-1.5 text-[11.5px] text-muted">Your colour flows through the website, booking pages and client portal.</p>
                 </div>

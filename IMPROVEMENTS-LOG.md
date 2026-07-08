@@ -446,3 +446,14 @@
   the booking day-strip on subdomains).
 - Verified live: all five render distinctly on dev-studio subdomain w/
   CTA + map; saved default (serene + sage) persists; picker renders 7/7.
+
+## 2026-07-08 · Template picker fixes (owner report: "stuck on boutique")
+- Root cause: clicking a template card gave NO visual feedback (highlight
+  was server-rendered only, updated after save+reload) so selection
+  appeared stuck. Cards now use peer-checked styling — instant brand
+  border + ✓ badge on click, no JS.
+- Second bug: the custom colour input shared name="accent" with the
+  swatches and could shadow them; renamed to accentCustom with explicit
+  precedence (picked swatch wins, else custom colour).
+- Verified: bold+custom saved and rendered, swatch precedence correct,
+  saved template returns checked on reload.

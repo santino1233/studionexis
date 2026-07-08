@@ -59,7 +59,9 @@ export async function POST(req: Request) {
   } else if (section === "template") {
     const prev = (tenant.website ?? {}) as Record<string, unknown>;
     const template = String(form.get("template") ?? "");
-    const accent = String(form.get("accent") ?? "").trim();
+    const swatch = String(form.get("accent") ?? "").trim();
+    const custom = String(form.get("accentCustom") ?? "").trim();
+    const accent = /^#[0-9a-fA-F]{6}$/.test(swatch) ? swatch : custom;
     const mapUrl = String(form.get("mapUrl") ?? "").trim();
     await db.tenant.update({
       where: { id: tenant.id },
