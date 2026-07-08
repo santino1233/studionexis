@@ -406,3 +406,14 @@
   NO_SHOW action added). Instructor filter chips + class-type legend +
   today ring + live now-line. All server-rendered.
 - Verified live: panel actions update state and land back on the calendar.
+
+## 2026-07-08 · Wave 8: beta subscription structure (enforced)
+- Plans (Starter $36 / Growth $49 / Scale $75, annual −20%, 7-day trial)
+  defined in src/lib/plans.ts and ENFORCED: client, staff and monthly
+  booking caps block at admin + public doors with upgrade messages; HQ
+  can override per tenant via policies.limits (also how enforcement was
+  live-verified: caps hit → blocked → removed → flows normal again).
+- Billing rebuilt: usage meters, monthly/annual toggle (annual shows
+  discounted $28.80/$39.20/$60), plan cards, add-ons (SMS PAYG "coming
+  soon", custom website → Settings). Plan choice persists (growth/annual
+  verified in DB). Stripe/Twilio wiring awaits owner keys.

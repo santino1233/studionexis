@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
 import { createSession } from "@/lib/auth";
 import { externalUrl } from "@/lib/request-url";
+import { TRIAL_DAYS } from "@/lib/plans";
 
 function slugify(name: string): string {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40) || "studio";
@@ -34,7 +35,7 @@ export async function POST(req: Request) {
           slug,
           name: studioName,
           status: "TRIAL",
-          trialEndsAt: new Date(Date.now() + 14 * 86400_000),
+          trialEndsAt: new Date(Date.now() + TRIAL_DAYS * 86400_000),
         },
       });
       const user = await tx.user.create({

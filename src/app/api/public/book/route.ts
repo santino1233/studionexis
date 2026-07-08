@@ -3,6 +3,7 @@ import { rateLimit } from "@/lib/rate-limit";
 import { db } from "@/lib/db";
 import { tenantBySlugOrDomain } from "@/lib/public-tenant";
 import { getCustomerSession } from "@/lib/customer-auth";
+import { checkBookingLimit, checkClientLimit } from "@/lib/plans";
 import { externalUrl } from "@/lib/request-url";
 import { sendEmail } from "@/lib/mailer";
 import { timeInTz } from "@/lib/tz";
@@ -28,6 +29,9 @@ export async function POST(req: Request) {
     return NextResponse.redirect(externalUrl(req, `${back}?err=missing&s=${sessionId}`), 303);
   }
 
+  const bookingLimit = await checkBookingLimit(tenant);
+  if (!bookingLimit.ok) return NextResponse.redirect(externalUrl(req, `${back}?err=full`), 303);
+
   try {
     const result = await db.$transaction(async (tx) => {
       const session = await tx.classSession.findFirstOrThrow({
@@ -45,6 +49,8 @@ export async function POST(req: Request) {
             },
           });
       if (!client) {
+        const clientLimit = await checkClientLimit(tenant);
+        if (clientLimit.ok !== true) throw new Error("studio-full");
         client = await tx.client.create({
           data: { tenantId: tenant.id, name, phone: phone || null, email: email || null, channel: "website" },
         });
@@ -84,6 +90,7 @@ export async function POST(req: Request) {
     return NextResponse.redirect(externalUrl(req, `${back}?ok=${result.outcome}`), 303);
   } catch (e) {
     const dup = e instanceof Error && e.message.includes("Unique constraint");
-    return NextResponse.redirect(externalUrl(req, `${back}?err=${dup ? "already" : "failed"}&s=${sessionId}`), 303);
+    const full = e instanceof Error && e.message === "studio-full";
+    return NextResponse.redirect(externalUrl(req, `${back}?err=${dup ? "already" : full ? "full" : "failed"}&s=${sessionId}`), 303);
   }
 }

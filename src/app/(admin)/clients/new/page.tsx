@@ -19,7 +19,7 @@ export default async function NewClientPage({ searchParams }: { searchParams: Pr
         <form method="post" action="/api/clients" className="space-y-4 p-6">
           {error && (
             <div className="rounded-xl border border-rose/20 bg-rose/5 px-3.5 py-2.5 text-[13px] font-medium text-rose">
-              Please give the client a name.
+              {error === "limit" ? "You've reached your plan's client limit — upgrade in Plan & Billing." : "Please give the client a name."}
             </div>
           )}
           <div>

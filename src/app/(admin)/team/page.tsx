@@ -30,7 +30,7 @@ export default async function TeamPage({ searchParams }: { searchParams: Promise
 
       {error && (
         <div className="mt-4 rounded-xl border border-rose/20 bg-rose/5 px-3.5 py-2.5 text-[13px] font-medium text-rose">
-          {error === "exists" ? "That email is already on the team." : "Fill everything in (password at least 8 characters)."}
+          {error === "exists" ? "That email is already on the team." : error === "limit" ? "You've reached your plan's team limit — upgrade in Plan & Billing." : "Fill everything in (password at least 8 characters)."}
         </div>
       )}
 

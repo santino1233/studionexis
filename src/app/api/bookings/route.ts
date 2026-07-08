@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { externalUrl } from "@/lib/request-url";
+import { checkBookingLimit } from "@/lib/plans";
 
 export async function POST(req: Request) {
   const auth = await getSession();
@@ -11,6 +12,10 @@ export async function POST(req: Request) {
   const sessionId = String(form.get("sessionId") ?? "");
   const clientId = String(form.get("clientId") ?? "");
   const back = `/schedule/${sessionId}`;
+
+  const tenantRow = await db.tenant.findUniqueOrThrow({ where: { id: auth.tenantId } });
+  const limit = await checkBookingLimit(tenantRow);
+  if (!limit.ok) return NextResponse.redirect(externalUrl(req, `${back}?error=limit`), 303);
 
   try {
     await db.$transaction(async (tx) => {

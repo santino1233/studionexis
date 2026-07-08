@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { externalUrl } from "@/lib/request-url";
+import { checkClientLimit } from "@/lib/plans";
 
 export async function POST(req: Request) {
   const session = await getSession();
@@ -10,6 +11,10 @@ export async function POST(req: Request) {
   const form = await req.formData();
   const name = String(form.get("name") ?? "").trim();
   if (!name) return NextResponse.redirect(externalUrl(req, "/clients/new?error=name"), 303);
+
+  const tenant = await db.tenant.findUniqueOrThrow({ where: { id: session.tenantId } });
+  const limit = await checkClientLimit(tenant);
+  if (!limit.ok) return NextResponse.redirect(externalUrl(req, "/clients/new?error=limit"), 303);
 
   const tags = String(form.get("tags") ?? "")
     .split(",").map((t) => t.trim()).filter(Boolean).slice(0, 8);

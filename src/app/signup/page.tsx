@@ -17,7 +17,7 @@ export default async function SignupPage({ searchParams }: { searchParams: Promi
 
         <div className="rounded-2xl border border-line-2 bg-surface p-7 shadow-[var(--shadow-card)]">
           <h1 className="font-display text-xl font-extrabold text-ink">Start your studio</h1>
-          <p className="mt-1 text-[13px] text-muted">14 days free — no card needed. Booking page included.</p>
+          <p className="mt-1 text-[13px] text-muted">7-day free trial — no card needed. Booking page included.</p>
 
           {error && (
             <div className="mt-4 rounded-xl border border-rose/20 bg-rose/5 px-3.5 py-2.5 text-[13px] font-medium text-rose">

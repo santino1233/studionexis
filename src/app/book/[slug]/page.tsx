@@ -128,7 +128,7 @@ export default async function BookPage({ params, searchParams }: {
 
         {ok === "booked" && <div className="mt-5 rounded-2xl border border-green/20 bg-green-wash px-5 py-4 text-[14px] font-bold text-green">You&apos;re booked! See you in class. 🎉</div>}
         {ok === "waitlist" && <div className="mt-5 rounded-2xl border px-5 py-4 text-[14px] font-bold" style={{ borderColor: `${brand}33`, background: `${brand}14`, color: brand }}>That class is full — you&apos;re on the waitlist.</div>}
-        {err && <div className="mt-5 rounded-2xl border border-rose/20 bg-rose/5 px-5 py-4 text-[14px] font-medium text-rose">{err === "already" ? "You're already on that class." : err === "missing" ? "Please give your name and a phone or email." : "That didn't work — try again."}</div>}
+        {err && <div className="mt-5 rounded-2xl border border-rose/20 bg-rose/5 px-5 py-4 text-[14px] font-medium text-rose">{err === "already" ? "You're already on that class." : err === "missing" ? "Please give your name and a phone or email." : err === "full" ? "The studio can't take online bookings right now — please contact them directly." : "That didn't work — try again."}</div>}
         {rolled && (
           <div className="mt-5 rounded-2xl px-5 py-3.5 text-[13.5px] font-semibold" style={{ background: `${brand}14`, color: brand }}>
             🌿 No more classes today — here&apos;s the next available day.

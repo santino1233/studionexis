@@ -114,3 +114,18 @@ https://new.nexis.revsports.ca → commit → log → next.
       detail rail (chips, facts, Edit Session, Check In All, per-attendee
       Arrived/No show/Remove), instructor filter chips, class-type legend,
       today ring + now line. Server-rendered, zero client JS.
+
+## Wave 8 — beta subscription structure (owner spec 2026-07-08)
+- [x] B1 Plans in code (src/lib/plans.ts): Starter $36 (500 clients / 10
+      staff / 2,000 bookings/mo / Stripe), Growth $49 (1,500 / 20 / 4,000 /
+      SMS via Twilio), Scale $75 (unlimited); 7-day trial; annual = 20% off;
+      add-ons: SMS credits (PAYG), custom website.
+- [x] B2 ENFORCED limits at every door: admin add-client, team add, admin
+      booking, public booking (incl. guest-created clients) — friendly
+      upgrade messages; HQ can override per-tenant via policies.limits.
+- [x] B3 Billing page: usage meters (hot at 85%), monthly/annual toggle,
+      three plan cards w/ current-plan + most-popular states, add-ons,
+      owner-only plan switching saved to tenant (Stripe checkout attaches
+      here when keys arrive; HQ activates paid status meanwhile).
+- [ ] B4 OWNER-GATED: Stripe keys → real checkout + webhooks; Twilio creds
+      → SMS notifications + PAYG credits.
