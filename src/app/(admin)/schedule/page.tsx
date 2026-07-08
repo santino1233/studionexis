@@ -21,8 +21,8 @@ const statusLabel: Record<string, string> = {
   CANCELLED: "Cancelled", LATE_CANCEL: "Late cancel", NO_SHOW: "No show",
 };
 
-export default async function SchedulePage({ searchParams }: { searchParams: Promise<{ w?: string; i?: string; sel?: string; c?: string }> }) {
-  const { w, i: instructorFilter, sel, c } = await searchParams;
+export default async function SchedulePage({ searchParams }: { searchParams: Promise<{ w?: string; i?: string; sel?: string; c?: string; checkout?: string }> }) {
+  const { w, i: instructorFilter, sel, c, checkout } = await searchParams;
   const colorBy = c === "status" ? "status" : "format";
   const offset = Number(w ?? 0) || 0;
   const tenant = await getCurrentTenant();
@@ -124,6 +124,12 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
           </Link>
         </div>
       </div>
+
+      {checkout === "done" && (
+        <div className="mb-3 flex items-center gap-2 rounded-xl border border-green/20 bg-green-wash px-4 py-2.5 text-[13.5px] font-bold text-green">
+          ✓ Checked out &amp; checked in
+        </div>
+      )}
 
       {/* Color mode */}
       <div className="mb-2 flex items-center justify-end gap-1.5 text-[11px] font-bold uppercase tracking-wider text-muted">
@@ -298,12 +304,16 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
                   <li key={b.id} className="rounded-xl bg-raised px-3 py-2.5">
                     <div className="flex items-center justify-between">
                       <span className="text-[13px] font-bold text-ink">{b.client.name}</span>
-                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${statusTone[b.status]}`}>{statusLabel[b.status]}</span>
+                      <span className="flex items-center gap-1.5">
+                        {b.paymentMethod === "at_studio" && !b.orderId && <span className="text-[10px] font-bold uppercase text-rose">Unpaid</span>}
+                        <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${statusTone[b.status]}`}>{statusLabel[b.status]}</span>
+                      </span>
                     </div>
                     {(b.status === "BOOKED" || b.status === "WAITLIST") && (
                       <div className="mt-2 flex gap-1.5">
                         {b.status === "BOOKED" && (
                           <>
+                            <Link href={`/schedule/${selected.id}/checkout/${b.id}`} className="rounded-lg bg-brand px-2.5 py-1 text-[11px] font-bold text-white hover:bg-brand-ink">Checkout</Link>
                             <form method="post" action={`/api/bookings/${b.id}`}><input type="hidden" name="action" value="checkin" /><input type="hidden" name="back" value={qs({})} /><button className="rounded-lg bg-green-wash px-2.5 py-1 text-[11px] font-bold text-green hover:brightness-95">Arrived</button></form>
                             <form method="post" action={`/api/bookings/${b.id}`}><input type="hidden" name="action" value="noshow" /><input type="hidden" name="back" value={qs({})} /><button className="rounded-lg bg-rose/10 px-2.5 py-1 text-[11px] font-bold text-rose hover:brightness-95">No show</button></form>
                           </>

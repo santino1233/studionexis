@@ -510,3 +510,15 @@
   striped dashed block in the day column, sized to the range (tz-correct:
   12:00–14:30 Bangkok stored 05:00–07:30Z). Clicking the block unblocks
   it (like the original's "click to unblock"). Bad ranges rejected.
+
+## 2026-07-08 · X3 Checkout mini-POS (live, verified)
+- Every BOOKED attendee (calendar rail + roster) gets a Checkout button →
+  mini-POS page: "Use package credit" (shows their packs, consumes 1,
+  no double-spend if booking already used one) OR "Charge for this visit"
+  (drop-in price + add merch w/ stock guard + voucher, cash/transfer/
+  card) — both create the paper trail (order linked to the booking) and
+  mark CHECKED_IN. "✓ Checked out & checked in" toast, exactly like the
+  original. UNPAID label on at-studio bookings until settled.
+- Verified live: charge path (drop-in 28 + merch 5 − voucher 5 = 28.00
+  card, stock −2, order linked) and credit path (credits 7→6), labels
+  cleared, guards for no-credits/stock/voucher.

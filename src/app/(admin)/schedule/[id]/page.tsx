@@ -78,7 +78,10 @@ export default async function SessionPage({ params, searchParams }: { params: Pr
                 <tr key={b.id} className="border-b border-line-2 last:border-0">
                   <td className="px-[18px] py-[13px]">
                     <Link href={`/clients/${b.clientId}`} className="text-[14px] font-semibold text-ink hover:text-brand">{b.client.name}</Link>
-                    <div className="text-[11.5px] text-muted">{b.paymentMethod === "package_credit" ? "Package credit" : b.paymentMethod === "at_studio" ? "Pay at studio" : ""}</div>
+                    <div className="text-[11.5px] text-muted">
+                      {b.paymentMethod === "package_credit" ? "Package credit" : b.paymentMethod === "at_studio" ? "Pay at studio" : ""}
+                      {b.paymentMethod === "at_studio" && !b.orderId && <span className="ml-1.5 font-bold uppercase text-rose">· Unpaid</span>}
+                    </div>
                   </td>
                   <td className="px-[18px] py-[13px]">
                     <span className={`rounded-full px-2.5 py-1 text-[11px] font-bold capitalize ${statusTone[b.status] ?? "bg-line-2 text-ink-2"}`}>
@@ -89,10 +92,13 @@ export default async function SessionPage({ params, searchParams }: { params: Pr
                     {(b.status === "BOOKED" || b.status === "WAITLIST" || b.status === "CHECKED_IN") && (
                       <div className="flex justify-end gap-1.5">
                         {b.status === "BOOKED" && (
-                          <form method="post" action={`/api/bookings/${b.id}`}>
-                            <input type="hidden" name="action" value="checkin" />
-                            <button className="inline-flex items-center gap-1.5 rounded-lg bg-green-wash px-3 py-1.5 text-[12px] font-bold text-green hover:brightness-95"><UserCheck className="size-3.5" /> Check in</button>
-                          </form>
+                          <>
+                            <Link href={`/schedule/${session.id}/checkout/${b.id}`} className="inline-flex items-center gap-1.5 rounded-lg bg-brand px-3 py-1.5 text-[12px] font-bold text-white hover:bg-brand-ink">Checkout</Link>
+                            <form method="post" action={`/api/bookings/${b.id}`}>
+                              <input type="hidden" name="action" value="checkin" />
+                              <button className="inline-flex items-center gap-1.5 rounded-lg bg-green-wash px-3 py-1.5 text-[12px] font-bold text-green hover:brightness-95"><UserCheck className="size-3.5" /> Check in</button>
+                            </form>
+                          </>
                         )}
                         <form method="post" action={`/api/bookings/${b.id}`}>
                           <input type="hidden" name="action" value="cancel" />
