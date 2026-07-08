@@ -33,8 +33,11 @@ export default async function SessionPage({ params, searchParams }: { params: Pr
 
   const active = session.bookings.filter((b) => b.status === "BOOKED" || b.status === "CHECKED_IN");
   const bookedIds = new Set(session.bookings.filter((b) => b.status !== "CANCELLED").map((b) => b.clientId));
-  const clients = (await db.client.findMany({ where: { tenantId: tenant.id }, orderBy: { name: "asc" }, take: 200 }))
-    .filter((c) => !bookedIds.has(c.id));
+  const [allClients, instructors] = await Promise.all([
+    db.client.findMany({ where: { tenantId: tenant.id }, orderBy: { name: "asc" }, take: 200 }),
+    db.user.findMany({ where: { tenantId: tenant.id, active: true, role: { in: ["INSTRUCTOR", "OWNER"] } }, orderBy: { name: "asc" } }),
+  ]);
+  const clients = allClients.filter((c) => !bookedIds.has(c.id));
 
   return (
     <div className="mx-auto max-w-[900px]">
@@ -107,6 +110,7 @@ export default async function SessionPage({ params, searchParams }: { params: Pr
           </table>
         </Card>
 
+        <div className="space-y-5">
         <Card>
           <CardHeader title="Book a client" sub={active.length >= session.capacity ? "Class is full — goes to waitlist" : "Uses a package credit when available"} />
           <form method="post" action="/api/bookings" className="space-y-3.5 p-5">
@@ -123,6 +127,38 @@ export default async function SessionPage({ params, searchParams }: { params: Pr
             )}
           </form>
         </Card>
+
+        {session.status === "SCHEDULED" && (
+          <Card>
+            <CardHeader title="Manage this class" />
+            <form method="post" action={`/api/sessions/${session.id}`} className="space-y-3.5 p-5">
+              <input type="hidden" name="action" value="update" />
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="mb-1 block text-[11px] font-bold uppercase tracking-wider text-muted">Spots</label>
+                  <input name="capacity" type="number" min={1} defaultValue={session.capacity} className="h-10 w-full rounded-[10px] border border-line bg-surface px-3 text-sm outline-none focus:border-brand" />
+                </div>
+                <div>
+                  <label className="mb-1 block text-[11px] font-bold uppercase tracking-wider text-muted">Room</label>
+                  <input name="location" defaultValue={session.location ?? ""} className="h-10 w-full rounded-[10px] border border-line bg-surface px-3 text-sm outline-none focus:border-brand" />
+                </div>
+              </div>
+              <select name="instructorId" defaultValue={session.instructorId ?? ""} className="h-10 w-full rounded-[10px] border border-line bg-surface px-3 text-sm outline-none focus:border-brand">
+                <option value="">Unassigned</option>
+                {instructors.map((i) => <option key={i.id} value={i.id}>{i.name}</option>)}
+              </select>
+              <button className="w-full rounded-[10px] border border-line bg-surface py-2.5 text-sm font-semibold text-ink-2 hover:bg-raised">Save changes</button>
+            </form>
+            <form method="post" action={`/api/sessions/${session.id}`} className="border-t border-line-2 p-5">
+              <input type="hidden" name="action" value="cancel" />
+              <button className="w-full rounded-[10px] bg-rose/10 py-2.5 text-sm font-bold text-rose hover:bg-rose/15">
+                Cancel this class
+              </button>
+              <p className="mt-2 text-center text-[11.5px] text-muted">Everyone booked is cancelled and credits come back.</p>
+            </form>
+          </Card>
+        )}
+        </div>
       </div>
     </div>
   );

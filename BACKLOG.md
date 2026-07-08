@@ -45,7 +45,7 @@ https://new.nexis.revsports.ca → commit → log → next.
 ## Wave 3 — hardening & daily-driver polish (autonomous)
 - [x] H1 Nightly Postgres backups (pg_dump cron to /opt/nexis/backups,
       7-day rotation) — currently NO backups of v2 data.
-- [ ] H2 Schedule: edit/cancel a session from the roster page (cancel
+- [x] H2 Schedule: edit/cancel a session from the roster page (cancel
       notifies/restores credits for everyone booked).
 - [ ] H3 Clients: edit-profile form (the profile button is still a stub).
 - [ ] H4 Rate limiting on public endpoints (login, signup, public booking,

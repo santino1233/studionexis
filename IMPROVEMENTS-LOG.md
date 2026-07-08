@@ -281,3 +281,12 @@
 - Not just "backup exists" — VERIFIED RESTORE: restored into a scratch DB
   and diffed row counts against live (tenants/clients/bookings/orders all
   matched), then dropped the scratch.
+
+## 2026-07-08 · H2 Manage a class from the roster (live)
+- Roster page gains a "Manage this class" card: change spots, room and
+  instructor; and a danger-zone "Cancel this class" — transactionally
+  cancels every active booking (incl. waitlist) and returns any package
+  credits to the clients, then marks the session cancelled (drops off
+  schedule + public page).
+- Verified live: book-with-credit 8→7, capacity/room update stuck,
+  cancel → session CANCELLED, booking CANCELLED, credits back to 8.
