@@ -145,3 +145,15 @@
   its public booking page live at /book/sunrise-yoga immediately, slug
   collision produced sunrise-yoga-2.
 - Stripe subscriptions: deferred to owner-assisted (needs API keys).
+
+## 2026-07-08 · V13 Super-admin Mission Control (live, secret path)
+- /hq/<secret> (secret in .env HQ_PATH; creds in .env.local.secrets,
+  git-ignored): platform KPIs (studios, trials, GMV across all studios,
+  end clients) + studio directory (status pill, trial end, clients/team/
+  orders counts) with actions: +7d trial, mark Paid, Suspend, Restore.
+- SUPERADMIN role: platform user with no tenant; login routes them to HQ.
+  Studio owners and wrong secrets both get 404 (page hides, not 403).
+- Suspension has teeth: suspended studio's public booking page 404s
+  immediately (admin banner shows suspended notice).
+- Verified live: superadmin login → HQ lists all studios; owner blocked;
+  suspend → public page dead; extend → TRIAL until +7d.

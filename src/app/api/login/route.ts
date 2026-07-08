@@ -13,9 +13,15 @@ export async function POST(req: Request) {
   }
 
   const user = await db.user.findFirst({ where: { email, active: true } });
-  if (!user || !user.tenantId || !(await bcrypt.compare(password, user.passwordHash))) {
+  if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
     return NextResponse.redirect(externalUrl(req, "/login?error=1"), 303);
   }
+
+  if (user.role === "SUPERADMIN") {
+    await createSession({ userId: user.id, tenantId: "", role: user.role, name: user.name });
+    return NextResponse.redirect(externalUrl(req, `/${process.env.HQ_PATH ?? "hq"}`), 303);
+  }
+  if (!user.tenantId) return NextResponse.redirect(externalUrl(req, "/login?error=1"), 303);
 
   await createSession({ userId: user.id, tenantId: user.tenantId, role: user.role, name: user.name });
   return NextResponse.redirect(externalUrl(req, "/dashboard"), 303);
