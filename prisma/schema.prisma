@@ -30,6 +30,7 @@ model Tenant {
   logoUrl      String?
   policies     Json         @default("{}")
   website      Json         @default("{}")
+  smsBalance   Decimal      @default(0) @db.Decimal(12, 4)
   createdAt    DateTime     @default(now())
 
   users          User[]
@@ -42,6 +43,8 @@ model Tenant {
   products       Product[]
   orders         Order[]
   expenses       Expense[]
+  smsMessages    SmsMessage[]
+  smsTopups      SmsTopup[]
 }
 
 enum UserRole {
@@ -313,4 +316,33 @@ model Voucher {
   orders Order[]
 
   @@unique([tenantId, code])
+}
+
+// ── SMS (Twilio pay-as-you-go, +10% platform markup on usage) ─────────
+
+model SmsTopup {
+  id        String   @id @default(cuid())
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  amount    Decimal  @db.Decimal(12, 2)
+  status    String   @default("PENDING") // PENDING | PAID
+  createdAt DateTime @default(now())
+
+  @@index([tenantId, createdAt])
+}
+
+model SmsMessage {
+  id          String   @id @default(cuid())
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  to          String
+  body        String
+  kind        String   @default("notification") // confirmation | reminder | …
+  status      String // SENT | DELIVERED | FAILED | SKIPPED_NO_CREDS | SKIPPED_NO_CREDits…
+  sid         String?  @unique
+  estCharge   Decimal  @default(0) @db.Decimal(12, 4) // deducted at send (marked up)
+  finalCharge Decimal? @db.Decimal(12, 4) // reconciled from Twilio price (marked up)
+  createdAt   DateTime @default(now())
+
+  @@index([tenantId, createdAt])
 }

@@ -468,3 +468,22 @@
   and the resolver matches www↔bare either way. Verified: cert SANs =
   dealerleads.me + www.dealerleads.me, both serve the studio over HTTPS.
 - Cron confirmed healthy (18 runs in the last hour).
+
+## 2026-07-08 · Twilio SMS framework (pay-as-you-go, +10% markup)
+- Schema: tenant.smsBalance + SmsTopup (PENDING→PAID) + SmsMessage
+  (SENT/DELIVERED/FAILED/SKIPPED_* with est+final charges).
+- lib/sms.ts: plan gate (Growth+) → credit gate → Twilio REST send with
+  status callback; charge = segments × est-rate × 1.10 deducted at send;
+  no creds → SKIPPED_NO_TWILIO (activates with env vars only).
+- /api/twilio/status webhook: delivery status + reconciles est vs actual
+  Twilio price ×1.10, refunds over-estimates and failed sends.
+- Top-ups: $10/$50/$100 packs + custom ($5–$1,000) on Billing → PENDING →
+  HQ "SMS top-ups awaiting payment" queue → Mark paid credits balance.
+- Billing SMS card: balance, usage this month, pending note, packs,
+  recent messages w/ per-message charges; Starter sees upgrade prompt.
+- Auto-usage: booking confirmations + hourly reminders now SMS clients
+  who have a phone but no email.
+- VERIFIED: topup→HQ→balance 50; zero-balance send skipped; simulated
+  send charged 0.0183 est; webhook (Price −0.0079) reconciled to 0.0087
+  final (exact ×1.1) and refunded the difference; bad token 403; billing
+  card renders balance 49.9913.

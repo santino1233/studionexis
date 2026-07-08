@@ -22,3 +22,14 @@ Stripe). Node 22, npm.
   pale-orange active pills, STUDIO+NEXIS wordmark, 30px Manrope titles,
   tinted-icon KPI cards, airy tables). Tokens already in globals.css.
 - Light-first. No dark-mode default.
+
+## Twilio SMS (framework live; creds owner-gated)
+Env to activate real sending: TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN,
+TWILIO_FROM (in .env, then systemctl restart nexis-next). Optional
+TWILIO_EST_PRICE (default 0.0083/segment). Economics: pay-as-you-go
+credits (tenant.smsBalance), 10% markup on carrier cost (SMS_MARKUP in
+src/lib/sms.ts) — deducted at send (estimate), reconciled to actual via
+/api/twilio/status webhook (CRON_TOKEN-guarded). Top-ups $10/50/100/
+custom($5-1000) → PENDING → HQ "Mark paid" credits balance (Stripe later).
+Plan-gated (Growth+). Auto-sends: booking confirmations + reminders to
+phone-only clients.

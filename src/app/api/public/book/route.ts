@@ -6,6 +6,7 @@ import { getCustomerSession } from "@/lib/customer-auth";
 import { checkBookingLimit, checkClientLimit } from "@/lib/plans";
 import { externalUrl } from "@/lib/request-url";
 import { sendEmail } from "@/lib/mailer";
+import { sendSms } from "@/lib/sms";
 import { timeInTz } from "@/lib/tz";
 
 export async function POST(req: Request) {
@@ -77,7 +78,16 @@ export async function POST(req: Request) {
       return { outcome: full ? "waitlist" : "booked", client, session };
     });
 
-    if (result.client.email) {
+    if (!result.client.email && result.client.phone) {
+      const s = result.session;
+      const cls = await db.classType.findUnique({ where: { id: s.classTypeId } });
+      await sendSms({
+        tenantId: tenant.id,
+        to: result.client.phone,
+        kind: "confirmation",
+        body: `${tenant.name}: ${result.outcome === "booked" ? "You're booked for" : "You're waitlisted for"} ${cls?.name ?? "class"} ${s.startsAt.toLocaleDateString("en-US", { timeZone: tenant.timezone, weekday: "short", month: "short", day: "numeric" })} ${timeInTz(s.startsAt, tenant.timezone)}. See you there!`,
+      });
+    } else if (result.client.email) {
       const s = result.session;
       const cls = await db.classType.findUnique({ where: { id: s.classTypeId } });
       await sendEmail({

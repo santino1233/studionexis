@@ -19,6 +19,11 @@ export default async function HqPage({ params }: { params: Promise<{ secret: str
   const auth = await getSession();
   if (!auth || auth.role !== "SUPERADMIN" || secret !== (process.env.HQ_PATH ?? "").replace(/^hq\//, "")) notFound();
 
+  const pendingTopups = await db.smsTopup.findMany({
+    where: { status: "PENDING" },
+    include: { tenant: { select: { name: true, slug: true } } },
+    orderBy: { createdAt: "asc" },
+  });
   const [tenants, revenueAgg, clientTotal] = await Promise.all([
     db.tenant.findMany({
       orderBy: { createdAt: "desc" },
@@ -43,6 +48,22 @@ export default async function HqPage({ params }: { params: Promise<{ secret: str
           <Kpi icon={DollarSign} tone="g" label="GMV (all studios)" value={fmt.format(Number(revenueAgg._sum.total ?? 0))} />
           <Kpi icon={Users} tone="b" label="End clients" value={String(clientTotal)} />
         </div>
+
+        {pendingTopups.length > 0 && (
+          <Card className="mt-6">
+            <CardHeader title="SMS top-ups awaiting payment" sub="Confirm once the studio has paid — credits apply instantly" />
+            <ul className="divide-y divide-line-2">
+              {pendingTopups.map((t) => (
+                <li key={t.id} className="flex items-center justify-between px-5 py-3.5">
+                  <span className="text-[13.5px] text-ink-2"><b className="text-ink">{t.tenant.name}</b> · ${Number(t.amount).toFixed(2)} · {t.createdAt.toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
+                  <form method="post" action={`/api/hq/topups/${t.id}`}>
+                    <button className="rounded-lg bg-green-wash px-3 py-1.5 text-[11.5px] font-bold text-green hover:brightness-95">Mark paid</button>
+                  </form>
+                </li>
+              ))}
+            </ul>
+          </Card>
+        )}
 
         <Card className="mt-6">
           <CardHeader title="Studios" sub="Plans, trials and controls" />

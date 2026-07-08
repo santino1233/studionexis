@@ -3,7 +3,8 @@ import { Check, MessageSquareText, Globe } from "lucide-react";
 import { Card, CardHeader } from "@/components/ui/card";
 import { getCurrentTenant } from "@/lib/tenant";
 import { getSession } from "@/lib/auth";
-import { PLANS, ADDONS, ANNUAL_DISCOUNT, annualMonthly, getLimits, planUsage } from "@/lib/plans";
+import { PLANS, ADDONS, ANNUAL_DISCOUNT, annualMonthly, getLimits, planUsage, getPlan } from "@/lib/plans";
+import { db } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
@@ -23,8 +24,8 @@ function Meter({ label, used, limit }: { label: string; used: number; limit: num
   );
 }
 
-export default async function BillingPage({ searchParams }: { searchParams: Promise<{ saved?: string; cycle?: string }> }) {
-  const { saved, cycle: cycleParam } = await searchParams;
+export default async function BillingPage({ searchParams }: { searchParams: Promise<{ saved?: string; cycle?: string; sms?: string }> }) {
+  const { saved, cycle: cycleParam, sms } = await searchParams;
   const tenant = await getCurrentTenant();
   const session = await getSession();
   const isOwner = session?.role === "OWNER";
@@ -33,6 +34,15 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
   const limits = getLimits(tenant);
   const usage = await planUsage(tenant);
   const trialDays = tenant.trialEndsAt ? Math.max(0, Math.ceil((tenant.trialEndsAt.getTime() - Date.now()) / 86400_000)) : null;
+
+  const monthStart = new Date(); monthStart.setUTCDate(1); monthStart.setUTCHours(0, 0, 0, 0);
+  const smsPlan = getPlan(tenant.plan).sms;
+  const [smsMonth, smsRecent, smsPendingTopups] = await Promise.all([
+    db.smsMessage.aggregate({ where: { tenantId: tenant.id, createdAt: { gte: monthStart }, status: { notIn: ["SKIPPED_PLAN", "SKIPPED_NO_CREDITS", "SKIPPED_NO_TWILIO", "FAILED"] } }, _sum: { estCharge: true }, _count: true }),
+    db.smsMessage.findMany({ where: { tenantId: tenant.id }, orderBy: { createdAt: "desc" }, take: 5 }),
+    db.smsTopup.findMany({ where: { tenantId: tenant.id, status: "PENDING" } }),
+  ]);
+  const smsBalance = Number(tenant.smsBalance);
 
   const statusLine =
     tenant.status === "TRIAL" ? `Free trial — ${trialDays} day${trialDays === 1 ? "" : "s"} left` :
@@ -111,6 +121,56 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
           );
         })}
       </div>
+
+      {/* SMS credits */}
+      <Card className="mt-8">
+        <CardHeader eyebrow="Add-on · pay as you go" title="SMS credits" sub="Text confirmations & reminders to clients without email — carrier rate + 10% service fee per message" />
+        {!smsPlan ? (
+          <div className="p-6 text-[13.5px] text-muted">
+            SMS is included on the <b className="text-ink">Growth</b> and <b className="text-ink">Scale</b> plans — upgrade above to unlock it.
+          </div>
+        ) : (
+          <div className="p-6">
+            {sms === "reserved" && <div className="mb-4 rounded-xl border border-green/20 bg-green-wash px-3.5 py-2.5 text-[13px] font-bold text-green">Top-up reserved — it activates as soon as payment is confirmed.</div>}
+            {sms === "badamount" && <div className="mb-4 rounded-xl border border-rose/20 bg-rose/5 px-3.5 py-2.5 text-[13px] font-medium text-rose">Custom amounts: $5 – $1,000.</div>}
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <div className="text-[11px] font-bold uppercase tracking-wider text-muted">Balance</div>
+                <div className="font-display text-[32px] font-extrabold tracking-tight text-ink">${smsBalance.toFixed(2)}</div>
+                <div className="text-[12px] text-muted">{smsMonth._count} message{smsMonth._count === 1 ? "" : "s"} · ${Number(smsMonth._sum.estCharge ?? 0).toFixed(2)} used this month</div>
+                {smsPendingTopups.length > 0 && <div className="mt-1 text-[12px] font-bold text-brand">${smsPendingTopups.reduce((a, t) => a + Number(t.amount), 0).toFixed(2)} in top-ups awaiting payment</div>}
+              </div>
+              {isOwner && (
+                <div className="flex flex-wrap items-center gap-2">
+                  {[10, 50, 100].map((a) => (
+                    <form key={a} method="post" action="/api/sms/topup">
+                      <input type="hidden" name="amount" value={a} />
+                      <button className="rounded-xl border border-line-2 bg-surface px-5 py-2.5 text-[14px] font-bold text-ink hover:border-brand/50 hover:text-brand">${a}</button>
+                    </form>
+                  ))}
+                  <form method="post" action="/api/sms/topup" className="flex items-center gap-1.5">
+                    <input name="amount" type="number" min={5} max={1000} step="1" placeholder="Custom" className="h-[42px] w-24 rounded-xl border border-line-2 bg-surface px-3 text-sm outline-none focus:border-brand" />
+                    <button className="rounded-xl bg-brand px-4 py-2.5 text-[13.5px] font-bold text-white hover:bg-brand-ink">Add</button>
+                  </form>
+                </div>
+              )}
+            </div>
+            {smsRecent.length > 0 && (
+              <div className="mt-5 border-t border-line-2 pt-4">
+                <div className="mb-2 text-[11px] font-bold uppercase tracking-wider text-muted">Recent messages</div>
+                <ul className="space-y-1.5">
+                  {smsRecent.map((m) => (
+                    <li key={m.id} className="flex items-center justify-between text-[12.5px]">
+                      <span className="text-ink-2">{m.to} · <span className="capitalize">{m.kind}</span> · <span className={m.status.startsWith("SKIP") || m.status === "FAILED" ? "text-rose" : "text-green"}>{m.status.toLowerCase().replaceAll("_", " ")}</span></span>
+                      <span className="font-bold text-ink">{Number(m.finalCharge ?? m.estCharge) > 0 ? `-$${Number(m.finalCharge ?? m.estCharge).toFixed(4)}` : "—"}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
+      </Card>
 
       {/* Add-ons */}
       <Card className="mt-8">

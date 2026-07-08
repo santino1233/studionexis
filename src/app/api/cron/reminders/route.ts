@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { sendEmail } from "@/lib/mailer";
+import { sendSms } from "@/lib/sms";
 import { timeInTz } from "@/lib/tz";
 
 // Hit hourly by system cron with the shared secret. Emails clients whose
@@ -14,7 +15,7 @@ export async function POST(req: Request) {
     where: {
       status: "BOOKED",
       remindedAt: null,
-      client: { email: { not: null } },
+      client: { OR: [{ email: { not: null } }, { phone: { not: null } }] },
       session: { startsAt: { gt: new Date(), lt: new Date(Date.now() + 24 * 3600_000) }, status: "SCHEDULED" },
     },
     include: { client: true, session: { include: { classType: true } }, tenant: true },
@@ -23,6 +24,17 @@ export async function POST(req: Request) {
 
   let sent = 0;
   for (const b of due) {
+    if (!b.client.email && b.client.phone) {
+      await sendSms({
+        tenantId: b.tenantId,
+        to: b.client.phone,
+        kind: "reminder",
+        body: `${b.tenant.name}: reminder — ${b.session.classType.name} ${b.session.startsAt.toLocaleDateString("en-US", { timeZone: b.tenant.timezone, weekday: "short", month: "short", day: "numeric" })} at ${timeInTz(b.session.startsAt, b.tenant.timezone)}.`,
+      });
+      await db.booking.update({ where: { id: b.id }, data: { remindedAt: new Date() } });
+      sent++;
+      continue;
+    }
     await sendEmail({
       tenantId: b.tenantId,
       to: b.client.email!,
