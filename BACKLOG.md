@@ -150,7 +150,7 @@ https://new.nexis.revsports.ca → commit → log → next.
       duration, capacity, status incl No Show, note, public checkbox);
       Mark Completed action; status colors + full legend; COLOR BY
       Format/Status toggle.
-- [ ] X2 Studio time blocks: TimeBlock model + Block button (range picker),
+- [x] X2 Studio time blocks: TimeBlock model + Block button (range picker),
       striped blocks on calendar, click-to-unblock.
 - [ ] X3 Checkout mini-POS from the calendar rail: pay (cash/transfer/
       card), voucher code, add products, or use package credit → creates

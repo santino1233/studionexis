@@ -40,7 +40,7 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
     return s ? `/schedule?${s}` : "/schedule";
   };
 
-  const [sessions, instructors] = await Promise.all([
+  const [sessions, instructors, timeBlocks] = await Promise.all([
     db.classSession.findMany({
       where: {
         tenantId: tenant.id,
@@ -56,6 +56,7 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
       orderBy: { startsAt: "asc" },
     }),
     db.user.findMany({ where: { tenantId: tenant.id, active: true, role: { in: ["INSTRUCTOR", "OWNER"] } }, orderBy: { name: "asc" } }),
+    db.timeBlock.findMany({ where: { tenantId: tenant.id, startsAt: { gte: rangeStart, lt: rangeEnd } }, orderBy: { startsAt: "asc" } }),
   ]);
 
   const minutesInTz = (d: Date) => {
@@ -72,6 +73,13 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
     minH = Math.min(minH, Math.floor(startMin / 60));
     maxH = Math.max(maxH, Math.ceil((startMin + durMin) / 60));
     byDay.set(k, [...(byDay.get(k) ?? []), s]);
+  }
+  const blocksByDay = new Map<string, typeof timeBlocks>();
+  for (const b of timeBlocks) {
+    const k = dayKeyInTz(b.startsAt, tenant.timezone);
+    minH = Math.min(minH, Math.floor(minutesInTz(b.startsAt) / 60));
+    maxH = Math.max(maxH, Math.ceil(minutesInTz(b.endsAt) / 60) || 24);
+    blocksByDay.set(k, [...(blocksByDay.get(k) ?? []), b]);
   }
   const hours = Array.from({ length: maxH - minH }, (_, n) => minH + n);
   const gridH = hours.length * PX_PER_HOUR;
@@ -98,6 +106,19 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
           <Link href={qs({ w: offset - 1 })} className="grid size-10 place-items-center rounded-xl border border-line-2 bg-surface text-ink-2 hover:bg-raised"><ChevronLeft className="size-4" /></Link>
           <Link href={qs({ w: offset + 1 })} className="grid size-10 place-items-center rounded-xl border border-line-2 bg-surface text-ink-2 hover:bg-raised"><ChevronRight className="size-4" /></Link>
           <span className="rounded-xl border border-line-2 bg-surface px-4 py-2.5 text-sm font-bold text-ink">{rangeLabel}</span>
+          <details className="relative ml-1">
+            <summary className="inline-flex cursor-pointer list-none items-center gap-2 rounded-xl border border-line-2 bg-surface px-4 py-2.5 text-sm font-semibold text-ink-2 hover:bg-raised">🔒 Block time</summary>
+            <form method="post" action="/api/timeblocks" className="absolute right-0 z-40 mt-2 w-[290px] space-y-2.5 rounded-2xl border border-line-2 bg-surface p-4 shadow-lg">
+              <input type="hidden" name="back" value={qs({})} />
+              <input name="date" type="date" required defaultValue={todayKey} className="h-10 w-full rounded-[10px] border border-line bg-surface px-3 text-sm outline-none focus:border-brand" />
+              <div className="grid grid-cols-2 gap-2">
+                <input name="from" type="time" required defaultValue="12:00" className="h-10 w-full rounded-[10px] border border-line bg-surface px-3 text-sm outline-none focus:border-brand" />
+                <input name="to" type="time" required defaultValue="14:00" className="h-10 w-full rounded-[10px] border border-line bg-surface px-3 text-sm outline-none focus:border-brand" />
+              </div>
+              <input name="reason" placeholder="Reason (e.g. maintenance)" className="h-10 w-full rounded-[10px] border border-line bg-surface px-3 text-sm outline-none focus:border-brand" />
+              <button className="w-full rounded-[10px] bg-ink py-2.5 text-[13px] font-bold text-canvas hover:opacity-90">Block this time</button>
+            </form>
+          </details>
           <Link href="/schedule/new" className="ml-1 inline-flex items-center gap-2 rounded-xl bg-brand px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-brand-ink">
             <Plus className="size-4" /> Add Class
           </Link>
@@ -154,6 +175,24 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
                         <span className="absolute -left-1 -top-[5px] size-2 rounded-full bg-brand" />
                       </div>
                     )}
+                    {(blocksByDay.get(d) ?? []).map((b) => {
+                      const top = (minutesInTz(b.startsAt) / 60 - minH) * PX_PER_HOUR;
+                      const height = Math.max(30, ((b.endsAt.getTime() - b.startsAt.getTime()) / 3600_000) * PX_PER_HOUR - 3);
+                      return (
+                        <form key={b.id} method="post" action={`/api/timeblocks/${b.id}`} className="absolute inset-x-1 z-10" style={{ top, height }}>
+                          <input type="hidden" name="back" value={qs({})} />
+                          <button
+                            type="submit"
+                            title="Click to unblock"
+                            className="h-full w-full overflow-hidden rounded-lg border border-dashed border-rose/40 px-2 py-1.5 text-left"
+                            style={{ background: "repeating-linear-gradient(45deg, color-mix(in srgb, #E5484D 8%, var(--color-surface)), color-mix(in srgb, #E5484D 8%, var(--color-surface)) 6px, var(--color-surface) 6px, var(--color-surface) 12px)" }}
+                          >
+                            <span className="block truncate text-[10.5px] font-bold text-rose">🔒 Blocked</span>
+                            {height > 44 && <span className="block truncate text-[10px] text-muted">{b.reason ?? "Studio time"} · click to unblock</span>}
+                          </button>
+                        </form>
+                      );
+                    })}
                     {(byDay.get(d) ?? []).map((s, idx) => {
                       const startMin = minutesInTz(s.startsAt);
                       const durMin = Math.max(30, (s.endsAt.getTime() - s.startsAt.getTime()) / 60_000);

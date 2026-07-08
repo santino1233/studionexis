@@ -504,3 +504,9 @@
   (hidden = internal-only booking, 🙈 marker), override note, reschedule
   (date/time/duration) from the manage card, Color-by Class/Status
   toggle, status legend. All verified live incl. tz-correct reschedule.
+
+## 2026-07-08 · X2 Studio time blocks (live)
+- "🔒 Block time" on the calendar header: date + from/to + reason →
+  striped dashed block in the day column, sized to the range (tz-correct:
+  12:00–14:30 Bangkok stored 05:00–07:30Z). Clicking the block unblocks
+  it (like the original's "click to unblock"). Bad ranges rejected.

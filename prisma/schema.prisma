@@ -45,6 +45,7 @@ model Tenant {
   expenses       Expense[]
   smsMessages    SmsMessage[]
   smsTopups      SmsTopup[]
+  timeBlocks     TimeBlock[]
 }
 
 enum UserRole {
@@ -348,4 +349,17 @@ model SmsMessage {
   createdAt   DateTime @default(now())
 
   @@index([tenantId, createdAt])
+}
+
+// Studio-blocked time ranges (maintenance, holidays, private events).
+model TimeBlock {
+  id        String   @id @default(cuid())
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  startsAt  DateTime
+  endsAt    DateTime
+  reason    String?
+  createdAt DateTime @default(now())
+
+  @@index([tenantId, startsAt])
 }
