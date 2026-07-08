@@ -142,3 +142,33 @@ https://new.nexis.revsports.ca → commit → log → next.
       (?preview=<id>).
 - [x] T3 Middleware fix: subdomain rewrites now carry query strings
       (?preview, ?d day-strip etc. previously dropped on tenant hosts).
+
+## Wave 10 — video spec (VIDEO-SPEC.md): calendar depth + blueprints + booking detail
+- [ ] X1 Session lifecycle: isPublic toggle + BLOCKED handling per session
+      ("Block this class" hides from public + unbookable, striped on
+      calendar, unblock restores); Edit Session modal (instructor, time,
+      duration, capacity, status incl No Show, note, public checkbox);
+      Mark Completed action; status colors + full legend; COLOR BY
+      Format/Status toggle.
+- [ ] X2 Studio time blocks: TimeBlock model + Block button (range picker),
+      striped blocks on calendar, click-to-unblock.
+- [ ] X3 Checkout mini-POS from the calendar rail: pay (cash/transfer/
+      card), voucher code, add products, or use package credit → creates
+      order tied to booking, marks CHECKED_IN, Unpaid label until then.
+- [ ] X4 Instructor earnings: User.commissionRate; session Details (rail)
+      shows class revenue + instructor earning; Mark Completed freezes
+      figures onto the session.
+- [ ] X5 Quick-add client (name+phone) inline in the roster panel.
+- [ ] X6 Day + Month calendar views w/ Week/Day/Month tabs.
+- [ ] X7 Blueprint editor page (/class-types/[id], tabs General/Pricing/
+      Schedule): equipment list, muscle-focus body map (port MuscleMapJS
+      from /opt/studionexis), hero image per class, benefits/good-for/
+      tags; Schedule tab: default instructor, valid from/to, public-by-
+      default, recurring slots (day→times, per-slot cap), exception
+      dates; auto-materialise sessions 4 weeks ahead (idempotent cron).
+- [ ] X8 Public class detail page (hero, tags, description, muscle map,
+      equipment, instructor) + booking w/ QUANTITY and payment choice:
+      credits / at-studio (STUDIO TOGGLE, default on until Stripe) /
+      deposit + pay-in-full stubs that activate with Stripe.
+- [ ] X9 Settings: studio-configurable class formats + difficulty labels
+      (used by blueprint editor).
