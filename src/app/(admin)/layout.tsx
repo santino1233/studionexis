@@ -1,5 +1,6 @@
 import { Sidebar } from "@/components/shell/sidebar";
 import { Topbar } from "@/components/shell/topbar";
+import { MobileNav } from "@/components/shell/mobile-nav";
 import { getCurrentTenant } from "@/lib/tenant";
 
 function PlanBanner({ status, trialEndsAt }: { status: string; trialEndsAt: Date | null }) {
@@ -26,6 +27,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   return (
     <div className="flex h-screen overflow-hidden bg-canvas">
       <Sidebar />
+      <MobileNav />
       <div className="flex min-w-0 flex-1 flex-col">
         <PlanBanner status={tenant.status} trialEndsAt={tenant.trialEndsAt} />
         <Topbar />

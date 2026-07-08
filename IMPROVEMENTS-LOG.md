@@ -300,3 +300,15 @@
   swap to Redis if we ever scale out.
 - Verified live: edit persisted; 12 rapid bad logins → limited after 10;
   authed traffic unaffected.
+
+## 2026-07-08 · H5 error pages + H6 mobile pass — WAVE 3 COMPLETE
+- H5: branded 404 (Take me home) + error page with Try again; verified on
+  authed unknown paths and dead public studio links (logged-out unknown
+  paths still bounce to login — correct).
+- H6: on phones the sidebar becomes a slide-in drawer (hamburger top-left,
+  closes on navigation/backdrop); data tables scroll sideways instead of
+  crushing. Desktop unchanged. All 13 admin pages 200 after the change.
+- AUTONOMOUS BACKLOG EXHAUSTED. Remaining items are owner-gated:
+  W8 Stripe keys · W9 migration rehearsal go-ahead · real-domain dry run
+  (W7 script) · SMTP credentials (W4) · owner mobile QA on a real device.
+  Loop stopping cleanly; nightly agent remains scheduled.

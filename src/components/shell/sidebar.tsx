@@ -36,10 +36,10 @@ const groups: Group[] = [
   ]},
 ];
 
-export function Sidebar() {
+export function Sidebar({ mobile = false }: { mobile?: boolean }) {
   const pathname = usePathname();
   return (
-    <aside className="flex w-[236px] shrink-0 flex-col border-r border-line bg-surface">
+    <aside className={cn("w-[236px] shrink-0 flex-col border-r border-line bg-surface", mobile ? "flex h-full" : "hidden lg:flex")}>
       <Link href="/dashboard" className="flex flex-col gap-0.5 px-[18px] pb-2 pt-5">
         <div className="font-display text-[21px] font-extrabold leading-none tracking-tight">
           <span className="text-ink">STUDIO</span>

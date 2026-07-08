@@ -50,5 +50,5 @@ https://new.nexis.revsports.ca → commit → log → next.
 - [x] H3 Clients: edit-profile form (the profile button is still a stub).
 - [x] H4 Rate limiting on public endpoints (login, signup, public booking,
       customer auth) — basic per-IP throttle.
-- [ ] H5 Friendly 404/error pages (currently Next defaults).
-- [ ] H6 Admin mobile pass: sidebar drawer + responsive tables.
+- [x] H5 Friendly 404/error pages (currently Next defaults).
+- [x] H6 Admin mobile pass: sidebar drawer + responsive tables.

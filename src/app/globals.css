@@ -49,3 +49,12 @@ body {
   scrollbar-width: thin;
   scrollbar-color: #d7d7db transparent;
 }
+
+/* Mobile: data tables scroll sideways instead of crushing columns. */
+@media (max-width: 640px) {
+  main table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+}
