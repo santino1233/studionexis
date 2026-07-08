@@ -29,7 +29,7 @@ https://new.nexis.revsports.ca → commit → log → next.
       page, assignable in schedule; instructors see their own classes.
 - [x] W2 Customer accounts on the public page: magic-link or password login,
       my-bookings (cancel within policy window), my-credits.
-- [ ] W3 Expenses & P&L: expense entry + categories, monthly P&L view
+- [x] W3 Expenses & P&L: expense entry + categories, monthly P&L view
       (revenue from orders − expenses).
 - [ ] W4 Email notifications: booking confirmation + reminder (SMTP env),
       graceful no-op without credentials.

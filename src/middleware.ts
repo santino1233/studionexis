@@ -15,7 +15,7 @@ export async function middleware(req: NextRequest) {
       const { payload } = await jwtVerify(token, new TextEncoder().encode(process.env.AUTH_SECRET!));
       // Instructors only get the operational pages, not money or settings.
       const role = payload.role as string;
-      const RESTRICTED = ["/pos", "/products", "/invoices", "/analytics", "/settings", "/billing", "/team", "/welcome"];
+      const RESTRICTED = ["/pos", "/products", "/invoices", "/analytics", "/settings", "/billing", "/team", "/welcome", "/expenses"];
       if (role === "INSTRUCTOR" && RESTRICTED.some((p) => pathname === p || pathname.startsWith(p + "/"))) {
         return NextResponse.redirect(new URL("/schedule", req.url));
       }

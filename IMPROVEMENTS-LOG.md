@@ -195,3 +195,11 @@
 - Fix en route: Prisma client types were stale after the migration —
   explicit `prisma generate` now part of the schema-change routine (build
   failed cleanly; no bad deploy thanks to the build-gate rule).
+
+## 2026-07-08 · W3 Expenses & P&L (live)
+- Expenses & P&L page (new sidebar item under Team & Insights): month nav,
+  P&L strip (Revenue − Expenses = Profit, green/red), expense table with
+  delete, quick add form (8 categories, date, note), by-category bars.
+- Instructors blocked (middleware + API). Zero-amount guard.
+- Verified live: 50.00 revenue − 17.75 expenses = 32.25 profit rendered,
+  category bars present, guards firing.
