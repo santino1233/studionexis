@@ -31,6 +31,18 @@ export async function POST(req: Request) {
         brandColor: /^#[0-9a-fA-F]{6}$/.test(String(form.get("brandColor"))) ? String(form.get("brandColor")) : tenant.brandColor,
       },
     });
+  } else if (section === "domain") {
+    const raw = String(form.get("customDomain") ?? "").trim().toLowerCase().replace(/^https?:\/\//, "").replace(/\/.*$/, "");
+    if (raw === "") {
+      await db.tenant.update({ where: { id: tenant.id }, data: { customDomain: null } });
+    } else {
+      if (!/^(?!-)[a-z0-9-]+(\.[a-z0-9-]+)+$/.test(raw) || raw.endsWith("nexis.revsports.ca")) {
+        return NextResponse.redirect(externalUrl(req, "/settings?error=domain"), 303);
+      }
+      const taken = await db.tenant.findFirst({ where: { customDomain: raw, id: { not: tenant.id } } });
+      if (taken) return NextResponse.redirect(externalUrl(req, "/settings?error=domaintaken"), 303);
+      await db.tenant.update({ where: { id: tenant.id }, data: { customDomain: raw } });
+    }
   } else if (section === "website") {
     const prev = (tenant.website ?? {}) as Record<string, unknown>;
     const pick = (k: string) => String(form.get(k) ?? "").trim();

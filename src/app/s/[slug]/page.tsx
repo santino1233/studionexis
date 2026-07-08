@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
+import { tenantBySlugOrDomain } from "@/lib/public-tenant";
 import { moneyFormatter } from "@/lib/tenant";
 import { dayKeyInTz, timeInTz } from "@/lib/tz";
 import { MapPin, Phone, AtSign, Clock } from "lucide-react";
@@ -8,7 +9,7 @@ export const dynamic = "force-dynamic";
 
 export default async function StudioSite({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const tenant = await db.tenant.findUnique({ where: { slug } });
+  const tenant = await tenantBySlugOrDomain(slug);
   if (!tenant || tenant.status === "SUSPENDED") notFound();
 
   const brand = tenant.brandColor || "#F97316";

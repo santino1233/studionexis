@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { tenantBySlugOrDomain } from "@/lib/public-tenant";
 import { externalUrl } from "@/lib/request-url";
 import { sendEmail } from "@/lib/mailer";
 import { timeInTz } from "@/lib/tz";
@@ -17,7 +18,7 @@ export async function POST(req: Request) {
     return NextResponse.redirect(externalUrl(req, `${back}?err=missing&s=${sessionId}`), 303);
   }
 
-  const tenant = await db.tenant.findUnique({ where: { slug } });
+  const tenant = await tenantBySlugOrDomain(slug);
   if (!tenant || tenant.status === "SUSPENDED") return NextResponse.redirect(externalUrl(req, "/login"), 303);
 
   try {

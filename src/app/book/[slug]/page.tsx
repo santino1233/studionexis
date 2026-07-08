@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
+import { tenantBySlugOrDomain } from "@/lib/public-tenant";
 import { dayKeyInTz, timeInTz } from "@/lib/tz";
 import { moneyFormatter } from "@/lib/tenant";
 
@@ -11,7 +12,7 @@ export default async function PublicBookingPage({ params, searchParams }: {
 }) {
   const { slug } = await params;
   const { ok, err, s: errSession } = await searchParams;
-  const tenant = await db.tenant.findUnique({ where: { slug } });
+  const tenant = await tenantBySlugOrDomain(slug);
   if (!tenant || tenant.status === "SUSPENDED") notFound();
 
   const fmt = moneyFormatter(tenant.currency);

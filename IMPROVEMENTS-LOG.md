@@ -236,3 +236,18 @@
   with a "View my website" link.
 - Verified live: saved content renders on the public page anonymously.
   (Gotcha: lucide-react dropped brand icons — Instagram → AtSign.)
+
+## 2026-07-08 · W7 Custom domains (live; go-live script pending real DNS)
+- Settings → Custom domain card: save your own domain (validated hostname,
+  uniqueness across studios, base-domain blocked, clearable) with plain-
+  English DNS steps (A record → 72.62.69.9).
+- Middleware: requests arriving on a foreign Host serve that studio's
+  website at "/" (rewrite → /s/~host); booking + portal + public APIs all
+  resolve tenants by slug OR custom domain, and redirects stay on the
+  customer's domain via X-Forwarded-Host.
+- scripts/connect-domain.sh: DNS check → nginx vhost (VestaCP listen-IP
+  quirk handled) → certbot → smoke test. Syntax-checked; needs a REAL
+  domain pointing at the server for a live dry run (owner-assisted).
+- Verified via Host-header simulation: custom host served the studio site,
+  unknown host 404, invalid/duplicate domains rejected, base domain
+  unaffected. Test domain cleared after verification.

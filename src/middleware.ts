@@ -3,8 +3,18 @@ import { jwtVerify } from "jose";
 
 const PUBLIC = ["/login", "/api/login", "/signup", "/api/signup", "/book", "/s", "/api/public", "/api/cron"];
 
+const BASE_HOSTS = ["new.nexis.revsports.ca", "nexis.revsports.ca", "localhost", "127.0.0.1"];
+
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
+
+  // Custom domains: a studio's own domain serves their public website at "/".
+  const host = (req.headers.get("x-forwarded-host") ?? req.headers.get("host") ?? "").split(":")[0].toLowerCase();
+  if (host && !BASE_HOSTS.includes(host) && !host.endsWith(".nexis.revsports.ca")) {
+    if (pathname === "/") {
+      return NextResponse.rewrite(new URL(`/s/~${host}`, req.url));
+    }
+  }
   if (PUBLIC.some((p) => pathname === p || pathname.startsWith(p + "/"))) {
     return NextResponse.next();
   }

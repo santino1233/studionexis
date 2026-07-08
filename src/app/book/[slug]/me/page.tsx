@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
+import { tenantBySlugOrDomain } from "@/lib/public-tenant";
 import { getCustomerSession } from "@/lib/customer-auth";
 import { timeInTz } from "@/lib/tz";
 
@@ -14,7 +15,7 @@ export default async function CustomerPortal({ params, searchParams }: {
 }) {
   const { slug } = await params;
   const { error } = await searchParams;
-  const tenant = await db.tenant.findUnique({ where: { slug } });
+  const tenant = await tenantBySlugOrDomain(slug);
   if (!tenant || tenant.status === "SUSPENDED") notFound();
   const brand = tenant.brandColor || "#F97316";
   const session = await getCustomerSession();

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
+import { tenantBySlugOrDomain } from "@/lib/public-tenant";
 import { createCustomerSession, destroyCustomerSession, getCustomerSession } from "@/lib/customer-auth";
 import { externalUrl } from "@/lib/request-url";
 
@@ -52,7 +53,7 @@ export async function POST(req: Request) {
   }
 
   // login / register
-  const tenant = await db.tenant.findUnique({ where: { slug } });
+  const tenant = await tenantBySlugOrDomain(slug);
   if (!tenant || tenant.status === "SUSPENDED") return NextResponse.redirect(externalUrl(req, "/login"), 303);
   const contact = String(form.get("contact") ?? "").trim().toLowerCase();
   const password = String(form.get("password") ?? "");

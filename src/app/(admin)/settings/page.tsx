@@ -93,6 +93,27 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
       </Card>
 
       <Card className="mt-5">
+        <CardHeader eyebrow="Add-on" title="Custom domain" sub="Serve your website on your own domain" />
+        <form method="post" action="/api/settings" className="space-y-4 p-6">
+          <input type="hidden" name="section" value="domain" />
+          {error === "domain" && <div className="rounded-xl border border-rose/20 bg-rose/5 px-3.5 py-2.5 text-[13px] font-medium text-rose">That doesn&apos;t look like a domain (e.g. www.yourstudio.com).</div>}
+          {error === "domaintaken" && <div className="rounded-xl border border-rose/20 bg-rose/5 px-3.5 py-2.5 text-[13px] font-medium text-rose">That domain is already connected to another studio.</div>}
+          <div>
+            <label className={label}>Your domain</label>
+            <input name="customDomain" defaultValue={tenant.customDomain ?? ""} placeholder="www.yourstudio.com" className={field} />
+          </div>
+          <ol className="list-decimal space-y-1 pl-5 text-[12.5px] text-muted">
+            <li>At your domain provider, add an <b>A record</b> pointing to <b className="font-mono">72.62.69.9</b>.</li>
+            <li>Save here, then ask support to activate it (we issue the security certificate).</li>
+            <li>Your website and booking pages then work on your domain.</li>
+          </ol>
+          <div className="flex justify-end">
+            <button className="rounded-[10px] bg-brand px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-brand-ink">Save domain</button>
+          </div>
+        </form>
+      </Card>
+
+      <Card className="mt-5">
         <CardHeader eyebrow="Rules" title="Booking policies" sub="What clients feel — cancellation windows and waitlists" />
         <form method="post" action="/api/settings" className="space-y-4 p-6">
           <input type="hidden" name="section" value="policies" />

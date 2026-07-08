@@ -36,7 +36,7 @@ https://new.nexis.revsports.ca → commit → log → next.
 - [x] W5 Promotions & vouchers (discount codes at POS/public checkout).
 - [x] W6 Studio website: simple public studio page (about, photos, pricing)
       layered on the booking page.
-- [ ] W7 Custom domains: tenant domain field + connect script (nginx+certbot).
+- [x] W7 Custom domains: tenant domain field + connect script (nginx+certbot).
 - [ ] W8 Stripe subscription billing (OWNER: needs API keys).
 - [ ] W9 Migration script old Mongo → Postgres + rehearsal on a copy.
 - [ ] W10 Host-based tenant resolution (<slug>.nexis.revsports.ca) behind a
