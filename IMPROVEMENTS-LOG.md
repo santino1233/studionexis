@@ -273,3 +273,11 @@
 - Wave 2 done except the two owner-gated items: W8 Stripe keys, W9
   migration rehearsal approval. Seeded Wave 3 (hardening): backups,
   session edit/cancel, client edit, rate limits, error pages, mobile.
+
+## 2026-07-08 · H1 Nightly database backups (live + restore-verified)
+- scripts/backup-db.sh: pg_dump | gzip to /opt/nexis/backups, 7-day
+  rotation; /etc/cron.d/nexis-backup runs it 02:30 nightly, logs to
+  /var/log/nexis-backup.log.
+- Not just "backup exists" — VERIFIED RESTORE: restored into a scratch DB
+  and diffed row counts against live (tenants/clients/bookings/orders all
+  matched), then dropped the scratch.
