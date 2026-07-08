@@ -429,3 +429,20 @@
   test hostname (CN=studio-test.nexis.revsports.ca, LIVE in ~30s), then
   auto-cleaned after removal. App-side custom-domain resolution
   re-verified separately (~host path serves the right studio).
+
+## 2026-07-08 · Wave 9: five website templates + design picker
+- /s/<slug> is now a template dispatcher over shared SiteData. Five full
+  designs: Boutique (cream/serif/editorial), Luxury (near-black/tracked
+  uppercase/full-bleed), Minimal (white/huge type/hairlines), Serene
+  (sage/arches/airy — default), Bold (brand-drenched/oversized/marquee).
+  Every one: hero w/ name+slogan+text, multiple Book-a-Class CTAs to the
+  booking page, classes + packages + gallery, contact footer with an
+  embedded Google Map (mapEmbedSrc handles share/place/embed links or a
+  plain address).
+- Settings → Website design: visual template cards, theme-colour swatches
+  + custom colour (writes brandColor so the whole customer world matches),
+  maps field, one-click ?preview= links for trying templates safely.
+- Fixed: tenant-host rewrites dropped query strings (broke previews AND
+  the booking day-strip on subdomains).
+- Verified live: all five render distinctly on dev-studio subdomain w/
+  CTA + map; saved default (serene + sage) persists; picker renders 7/7.

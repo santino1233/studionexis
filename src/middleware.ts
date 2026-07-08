@@ -36,7 +36,9 @@ export async function middleware(req: NextRequest) {
   if (slugParam) {
     const alias = TENANT_ALIASES[pathname];
     if (alias) {
-      return NextResponse.rewrite(new URL(alias.replaceAll("{slug}", slugParam), req.url));
+      const url = new URL(alias.replaceAll("{slug}", slugParam), req.url);
+      url.search = req.nextUrl.search; // keep ?preview=, ?d=, ?ok=…
+      return NextResponse.rewrite(url);
     }
     // Already-slugged public routes and APIs pass through.
     if (pathname.startsWith("/s/") || pathname.startsWith("/book/") || pathname.startsWith("/api/")) {

@@ -56,6 +56,18 @@ export async function POST(req: Request) {
       where: { id: tenant.id },
       data: { policies: { ...prev, expenseCategories: cats } },
     });
+  } else if (section === "template") {
+    const prev = (tenant.website ?? {}) as Record<string, unknown>;
+    const template = String(form.get("template") ?? "");
+    const accent = String(form.get("accent") ?? "").trim();
+    const mapUrl = String(form.get("mapUrl") ?? "").trim();
+    await db.tenant.update({
+      where: { id: tenant.id },
+      data: {
+        website: { ...prev, template: ["boutique", "luxury", "minimal", "serene", "bold"].includes(template) ? template : (prev.template ?? "boutique"), mapUrl },
+        ...(/^#[0-9a-fA-F]{6}$/.test(accent) ? { brandColor: accent } : {}),
+      },
+    });
   } else if (section === "website") {
     const prev = (tenant.website ?? {}) as Record<string, unknown>;
     const pick = (k: string) => String(form.get(k) ?? "").trim();

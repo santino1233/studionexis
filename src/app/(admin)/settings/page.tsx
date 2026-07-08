@@ -59,6 +59,73 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
       </Card>
 
       <Card className="mt-5">
+        <CardHeader eyebrow="Public" title="Website design" sub="Pick a template and colour — preview before you commit" />
+        <form method="post" action="/api/settings" className="space-y-5 p-6">
+          <input type="hidden" name="section" value="template" />
+          {(() => {
+            const w = (tenant.website ?? {}) as { template?: string; mapUrl?: string };
+            const current = w.template ?? "boutique";
+            const templates = [
+              ["boutique", "Boutique", "Warm, editorial, personal", "#FAF5EE", "#2A241D", "serif"],
+              ["luxury", "Luxury", "Dark, refined, exclusive", "#121110", "#EFEAE2", "serif"],
+              ["minimal", "Minimal", "White space, big type", "#FFFFFF", "#111113", "sans"],
+              ["serene", "Serene", "Soft, calm, natural", "#F2F4EF", "#2B322B", "sans"],
+              ["bold", "Bold", "Loud colour, high energy", "#17181C", "#FFFFFF", "sans"],
+            ] as const;
+            const swatches = ["#F97316", "#B45309", "#6D8B74", "#0F766E", "#7C3AED", "#BE123C"];
+            return (
+              <>
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+                  {templates.map(([id, name, vibe, bg, fg, font]) => (
+                    <label key={id} className={`block cursor-pointer overflow-hidden rounded-xl border-2 transition-all ${current === id ? "border-brand shadow-md" : "border-line-2 hover:border-line"}`}>
+                      <input type="radio" name="template" value={id} defaultChecked={current === id} className="sr-only" />
+                      <div className="flex h-[74px] flex-col justify-between p-3" style={{ background: bg, color: fg }}>
+                        <span className={`text-[15px] font-bold ${font === "serif" ? "font-serif" : "font-display"}`}>Aa</span>
+                        <span className="block h-1.5 w-8 rounded-full" style={{ background: tenant.brandColor }} />
+                      </div>
+                      <div className="border-t border-line-2 bg-surface px-3 py-2">
+                        <div className="text-[12.5px] font-bold text-ink">{name}</div>
+                        <div className="text-[10.5px] leading-tight text-muted">{vibe}</div>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+
+                <div>
+                  <label className={label}>Theme colour</label>
+                  <div className="flex flex-wrap items-center gap-2">
+                    {swatches.map((c) => (
+                      <label key={c} className="cursor-pointer">
+                        <input type="radio" name="accent" value={c} defaultChecked={tenant.brandColor.toLowerCase() === c.toLowerCase()} className="peer sr-only" />
+                        <span className="block size-8 rounded-full border-2 border-transparent ring-offset-2 transition-all peer-checked:ring-2" style={{ background: c, ["--tw-ring-color" as string]: c }} />
+                      </label>
+                    ))}
+                    <span className="mx-1 text-[12px] text-muted">or</span>
+                    <input type="color" name="accent" defaultValue={tenant.brandColor} className="h-9 w-14 cursor-pointer rounded-lg border border-line bg-surface p-1" title="Custom colour" />
+                  </div>
+                  <p className="mt-1.5 text-[11.5px] text-muted">Your colour flows through the website, booking pages and client portal.</p>
+                </div>
+
+                <div>
+                  <label className={label}>Google Maps link (or your address)</label>
+                  <input name="mapUrl" defaultValue={w.mapUrl ?? ""} placeholder="Paste your Google Maps link — the map appears on your site" className={field} />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <span className="flex gap-3 text-[12.5px]">
+                    {templates.map(([id, name]) => (
+                      <a key={id} href={`/s/${tenant.slug}?preview=${id}`} target="_blank" className="font-bold text-brand hover:underline">{name}</a>
+                    ))}
+                  </span>
+                  <button className="rounded-[10px] bg-brand px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-brand-ink">Save design</button>
+                </div>
+              </>
+            );
+          })()}
+        </form>
+      </Card>
+
+      <Card className="mt-5">
         <CardHeader eyebrow="Public" title="Your website" sub={`Live at /s/${tenant.slug} — about, pricing and booking, branded to you`} />
         <form method="post" action="/api/settings" className="space-y-4 p-6">
           <input type="hidden" name="section" value="website" />

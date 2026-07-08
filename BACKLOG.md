@@ -129,3 +129,16 @@ https://new.nexis.revsports.ca → commit → log → next.
       here when keys arrive; HQ activates paid status meanwhile).
 - [ ] B4 OWNER-GATED: Stripe keys → real checkout + webhooks; Twilio creds
       → SMS notifications + PAYG credits.
+
+## Wave 9 — website templates (owner spec)
+- [x] T1 Five templates (Boutique/Luxury/Minimal/Serene/Bold) inspired by
+      soulpilates.com.vn + pilatesbyrecharged.com — each with hero image +
+      name/slogan/about, Book-a-Class CTAs → booking page, classes strip,
+      packages, gallery, contact footer w/ embedded Google Map.
+- [x] T2 Settings "Website design" card: template cards w/ style preview,
+      6 theme-colour swatches + custom picker (drives brandColor →
+      website/booking/portal), Google Maps link field (accepts share/place/
+      embed links or a plain address), per-template live preview links
+      (?preview=<id>).
+- [x] T3 Middleware fix: subdomain rewrites now carry query strings
+      (?preview, ?d day-strip etc. previously dropped on tenant hosts).
