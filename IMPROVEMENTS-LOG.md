@@ -349,3 +349,9 @@
   the contact row — birthday lists/automations can build on this).
 - Wired through add + edit forms and both APIs; verified live (VIP +
   prenatal pills and "March 14" render on Ava's profile, form prefills).
+
+## 2026-07-08 · P6 Custom expense categories (live)
+- Settings gained an "Expense categories" card (comma-edited, up to 20,
+  blank = standard list); the expense form uses the studio's own list.
+- Merge-safe: saving categories preserved cancel windows + waitlist flag
+  in the same policies blob (verified in DB).

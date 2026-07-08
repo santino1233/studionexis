@@ -114,6 +114,23 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
       </Card>
 
       <Card className="mt-5">
+        <CardHeader eyebrow="Money" title="Expense categories" sub="The choices in your expense form — make them match how you think" />
+        <form method="post" action="/api/settings" className="space-y-4 p-6">
+          <input type="hidden" name="section" value="categories" />
+          <input
+            name="expenseCategories"
+            defaultValue={(((tenant.policies ?? {}) as { expenseCategories?: string[] }).expenseCategories ?? []).join(", ")}
+            placeholder="Rent, Salaries, Utilities, Equipment, Marketing, Supplies, Software, Other"
+            className={field}
+          />
+          <p className="text-[12px] text-muted">Comma-separated, up to 20. Leave blank to use the standard list.</p>
+          <div className="flex justify-end">
+            <button className="rounded-[10px] bg-brand px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-brand-ink">Save categories</button>
+          </div>
+        </form>
+      </Card>
+
+      <Card className="mt-5">
         <CardHeader eyebrow="Rules" title="Booking policies" sub="What clients feel — cancellation windows and waitlists" />
         <form method="post" action="/api/settings" className="space-y-4 p-6">
           <input type="hidden" name="section" value="policies" />

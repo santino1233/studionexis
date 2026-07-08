@@ -43,6 +43,14 @@ export async function POST(req: Request) {
       if (taken) return NextResponse.redirect(externalUrl(req, "/settings?error=domaintaken"), 303);
       await db.tenant.update({ where: { id: tenant.id }, data: { customDomain: raw } });
     }
+  } else if (section === "categories") {
+    const prev = (tenant.policies ?? {}) as Record<string, unknown>;
+    const cats = String(form.get("expenseCategories") ?? "")
+      .split(",").map((c) => c.trim()).filter(Boolean).slice(0, 20);
+    await db.tenant.update({
+      where: { id: tenant.id },
+      data: { policies: { ...prev, expenseCategories: cats } },
+    });
   } else if (section === "website") {
     const prev = (tenant.website ?? {}) as Record<string, unknown>;
     const pick = (k: string) => String(form.get(k) ?? "").trim();

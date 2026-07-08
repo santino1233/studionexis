@@ -75,7 +75,7 @@ https://new.nexis.revsports.ca → commit → log → next.
       Summary + wire the sales-mix donut (old dashboard had both).
 - [x] P5 Client profile depth: tags, birthday, referral source (old
       Client entity) + show on profile header.
-- [ ] P6 Settings depth: expense-category editor (old system had custom
+- [x] P6 Settings depth: expense-category editor (old system had custom
       categories per studio).
 - [ ] P7 Custom photo uploads for hero/gallery (needs media storage —
       currently defaults only).

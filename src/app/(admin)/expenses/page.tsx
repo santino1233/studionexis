@@ -6,7 +6,7 @@ import { Trash2 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
-const CATEGORIES = ["Rent", "Salaries", "Utilities", "Equipment", "Marketing", "Supplies", "Software", "Other"];
+const DEFAULT_CATEGORIES = ["Rent", "Salaries", "Utilities", "Equipment", "Marketing", "Supplies", "Software", "Other"];
 const field = "h-10 w-full rounded-[10px] border border-line bg-surface px-3 text-sm outline-none focus:border-brand focus:ring-4 focus:ring-brand/10";
 const microLabel = "mb-1 block text-[11px] font-bold uppercase tracking-wider text-muted";
 
@@ -14,6 +14,8 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
   const { m: ym, error } = await searchParams;
   const tenant = await getCurrentTenant();
   const fmt = moneyFormatter(tenant.currency);
+  const custom = ((tenant.policies ?? {}) as { expenseCategories?: string[] }).expenseCategories;
+  const CATEGORIES = custom && custom.length > 0 ? custom : DEFAULT_CATEGORIES;
 
   const nowKey = dayKeyInTz(new Date(), tenant.timezone);
   const key = ym && /^\d{4}-\d{2}$/.test(ym) ? ym : nowKey.slice(0, 7);
