@@ -61,9 +61,9 @@ export default async function ClientProfilePage({ params }: { params: Promise<{ 
           <button className="inline-flex items-center gap-2 rounded-[10px] bg-brand px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-brand-ink">
             <Plus className="size-4" /> Sell package
           </button>
-          <button className="inline-flex items-center gap-2 rounded-[10px] border border-line bg-surface px-4 py-2.5 text-sm font-semibold text-ink-2 hover:bg-raised">
+          <Link href={`/clients/${client.id}/edit`} className="inline-flex items-center gap-2 rounded-[10px] border border-line bg-surface px-4 py-2.5 text-sm font-semibold text-ink-2 hover:bg-raised">
             <Pencil className="size-4" /> Edit profile
-          </button>
+          </Link>
         </div>
       </div>
 

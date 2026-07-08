@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { rateLimit } from "@/lib/rate-limit";
 import { db } from "@/lib/db";
 import { tenantBySlugOrDomain } from "@/lib/public-tenant";
 import { externalUrl } from "@/lib/request-url";
@@ -6,6 +7,9 @@ import { sendEmail } from "@/lib/mailer";
 import { timeInTz } from "@/lib/tz";
 
 export async function POST(req: Request) {
+  if (!rateLimit(req, "pubbook", 15, 60)) {
+    return new NextResponse("Too many attempts — slow down and try again shortly.", { status: 429 });
+  }
   const form = await req.formData();
   const slug = String(form.get("slug") ?? "");
   const sessionId = String(form.get("sessionId") ?? "");

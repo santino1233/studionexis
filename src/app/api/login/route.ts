@@ -1,10 +1,14 @@
 import { NextResponse } from "next/server";
+import { rateLimit } from "@/lib/rate-limit";
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
 import { createSession } from "@/lib/auth";
 import { externalUrl } from "@/lib/request-url";
 
 export async function POST(req: Request) {
+  if (!rateLimit(req, "login", 10, 60)) {
+    return new NextResponse("Too many attempts — slow down and try again shortly.", { status: 429 });
+  }
   const form = await req.formData();
   const email = String(form.get("email") ?? "").trim().toLowerCase();
   const password = String(form.get("password") ?? "");

@@ -290,3 +290,13 @@
   schedule + public page).
 - Verified live: book-with-credit 8→7, capacity/room update stuck,
   cancel → session CANCELLED, booking CANCELLED, credits back to 8.
+
+## 2026-07-08 · H3 Client editing + H4 rate limiting (live)
+- H3: /clients/<id>/edit — full edit form (name, contact, channel, notes,
+  private health notes), wired to the profile's Edit button; tenant-scoped.
+- H4: per-IP sliding-window rate limits on the public endpoints —
+  login 10/min, signup 5/5min, public booking 15/min, customer auth
+  15/min → 429 with a friendly message. In-process (single instance);
+  swap to Redis if we ever scale out.
+- Verified live: edit persisted; 12 rapid bad logins → limited after 10;
+  authed traffic unaffected.

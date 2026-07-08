@@ -47,8 +47,8 @@ https://new.nexis.revsports.ca → commit → log → next.
       7-day rotation) — currently NO backups of v2 data.
 - [x] H2 Schedule: edit/cancel a session from the roster page (cancel
       notifies/restores credits for everyone booked).
-- [ ] H3 Clients: edit-profile form (the profile button is still a stub).
-- [ ] H4 Rate limiting on public endpoints (login, signup, public booking,
+- [x] H3 Clients: edit-profile form (the profile button is still a stub).
+- [x] H4 Rate limiting on public endpoints (login, signup, public booking,
       customer auth) — basic per-IP throttle.
 - [ ] H5 Friendly 404/error pages (currently Next defaults).
 - [ ] H6 Admin mobile pass: sidebar drawer + responsive tables.

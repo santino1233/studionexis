@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { rateLimit } from "@/lib/rate-limit";
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
 import { createSession } from "@/lib/auth";
@@ -9,6 +10,9 @@ function slugify(name: string): string {
 }
 
 export async function POST(req: Request) {
+  if (!rateLimit(req, "signup", 5, 300)) {
+    return new NextResponse("Too many attempts — slow down and try again shortly.", { status: 429 });
+  }
   const form = await req.formData();
   const studioName = String(form.get("studioName") ?? "").trim();
   const ownerName = String(form.get("ownerName") ?? "").trim();

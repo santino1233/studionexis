@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { rateLimit } from "@/lib/rate-limit";
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
 import { tenantBySlugOrDomain } from "@/lib/public-tenant";
@@ -7,6 +8,9 @@ import { externalUrl } from "@/lib/request-url";
 
 // One endpoint, three modes: login, register (set password), logout, cancel.
 export async function POST(req: Request) {
+  if (!rateLimit(req, "pubcust", 15, 60)) {
+    return new NextResponse("Too many attempts — slow down and try again shortly.", { status: 429 });
+  }
   const form = await req.formData();
   const mode = String(form.get("mode") ?? "");
   const slug = String(form.get("slug") ?? "");
