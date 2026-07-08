@@ -22,4 +22,22 @@ https://new.nexis.revsports.ca → commit → log → next.
 - [x] V11 Public tenant booking page + website (light, studio-branded).
 - [x] V12 Signup + tenant provisioning + trial plans; Stripe subscriptions.
 - [x] V13 Super-admin portal (secret host): studios, plans, finances.
-- [ ] V14 Cutover plan: data migration from Mongo, domain swap, retire old.
+- [x] V14 Cutover plan: data migration from Mongo, domain swap, retire old.
+
+## Wave 2 — close the parity gaps before cutover (see CUTOVER.md + SPEC.md)
+- [ ] W1 Team: staff/instructor accounts (invite, roles), instructor list
+      page, assignable in schedule; instructors see their own classes.
+- [ ] W2 Customer accounts on the public page: magic-link or password login,
+      my-bookings (cancel within policy window), my-credits.
+- [ ] W3 Expenses & P&L: expense entry + categories, monthly P&L view
+      (revenue from orders − expenses).
+- [ ] W4 Email notifications: booking confirmation + reminder (SMTP env),
+      graceful no-op without credentials.
+- [ ] W5 Promotions & vouchers (discount codes at POS/public checkout).
+- [ ] W6 Studio website: simple public studio page (about, photos, pricing)
+      layered on the booking page.
+- [ ] W7 Custom domains: tenant domain field + connect script (nginx+certbot).
+- [ ] W8 Stripe subscription billing (OWNER: needs API keys).
+- [ ] W9 Migration script old Mongo → Postgres + rehearsal on a copy.
+- [ ] W10 Host-based tenant resolution (<slug>.nexis.revsports.ca) behind a
+      flag, for cutover day.

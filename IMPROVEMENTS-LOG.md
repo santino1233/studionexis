@@ -157,3 +157,11 @@
   immediately (admin banner shows suspended notice).
 - Verified live: superadmin login → HQ lists all studios; owner blocked;
   suspend → public page dead; extend → TRIAL until +7d.
+
+## 2026-07-08 · V14 Cutover plan drafted — core rebuild backlog COMPLETE
+- CUTOVER.md: gap list, per-entity Mongo→Postgres migration approach,
+  freeze/sync/nginx-flip procedure with 30-day instant rollback, and the
+  three decisions only the owner can make (which studios migrate, Stripe
+  keys, go date). Nothing executes without an explicit go.
+- V1–V14 all done. Seeded Wave 2 (W1–W10): the parity gaps that should
+  close before cutover. Loop continues into W1.
