@@ -25,7 +25,7 @@ https://new.nexis.revsports.ca → commit → log → next.
 - [x] V14 Cutover plan: data migration from Mongo, domain swap, retire old.
 
 ## Wave 2 — close the parity gaps before cutover (see CUTOVER.md + SPEC.md)
-- [ ] W1 Team: staff/instructor accounts (invite, roles), instructor list
+- [x] W1 Team: staff/instructor accounts (invite, roles), instructor list
       page, assignable in schedule; instructors see their own classes.
 - [ ] W2 Customer accounts on the public page: magic-link or password login,
       my-bookings (cancel within policy window), my-credits.

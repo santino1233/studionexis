@@ -165,3 +165,16 @@
   keys, go date). Nothing executes without an explicit go.
 - V1–V14 all done. Seeded Wave 2 (W1–W10): the parity gaps that should
   close before cutover. Loop continues into W1.
+
+## 2026-07-08 · W1 Team & instructor accounts (live, role-gated)
+- Team page: member list (role pill, classes taught, active status) +
+  owner-only add-member form (staff or instructor, temp password) and
+  deactivate/reactivate (deactivated members cannot log in).
+- Role gates in middleware: instructors are redirected away from money/
+  admin pages (POS, products, invoices, analytics, settings, billing,
+  team) to the schedule; staff keep operational access; only owners
+  manage the team (API enforces, not just UI).
+- Instructors appear in the add-class instructor dropdown automatically.
+- Verified live: add → login as instructor → blocked from POS, allowed on
+  schedule → in dropdown → deactivate blocks login → API rejects
+  instructor trying to add members.
