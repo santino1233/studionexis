@@ -29,6 +29,7 @@ model Tenant {
   brandColor   String       @default("#F97316")
   logoUrl      String?
   policies     Json         @default("{}")
+  website      Json         @default("{}")
   createdAt    DateTime     @default(now())
 
   users          User[]

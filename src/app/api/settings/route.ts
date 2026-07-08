@@ -31,6 +31,23 @@ export async function POST(req: Request) {
         brandColor: /^#[0-9a-fA-F]{6}$/.test(String(form.get("brandColor"))) ? String(form.get("brandColor")) : tenant.brandColor,
       },
     });
+  } else if (section === "website") {
+    const prev = (tenant.website ?? {}) as Record<string, unknown>;
+    const pick = (k: string) => String(form.get(k) ?? "").trim();
+    await db.tenant.update({
+      where: { id: tenant.id },
+      data: {
+        website: {
+          ...prev,
+          tagline: pick("tagline"),
+          about: pick("about"),
+          address: pick("address"),
+          phoneNumber: pick("phoneNumber"),
+          instagram: pick("instagram").replace(/^@/, ""),
+          hours: pick("hours"),
+        },
+      },
+    });
   } else if (section === "policies") {
     // Merge into the JSON policies blob — never replace wholesale.
     const prev = (tenant.policies ?? {}) as Record<string, unknown>;

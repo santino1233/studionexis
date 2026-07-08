@@ -227,3 +227,12 @@
 - Orders store discount + voucher link for reporting.
 - Verified live: 10% code took 2.50→2.25, usage 1/2, third use rejected
   ("fully used"), invalid code rejected, management card renders.
+
+## 2026-07-08 · W6 Public studio website (live)
+- /s/<studio>: brand-color hero (tagline + about + Book CTA), next-3-days
+  class strip, package pricing cards, Find-us block (address, phone,
+  Instagram, hours). Sections hide when empty; suspended studios 404.
+- Settings → "Your website" card edits it all (merged JSON on the tenant)
+  with a "View my website" link.
+- Verified live: saved content renders on the public page anonymously.
+  (Gotcha: lucide-react dropped brand icons — Instagram → AtSign.)

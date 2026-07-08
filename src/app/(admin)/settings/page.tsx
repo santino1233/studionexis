@@ -59,6 +59,40 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
       </Card>
 
       <Card className="mt-5">
+        <CardHeader eyebrow="Public" title="Your website" sub={`Live at /s/${tenant.slug} — about, pricing and booking, branded to you`} />
+        <form method="post" action="/api/settings" className="space-y-4 p-6">
+          <input type="hidden" name="section" value="website" />
+          {(() => {
+            const w = (tenant.website ?? {}) as Record<string, string>;
+            return (
+              <>
+                <div>
+                  <label className={label}>Tagline</label>
+                  <input name="tagline" defaultValue={w.tagline ?? ""} placeholder="e.g. Move better. Feel stronger." className={field} />
+                </div>
+                <div>
+                  <label className={label}>About your studio</label>
+                  <textarea name="about" rows={4} defaultValue={w.about ?? ""} placeholder="Tell people what makes your studio special…" className="w-full rounded-[10px] border border-line bg-surface px-3.5 py-2.5 text-sm outline-none placeholder:text-muted focus:border-brand focus:ring-4 focus:ring-brand/10" />
+                </div>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div><label className={label}>Address</label><input name="address" defaultValue={w.address ?? ""} className={field} /></div>
+                  <div><label className={label}>Phone</label><input name="phoneNumber" defaultValue={w.phoneNumber ?? ""} className={field} /></div>
+                </div>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div><label className={label}>Instagram</label><input name="instagram" defaultValue={w.instagram ?? ""} placeholder="yourstudio" className={field} /></div>
+                  <div><label className={label}>Opening hours</label><input name="hours" defaultValue={w.hours ?? ""} placeholder="Mon–Sat 7:00–20:00" className={field} /></div>
+                </div>
+              </>
+            );
+          })()}
+          <div className="flex items-center justify-between">
+            <a href={`/s/${tenant.slug}`} target="_blank" className="text-[13px] font-bold text-brand hover:underline">View my website →</a>
+            <button className="rounded-[10px] bg-brand px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-brand-ink">Save website</button>
+          </div>
+        </form>
+      </Card>
+
+      <Card className="mt-5">
         <CardHeader eyebrow="Rules" title="Booking policies" sub="What clients feel — cancellation windows and waitlists" />
         <form method="post" action="/api/settings" className="space-y-4 p-6">
           <input type="hidden" name="section" value="policies" />
