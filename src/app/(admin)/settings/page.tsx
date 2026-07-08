@@ -144,12 +144,21 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
           {error === "domaintaken" && <div className="rounded-xl border border-rose/20 bg-rose/5 px-3.5 py-2.5 text-[13px] font-medium text-rose">That domain is already connected to another studio.</div>}
           <div>
             <label className={label}>Your domain</label>
-            <input name="customDomain" defaultValue={tenant.customDomain ?? ""} placeholder="www.yourstudio.com" className={field} />
+            <div className="flex items-center gap-2">
+              <input name="customDomain" defaultValue={tenant.customDomain ?? ""} placeholder="www.yourstudio.com" className={field} />
+              {(() => {
+                const d = ((tenant.policies ?? {}) as { domain?: { status?: string; error?: string } }).domain;
+                if (!tenant.customDomain || !d?.status) return null;
+                if (d.status === "LIVE") return <span className="shrink-0 rounded-full bg-green-wash px-3 py-1.5 text-[11px] font-bold text-green">● Live</span>;
+                if (d.status === "PENDING_DNS") return <span className="shrink-0 rounded-full bg-brand-wash px-3 py-1.5 text-[11px] font-bold text-brand">Waiting for DNS…</span>;
+                return <span className="shrink-0 rounded-full bg-rose/10 px-3 py-1.5 text-[11px] font-bold text-rose" title={d.error ?? ""}>Problem — we&apos;re on it</span>;
+              })()}
+            </div>
           </div>
           <ol className="list-decimal space-y-1 pl-5 text-[12.5px] text-muted">
             <li>At your domain provider, add an <b>A record</b> pointing to <b className="font-mono">72.62.69.9</b>.</li>
-            <li>Save here, then ask support to activate it (we issue the security certificate).</li>
-            <li>Your website and booking pages then work on your domain.</li>
+            <li>Save here — that&apos;s it. We check every few minutes, and once your DNS points at us we issue the security certificate and switch your domain on automatically.</li>
+            <li>Your website, booking pages and client portal then work on your domain.</li>
           </ol>
           <div className="flex justify-end">
             <button className="rounded-[10px] bg-brand px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-brand-ink">Save domain</button>

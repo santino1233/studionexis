@@ -33,15 +33,20 @@ export async function POST(req: Request) {
     });
   } else if (section === "domain") {
     const raw = String(form.get("customDomain") ?? "").trim().toLowerCase().replace(/^https?:\/\//, "").replace(/\/.*$/, "");
+    const prevPol = (tenant.policies ?? {}) as Record<string, unknown>;
     if (raw === "") {
-      await db.tenant.update({ where: { id: tenant.id }, data: { customDomain: null } });
+      delete prevPol.domain;
+      await db.tenant.update({ where: { id: tenant.id }, data: { customDomain: null, policies: prevPol as object } });
     } else {
       if (!/^(?!-)[a-z0-9-]+(\.[a-z0-9-]+)+$/.test(raw) || raw.endsWith("nexis.revsports.ca")) {
         return NextResponse.redirect(externalUrl(req, "/settings?error=domain"), 303);
       }
       const taken = await db.tenant.findFirst({ where: { customDomain: raw, id: { not: tenant.id } } });
       if (taken) return NextResponse.redirect(externalUrl(req, "/settings?error=domaintaken"), 303);
-      await db.tenant.update({ where: { id: tenant.id }, data: { customDomain: raw } });
+      await db.tenant.update({
+        where: { id: tenant.id },
+        data: { customDomain: raw, policies: { ...prevPol, domain: { status: "PENDING_DNS" } } as object },
+      });
     }
   } else if (section === "categories") {
     const prev = (tenant.policies ?? {}) as Record<string, unknown>;
