@@ -44,7 +44,9 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           </form>
         </div>
 
-        <p className="mt-6 text-center text-[12.5px] text-muted">Studio Nexis — the operating system for boutique studios.</p>
+        <p className="mt-6 text-center text-[13px] text-muted">
+          New here? <a href="/signup" className="font-bold text-brand hover:underline">Start your studio free</a>
+        </p>
       </div>
     </div>
   );

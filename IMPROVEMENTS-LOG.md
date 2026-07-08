@@ -133,3 +133,15 @@
 - Verified live: anon page 200 + classes listed, booking created a
   "website" client, duplicate + missing-contact guards fire, admin still
   redirects anonymously.
+
+## 2026-07-08 · V12 Signup + tenant provisioning + trials (live)
+- /signup (public): studio name, owner, email, password → transactionally
+  creates the tenant (unique slug with collision suffix -2, -3…), owner
+  account, 14-day trial → auto-login → lands on /welcome guided setup.
+- Trial/plan banner in the admin shell: days-left for trials, warnings for
+  past-due/suspended. Login ↔ signup cross-links.
+- Verified live: provisioned "Sunrise Yoga" end-to-end — TRIAL/starter row,
+  auto-login, tenant-scoped (sees zero clients; dev-studio data invisible),
+  its public booking page live at /book/sunrise-yoga immediately, slug
+  collision produced sunrise-yoga-2.
+- Stripe subscriptions: deferred to owner-assisted (needs API keys).
