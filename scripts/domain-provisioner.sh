@@ -40,12 +40,23 @@ while IFS='|' read -r TID DOMAIN STATUS; do
     continue
   fi
 
+  # Cover www.<domain> too when it also points at us
+  NAMES="$DOMAIN"
+  CERT_ARGS="-d $DOMAIN"
+  if [ "${DOMAIN#www.}" = "$DOMAIN" ]; then
+    WWW="www.$DOMAIN"
+    if [ "$(getent hosts "$WWW" | awk '{print $1}' | head -1)" = "$IP" ]; then
+      NAMES="$DOMAIN $WWW"
+      CERT_ARGS="-d $DOMAIN -d $WWW"
+    fi
+  fi
+
   CONF="$CONF_DIR/$PREFIX$DOMAIN.conf"
   if [ ! -f "$CONF" ]; then
     cat > "$CONF" <<EOF
 server {
     listen $IP:80;
-    server_name $DOMAIN;
+    server_name $NAMES;
     location / {
         proxy_pass http://$UPSTREAM;
         proxy_http_version 1.1;
@@ -64,8 +75,18 @@ EOF
     fi
   fi
 
+  NEED_CERT=0
   if [ ! -d "/etc/letsencrypt/live/$DOMAIN" ]; then
-    if ! certbot --nginx -d "$DOMAIN" --non-interactive --agree-tos -m haxkodi@gmail.com --redirect >> "$LOG" 2>&1; then
+    NEED_CERT=1
+  elif echo "$NAMES" | grep -q www. && ! openssl x509 -in "/etc/letsencrypt/live/$DOMAIN/cert.pem" -noout -text | grep -q "www.$DOMAIN"; then
+    # cert exists but www was pointed later — expand it, and make sure the
+    # vhost answers for www so the challenge can pass
+    NEED_CERT=1
+    sed -i "s/server_name $DOMAIN;/server_name $NAMES;/g" "$CONF"
+    reload_nginx
+  fi
+  if [ "$NEED_CERT" = "1" ]; then
+    if ! certbot --nginx $CERT_ARGS --expand --non-interactive --agree-tos -m haxkodi@gmail.com --redirect >> "$LOG" 2>&1; then
       set_status "$TID" "ERROR" "certificate issuance failed - is the domain reachable?"
       log "$DOMAIN: certbot failed"
       continue

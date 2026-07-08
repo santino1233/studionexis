@@ -457,3 +457,14 @@
   precedence (picked swatch wins, else custom colour).
 - Verified: bold+custom saved and rendered, swatch precedence correct,
   saved template returns checked on reload.
+
+## 2026-07-08 · REAL custom domain live: dealerleads.me (owner's dry run)
+- Owner pointed dealerleads.me at the server and saved it on test-studio;
+  the provisioner took it LIVE automatically with a real Let's Encrypt
+  cert — the full production path (Settings → DNS → auto-cert → serving
+  the studio site + booking) is now proven on a genuine external domain.
+- Hardened for www: provisioner now detects www.<domain> pointing at us,
+  covers it in server_name AND the certificate (expands existing certs),
+  and the resolver matches www↔bare either way. Verified: cert SANs =
+  dealerleads.me + www.dealerleads.me, both serve the studio over HTTPS.
+- Cron confirmed healthy (18 runs in the last hour).
