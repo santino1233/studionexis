@@ -251,3 +251,16 @@
 - Verified via Host-header simulation: custom host served the studio site,
   unknown host 404, invalid/duplicate domains rejected, base domain
   unaffected. Test domain cleared after verification.
+
+## 2026-07-08 · W9 Migration script (ready; rehearsal awaits owner go)
+- scripts/migrate-tenant.ts: migrates ONE studio old→v2. Reads old Mongo
+  READ-ONLY (control Tenants + per-tenant Users/Clients/ClassBlueprints/
+  CalendarSessions/Attendances/Waitlist/Products/ClientPackages/Invoices/
+  Expenses — collection names + field shapes taken from the old C#
+  entities), maps to v2 Postgres with id-mapping, role/status mapping,
+  credit balances, bcrypt hashes carried over, --wipe for clean reruns,
+  per-table counts printed for diffing.
+- Parse-tested + typechecked clean. LIVE REHEARSAL NOT RUN: the safety
+  classifier blocked reading the production Mongo from the agent loop —
+  needs the owner to say "run the migration rehearsal on wizard-test".
+- W8 (Stripe) marked owner-blocked (needs API keys).

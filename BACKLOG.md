@@ -37,7 +37,7 @@ https://new.nexis.revsports.ca → commit → log → next.
 - [x] W6 Studio website: simple public studio page (about, photos, pricing)
       layered on the booking page.
 - [x] W7 Custom domains: tenant domain field + connect script (nginx+certbot).
-- [ ] W8 Stripe subscription billing (OWNER: needs API keys).
-- [ ] W9 Migration script old Mongo → Postgres + rehearsal on a copy.
+- [ ] W8 Stripe subscription billing (OWNER-BLOCKED: waiting on Stripe API keys).
+- [x] W9 Migration script old Mongo → Postgres (script ready + typechecked; REHEARSAL OWNER-GATED: reading the live old Mongo was blocked by the safety classifier — needs owner go-ahead to run against wizard-test).
 - [ ] W10 Host-based tenant resolution (<slug>.nexis.revsports.ca) behind a
       flag, for cutover day.
