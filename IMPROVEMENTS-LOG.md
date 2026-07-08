@@ -381,3 +381,16 @@
   LIGHT default, explicit sidebar toggle persisted in localStorage,
   pre-paint script prevents flash. KPI washes, shadows and lines all
   have dark values.
+
+## 2026-07-08 · Wave 7: subdomain infrastructure + original-style portal
+- Infra: studio subdomains live TODAY (dev-studio./sunrise-yoga. via nginx
+  exact-name carve-outs; old wildcard untouched); admin hidden on
+  app.nexis.revsports.ca; tenant hosts expose ONLY the customer world
+  (admin paths redirect to the studio site). Custom domains share the
+  same alias map.
+- Portal rebuilt to the owner's screenshots of the original system (see
+  backlog S2 for the full page list). Members book with ONE CLICK (no
+  guest form), guests keep the inline form.
+- New commerce loop: customers reserve packages online → studio marks
+  paid at the desk (Invoices → Mark paid) → credits activate instantly.
+  Full loop verified across both hosts including credit auto-spend.

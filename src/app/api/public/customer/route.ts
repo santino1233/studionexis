@@ -56,6 +56,18 @@ export async function POST(req: Request) {
     return NextResponse.redirect(externalUrl(req, me), 303);
   }
 
+  if (mode === "profile") {
+    const session = await getCustomerSession();
+    if (!session || session.slug !== slug) return NextResponse.redirect(externalUrl(req, me), 303);
+    const name = String(form.get("name") ?? "").trim();
+    if (!name) return NextResponse.redirect(externalUrl(req, `/book/${slug}/account?error=missing`), 303);
+    await db.client.updateMany({
+      where: { id: session.clientId, tenantId: session.tenantId },
+      data: { name, phone: String(form.get("phone") ?? "").trim() || null },
+    });
+    return NextResponse.redirect(externalUrl(req, `/book/${slug}/account?ok=profile`), 303);
+  }
+
   if (mode === "password") {
     const session = await getCustomerSession();
     if (!session || session.slug !== slug) return NextResponse.redirect(externalUrl(req, me), 303);

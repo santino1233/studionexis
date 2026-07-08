@@ -62,7 +62,15 @@ export default async function InvoicesPage() {
                 <td className="px-[18px] py-[14px] text-[13px] capitalize text-ink-2">{o.method}</td>
                 <td className="px-[18px] py-[14px] text-[13.5px] font-bold text-ink">{fmt.format(Number(o.total))}</td>
                 <td className="px-[18px] py-[14px]">
-                  <span className={`rounded-full px-2.5 py-1 text-[11px] font-bold capitalize ${statusTone[o.status] ?? "bg-line-2 text-ink-2"}`}>{o.status.toLowerCase()}</span>
+                  <div className="flex items-center gap-2">
+                    <span className={`rounded-full px-2.5 py-1 text-[11px] font-bold capitalize ${statusTone[o.status] ?? "bg-line-2 text-ink-2"}`}>{o.status.toLowerCase()}</span>
+                    {o.status === "PENDING" && (
+                      <form method="post" action={`/api/orders/${o.id}`}>
+                        <input type="hidden" name="action" value="paid" />
+                        <button className="rounded-lg bg-green-wash px-2.5 py-1 text-[11px] font-bold text-green hover:brightness-95">Mark paid</button>
+                      </form>
+                    )}
+                  </div>
                 </td>
                 <td className="px-[18px] py-[14px] text-[13px] text-muted">
                   {o.createdAt.toLocaleDateString("en-US", { timeZone: tenant.timezone, month: "short", day: "numeric", year: "numeric" })}

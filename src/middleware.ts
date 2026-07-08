@@ -3,32 +3,51 @@ import { jwtVerify } from "jose";
 
 const PUBLIC = ["/login", "/api/login", "/signup", "/api/signup", "/book", "/s", "/api/public", "/api/cron", "/api/media"];
 
-const BASE_HOSTS = ["new.nexis.revsports.ca", "nexis.revsports.ca", "localhost", "127.0.0.1"];
+const BASE = "nexis.revsports.ca";
+// Hosts that serve the (hidden) admin app. Everything else on the base
+// domain is a tenant's customer world.
+const ADMIN_HOSTS = [`app.${BASE}`, `new.${BASE}`, "localhost", "127.0.0.1"];
+const RESERVED_SLUGS = ["app", "new", "www", "hq", "api", "mail", "admin"];
+
+// Pretty customer paths on a tenant host → internal slugged routes.
+const TENANT_ALIASES: Record<string, string> = {
+  "/": "/s/{slug}",
+  "/book": "/book/{slug}",
+  "/packages": "/book/{slug}/packages",
+  "/bookings": "/book/{slug}/bookings",
+  "/my-packages": "/book/{slug}/my-packages",
+  "/account": "/book/{slug}/account",
+  "/book/me": "/book/{slug}/account",
+};
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
-
   const host = (req.headers.get("x-forwarded-host") ?? req.headers.get("host") ?? "").split(":")[0].toLowerCase();
 
-  // Tenant subdomains (<slug>.nexis.revsports.ca) — cutover-day feature,
-  // behind TENANT_SUBDOMAINS=1. nginx keeps routing these to the old
-  // system until the flip, so this is inert in production until then.
-  const BASE = "nexis.revsports.ca";
-  if (process.env.TENANT_SUBDOMAINS === "1" && host.endsWith(`.${BASE}`)) {
+  // ── Tenant hosts: <slug>.BASE and custom domains ──────────────────────
+  let slugParam: string | null = null;
+  if (host.endsWith(`.${BASE}`) && !ADMIN_HOSTS.includes(host)) {
     const slug = host.slice(0, -(BASE.length + 1));
-    if (slug && !["new", "www", "hq"].includes(slug)) {
-      if (pathname === "/") return NextResponse.rewrite(new URL(`/s/${slug}`, req.url));
-      if (pathname === "/book") return NextResponse.rewrite(new URL(`/book/${slug}`, req.url));
-      if (pathname === "/book/me") return NextResponse.rewrite(new URL(`/book/${slug}/me`, req.url));
-    }
+    if (slug && !RESERVED_SLUGS.includes(slug)) slugParam = slug;
+  } else if (host && host !== BASE && !ADMIN_HOSTS.includes(host)) {
+    slugParam = `~${host}`; // custom domain
   }
 
-  // Custom domains: a studio's own domain serves their public website at "/".
-  if (host && !BASE_HOSTS.includes(host) && !host.endsWith(`.${BASE}`)) {
-    if (pathname === "/") {
-      return NextResponse.rewrite(new URL(`/s/~${host}`, req.url));
+  if (slugParam) {
+    const alias = TENANT_ALIASES[pathname];
+    if (alias) {
+      return NextResponse.rewrite(new URL(alias.replaceAll("{slug}", slugParam), req.url));
     }
+    // Already-slugged public routes and APIs pass through.
+    if (pathname.startsWith("/s/") || pathname.startsWith("/book/") || pathname.startsWith("/api/")) {
+      return NextResponse.next();
+    }
+    // Everything else (login, dashboard, any admin surface) does not exist
+    // on a customer domain — bounce to the studio site.
+    return NextResponse.redirect(new URL("/", req.url));
   }
+
+  // ── Admin hosts: normal auth-gated app ────────────────────────────────
   if (PUBLIC.some((p) => pathname === p || pathname.startsWith(p + "/"))) {
     return NextResponse.next();
   }
@@ -37,7 +56,6 @@ export async function middleware(req: NextRequest) {
   if (token) {
     try {
       const { payload } = await jwtVerify(token, new TextEncoder().encode(process.env.AUTH_SECRET!));
-      // Instructors only get the operational pages, not money or settings.
       const role = payload.role as string;
       const RESTRICTED = ["/pos", "/products", "/invoices", "/analytics", "/settings", "/billing", "/team", "/welcome", "/expenses"];
       if (role === "INSTRUCTOR" && RESTRICTED.some((p) => pathname === p || pathname.startsWith(p + "/"))) {
@@ -48,11 +66,9 @@ export async function middleware(req: NextRequest) {
       // fall through to login redirect
     }
   }
-  const login = new URL("/login", req.url);
-  return NextResponse.redirect(login);
+  return NextResponse.redirect(new URL("/login", req.url));
 }
 
 export const config = {
-  // Protect everything except Next internals and static assets.
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|webp|ico|css|js|woff2?)).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|studio/|.*\\.(?:svg|png|jpg|jpeg|webp|ico|css|js|woff2?)).*)"],
 };

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { rateLimit } from "@/lib/rate-limit";
 import { db } from "@/lib/db";
 import { tenantBySlugOrDomain } from "@/lib/public-tenant";
+import { getCustomerSession } from "@/lib/customer-auth";
 import { externalUrl } from "@/lib/request-url";
 import { sendEmail } from "@/lib/mailer";
 import { timeInTz } from "@/lib/tz";
@@ -13,17 +14,19 @@ export async function POST(req: Request) {
   const form = await req.formData();
   const slug = String(form.get("slug") ?? "");
   const sessionId = String(form.get("sessionId") ?? "");
+  const customer = await getCustomerSession();
   const name = String(form.get("name") ?? "").trim();
   const phone = String(form.get("phone") ?? "").trim();
   const email = String(form.get("email") ?? "").trim().toLowerCase();
   const back = `/book/${slug}`;
 
-  if (!name || (!phone && !email)) {
-    return NextResponse.redirect(externalUrl(req, `${back}?err=missing&s=${sessionId}`), 303);
-  }
-
   const tenant = await tenantBySlugOrDomain(slug);
   if (!tenant || tenant.status === "SUSPENDED") return NextResponse.redirect(externalUrl(req, "/login"), 303);
+
+  const isMember = customer && customer.tenantId === tenant.id;
+  if (!isMember && (!name || (!phone && !email))) {
+    return NextResponse.redirect(externalUrl(req, `${back}?err=missing&s=${sessionId}`), 303);
+  }
 
   try {
     const result = await db.$transaction(async (tx) => {
@@ -32,13 +35,15 @@ export async function POST(req: Request) {
         include: { _count: { select: { bookings: { where: { status: { in: ["BOOKED", "CHECKED_IN"] } } } } } },
       });
 
-      // Match an existing client by phone/email, else create one.
-      let client = await tx.client.findFirst({
-        where: {
-          tenantId: tenant.id,
-          OR: [...(phone ? [{ phone }] : []), ...(email ? [{ email }] : [])],
-        },
-      });
+      // Logged-in members book as themselves; guests match by contact.
+      let client = isMember
+        ? await tx.client.findFirst({ where: { id: customer!.clientId, tenantId: tenant.id } })
+        : await tx.client.findFirst({
+            where: {
+              tenantId: tenant.id,
+              OR: [...(phone ? [{ phone }] : []), ...(email ? [{ email }] : [])],
+            },
+          });
       if (!client) {
         client = await tx.client.create({
           data: { tenantId: tenant.id, name, phone: phone || null, email: email || null, channel: "website" },

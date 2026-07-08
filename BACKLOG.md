@@ -89,3 +89,23 @@ https://new.nexis.revsports.ca → commit → log → next.
       change-password (verified incl. wrong-current-password guard).
 - [x] O3 Dark mode: admin-scoped (public pages stay studio-branded light),
       light default, sidebar toggle persists, pre-paint script = no flash.
+
+## Wave 7 — subdomain architecture + original-style customer portal
+- [x] S1 Host architecture: <slug>.nexis.revsports.ca = customer world
+      (/, /book, /packages, /bookings, /my-packages, /account); admin
+      HIDDEN there (all admin paths bounce to studio site); admin lives on
+      app.nexis.revsports.ca; nginx exact-name carve-outs beat the old
+      wildcard so v2 subdomains work TODAY without touching the old stack.
+- [x] S2 Customer portal rebuilt to the original's design: tabbed nav,
+      Book-a-Class w/ 14-day strip + level filters + next-available-day
+      roll-forward + credits widget + one-click member booking; Buy
+      Packages w/ dark hero + package cards + reserve(pay-at-studio) flow;
+      My Bookings w/ Upcoming/Waitlist/Past tabs + REF numbers + payment
+      notes; My Packages w/ dark credit cards + usage tab; My Account w/
+      profile stats, editable personal info, security, logout.
+- [x] S3 Commerce loop: online reserve → PENDING order → staff "Mark paid"
+      in Invoices grants the credits → member one-click booking spends
+      them. Verified end-to-end across both hosts.
+- [ ] S4 At cutover: flip old wildcard vhost to v2 (middleware already
+      handles every subdomain); add per-studio "connect" for more studios
+      pre-cutover by appending server_names to v2-subdomains conf.
