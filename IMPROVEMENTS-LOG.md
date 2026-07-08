@@ -264,3 +264,12 @@
   classifier blocked reading the production Mongo from the agent loop —
   needs the owner to say "run the migration rehearsal on wizard-test".
 - W8 (Stripe) marked owner-blocked (needs API keys).
+
+## 2026-07-08 · W10 Tenant subdomains behind a flag — WAVE 2 COMPLETE
+- <slug>.nexis.revsports.ca now resolves on v2 (/, /book, /book/me →
+  that studio's site/booking/portal) behind TENANT_SUBDOMAINS=1. Inert in
+  prod: nginx still routes tenant subdomains to the old system until
+  cutover; verified via local Host-header simulation + old system intact.
+- Wave 2 done except the two owner-gated items: W8 Stripe keys, W9
+  migration rehearsal approval. Seeded Wave 3 (hardening): backups,
+  session edit/cancel, client edit, rate limits, error pages, mobile.

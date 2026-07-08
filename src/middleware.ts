@@ -8,9 +8,23 @@ const BASE_HOSTS = ["new.nexis.revsports.ca", "nexis.revsports.ca", "localhost",
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // Custom domains: a studio's own domain serves their public website at "/".
   const host = (req.headers.get("x-forwarded-host") ?? req.headers.get("host") ?? "").split(":")[0].toLowerCase();
-  if (host && !BASE_HOSTS.includes(host) && !host.endsWith(".nexis.revsports.ca")) {
+
+  // Tenant subdomains (<slug>.nexis.revsports.ca) — cutover-day feature,
+  // behind TENANT_SUBDOMAINS=1. nginx keeps routing these to the old
+  // system until the flip, so this is inert in production until then.
+  const BASE = "nexis.revsports.ca";
+  if (process.env.TENANT_SUBDOMAINS === "1" && host.endsWith(`.${BASE}`)) {
+    const slug = host.slice(0, -(BASE.length + 1));
+    if (slug && !["new", "www", "hq"].includes(slug)) {
+      if (pathname === "/") return NextResponse.rewrite(new URL(`/s/${slug}`, req.url));
+      if (pathname === "/book") return NextResponse.rewrite(new URL(`/book/${slug}`, req.url));
+      if (pathname === "/book/me") return NextResponse.rewrite(new URL(`/book/${slug}/me`, req.url));
+    }
+  }
+
+  // Custom domains: a studio's own domain serves their public website at "/".
+  if (host && !BASE_HOSTS.includes(host) && !host.endsWith(`.${BASE}`)) {
     if (pathname === "/") {
       return NextResponse.rewrite(new URL(`/s/~${host}`, req.url));
     }
