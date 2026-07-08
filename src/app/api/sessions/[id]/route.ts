@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { externalUrl } from "@/lib/request-url";
 import { utcFromZoned } from "@/lib/tz";
+import { computeSessionFinancials } from "@/lib/earnings";
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const auth = await getSession();
@@ -18,7 +19,15 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
   if (action === "block" || action === "unblock" || action === "complete") {
     const status = action === "block" ? "BLOCKED" : action === "complete" ? "COMPLETED" : "SCHEDULED";
-    await db.classSession.update({ where: { id }, data: { status } });
+    if (action === "complete") {
+      const fin = await computeSessionFinancials(id);
+      await db.classSession.update({
+        where: { id },
+        data: { status, revenue: fin.revenue.toFixed(2), instructorEarnings: fin.earnings.toFixed(2) },
+      });
+    } else {
+      await db.classSession.update({ where: { id }, data: { status } });
+    }
     return NextResponse.redirect(externalUrl(req, back ?? `/schedule/${id}`), 303);
   }
 

@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, Plus, X, UserCheck, Pencil } from "lucide-react";
 import { db } from "@/lib/db";
-import { getCurrentTenant } from "@/lib/tenant";
+import { getCurrentTenant, moneyFormatter } from "@/lib/tenant";
+import { computeSessionFinancials } from "@/lib/earnings";
 import { dayKeyInTz, timeInTz, weekDays } from "@/lib/tz";
 
 export const dynamic = "force-dynamic";
@@ -89,6 +90,12 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
   const hourLabel = (h: number) => new Date(Date.UTC(2000, 0, 1, h)).toLocaleTimeString("en-US", { hour: "numeric", timeZone: "UTC" });
 
   const selected = sel ? sessions.find((s) => s.id === sel) ?? null : null;
+  const fmt = moneyFormatter(tenant.currency);
+  const fin = selected
+    ? selected.status === "COMPLETED" && selected.revenue != null
+      ? { revenue: Number(selected.revenue), earnings: Number(selected.instructorEarnings ?? 0), rate: Number(selected.instructor?.commissionRate ?? 0), frozen: true }
+      : { ...(await computeSessionFinancials(selected.id)), frozen: false }
+    : null;
   const selActive = selected?.bookings.filter((b) => b.status === "BOOKED" || b.status === "CHECKED_IN") ?? [];
   const selWaitlist = selected?.bookings.filter((b) => b.status === "WAITLIST") ?? [];
   const legendTypes = [...new Map(sessions.map((s) => [s.classType.id, s.classType])).values()].slice(0, 8);
@@ -273,6 +280,18 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
               <div>👥 <b className="text-ink">{selActive.length} / {selected.capacity}</b> booked{selWaitlist.length > 0 ? ` · ${selWaitlist.length} waitlisted` : ""}</div>
               {selected.location && <div>📍 {selected.location}</div>}
             </div>
+            {fin && (
+              <div className="grid grid-cols-2 gap-3 border-b border-line-2 p-4">
+                <div className="rounded-xl bg-raised px-3 py-2.5">
+                  <div className="text-[9.5px] font-bold uppercase tracking-wider text-muted">Class revenue{fin.frozen ? "" : " (live)"}</div>
+                  <div className="font-display text-[17px] font-extrabold text-ink">{fmt.format(fin.revenue)}</div>
+                </div>
+                <div className="rounded-xl bg-raised px-3 py-2.5">
+                  <div className="text-[9.5px] font-bold uppercase tracking-wider text-muted">Instructor earns{fin.rate ? ` (${fin.rate}%)` : ""}</div>
+                  <div className="font-display text-[17px] font-extrabold" style={{ color: "var(--color-green)" }}>{fmt.format(fin.earnings)}</div>
+                </div>
+              </div>
+            )}
             <div className="flex flex-wrap gap-2 border-b border-line-2 p-4">
               {selected.status === "SCHEDULED" && (
                 <form method="post" action={`/api/sessions/${selected.id}`} className="w-full">

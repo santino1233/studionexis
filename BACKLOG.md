@@ -155,7 +155,7 @@ https://new.nexis.revsports.ca → commit → log → next.
 - [x] X3 Checkout mini-POS from the calendar rail: pay (cash/transfer/
       card), voucher code, add products, or use package credit → creates
       order tied to booking, marks CHECKED_IN, Unpaid label until then.
-- [ ] X4 Instructor earnings: User.commissionRate; session Details (rail)
+- [x] X4 Instructor earnings: User.commissionRate; session Details (rail)
       shows class revenue + instructor earning; Mark Completed freezes
       figures onto the session.
 - [ ] X5 Quick-add client (name+phone) inline in the roster panel.

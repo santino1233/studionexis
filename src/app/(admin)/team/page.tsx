@@ -39,7 +39,7 @@ export default async function TeamPage({ searchParams }: { searchParams: Promise
           <table className="w-full text-left">
             <thead>
               <tr className="border-b border-line-2">
-                {["Member", "Role", "Classes taught", "Status", ""].map((h, i) => (
+                {["Member", "Role", "Commission", "Classes taught", "Status", ""].map((h, i) => (
                   <th key={i} className="px-[18px] py-[13px] text-[10.5px] font-bold uppercase tracking-[0.08em] text-muted">{h}</th>
                 ))}
               </tr>
@@ -53,6 +53,18 @@ export default async function TeamPage({ searchParams }: { searchParams: Promise
                   </td>
                   <td className="px-[18px] py-[14px]">
                     <span className={`rounded-full px-2.5 py-1 text-[11px] font-bold capitalize ${roleTone[u.role] ?? "bg-line-2 text-ink-2"}`}>{u.role.toLowerCase()}</span>
+                  </td>
+                  <td className="px-[18px] py-[14px]">
+                    {isOwner ? (
+                      <form method="post" action={`/api/team/${u.id}`} className="flex items-center gap-1">
+                        <input type="hidden" name="action" value="rate" />
+                        <input name="rate" type="number" min={0} max={100} step="0.5" defaultValue={Number(u.commissionRate)} className="h-8 w-16 rounded-lg border border-line bg-surface px-2 text-center text-[12.5px] outline-none focus:border-brand" />
+                        <span className="text-[12px] text-muted">%</span>
+                        <button className="rounded-lg bg-line-2 px-2 py-1 text-[11px] font-bold text-ink-2 hover:text-ink">Set</button>
+                      </form>
+                    ) : (
+                      <span className="text-[13px] text-ink-2">{Number(u.commissionRate)}%</span>
+                    )}
                   </td>
                   <td className="px-[18px] py-[14px] text-[13px] text-ink-2">{u._count.sessionsTaught}</td>
                   <td className="px-[18px] py-[14px]">

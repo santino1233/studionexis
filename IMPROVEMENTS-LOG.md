@@ -522,3 +522,13 @@
 - Verified live: charge path (drop-in 28 + merch 5 − voucher 5 = 28.00
   card, stock −2, order linked) and credit path (credits 7→6), labels
   cleared, guards for no-credits/stock/voucher.
+
+## 2026-07-08 · X4 Instructor earnings & class revenue (live)
+- Team page: per-member commission % (owner sets inline).
+- Class revenue = drop-in checkout lines for the session + per-class
+  value of each package credit spent (pricePaid ÷ pack credits) — the
+  original's fractional-value model. Instructor earning = revenue × rate.
+- Calendar rail shows both LIVE for scheduled classes; "Mark class
+  completed" freezes the figures onto the session (payroll/analytics
+  ready). Verified: $28 drop-in + $15 credit value = $43.00 revenue,
+  $12.90 at Mia's 30%, frozen on complete, rendered in the rail.
