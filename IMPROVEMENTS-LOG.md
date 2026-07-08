@@ -82,3 +82,12 @@
   decrement stock. Guards: insufficient stock, package without a client.
 - Verified live: mixed cart charged correctly (45 + 2×2.50 = 50.00), Ava
   received 3 credits, stock 20→18, both guards rejected bad carts.
+
+## 2026-07-08 · V8 Products & Packages management + Invoices (live)
+- Products & Packages page: packages table (credits, validity, price,
+  units sold) + add form; retail products table with stock-level pills
+  (green/low-orange/out-red) + add form. New items appear in POS instantly.
+- Invoices page: every order — number, client link, line-item summary,
+  method, total, status pill, date in studio tz — plus a Collected total.
+- Verified live: added a package + product through the forms, both listed;
+  invoices shows order #1 (Ava, $50.00) from the V7 test sale.
