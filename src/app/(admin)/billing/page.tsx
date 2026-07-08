@@ -5,6 +5,7 @@ import { getCurrentTenant } from "@/lib/tenant";
 import { getSession } from "@/lib/auth";
 import { PLANS, ADDONS, ANNUAL_DISCOUNT, annualMonthly, getLimits, planUsage, getPlan } from "@/lib/plans";
 import { db } from "@/lib/db";
+import { estMessages } from "@/lib/sms";
 
 export const dynamic = "force-dynamic";
 
@@ -124,7 +125,7 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
 
       {/* SMS credits */}
       <Card className="mt-8">
-        <CardHeader eyebrow="Add-on · pay as you go" title="SMS credits" sub="Text confirmations & reminders to clients without email — carrier rate + 10% service fee per message" />
+        <CardHeader eyebrow="Add-on · pay as you go" title="SMS credits" sub="Text confirmations & reminders to clients without email — pay only for what you send" />
         {!smsPlan ? (
           <div className="p-6 text-[13.5px] text-muted">
             SMS is included on the <b className="text-ink">Growth</b> and <b className="text-ink">Scale</b> plans — upgrade above to unlock it.
@@ -141,17 +142,23 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
                 {smsPendingTopups.length > 0 && <div className="mt-1 text-[12px] font-bold text-brand">${smsPendingTopups.reduce((a, t) => a + Number(t.amount), 0).toFixed(2)} in top-ups awaiting payment</div>}
               </div>
               {isOwner && (
-                <div className="flex flex-wrap items-center gap-2">
-                  {[10, 50, 100].map((a) => (
-                    <form key={a} method="post" action="/api/sms/topup">
-                      <input type="hidden" name="amount" value={a} />
-                      <button className="rounded-xl border border-line-2 bg-surface px-5 py-2.5 text-[14px] font-bold text-ink hover:border-brand/50 hover:text-brand">${a}</button>
+                <div>
+                  <div className="flex flex-wrap items-stretch gap-2">
+                    {[10, 50, 100].map((a) => (
+                      <form key={a} method="post" action="/api/sms/topup">
+                        <input type="hidden" name="amount" value={a} />
+                        <button className="flex h-full flex-col items-center rounded-xl border border-line-2 bg-surface px-5 py-2.5 hover:border-brand/50">
+                          <span className="text-[15px] font-extrabold text-ink">${a}</span>
+                          <span className="text-[10.5px] font-semibold text-muted">≈ {estMessages(a).toLocaleString()} texts</span>
+                        </button>
+                      </form>
+                    ))}
+                    <form method="post" action="/api/sms/topup" className="flex items-center gap-1.5">
+                      <input name="amount" type="number" min={5} max={1000} step="1" placeholder="Custom" className="h-[46px] w-24 rounded-xl border border-line-2 bg-surface px-3 text-sm outline-none focus:border-brand" />
+                      <button className="rounded-xl bg-brand px-4 py-3 text-[13.5px] font-bold text-white hover:bg-brand-ink">Add</button>
                     </form>
-                  ))}
-                  <form method="post" action="/api/sms/topup" className="flex items-center gap-1.5">
-                    <input name="amount" type="number" min={5} max={1000} step="1" placeholder="Custom" className="h-[42px] w-24 rounded-xl border border-line-2 bg-surface px-3 text-sm outline-none focus:border-brand" />
-                    <button className="rounded-xl bg-brand px-4 py-2.5 text-[13.5px] font-bold text-white hover:bg-brand-ink">Add</button>
-                  </form>
+                  </div>
+                  <p className="mt-1.5 text-[11px] text-muted">≈ {estMessages(1)} texts per $1 · standard-length messages, US numbers</p>
                 </div>
               )}
             </div>

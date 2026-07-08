@@ -487,3 +487,11 @@
   send charged 0.0183 est; webhook (Price −0.0079) reconciled to 0.0087
   final (exact ×1.1) and refunded the difference; bad token 403; billing
   card renders balance 49.9913.
+
+## 2026-07-08 · SMS pricing presentation (owner request)
+- No fee/markup language anywhere customer-facing — the marked-up rate is
+  simply "the price" (markup stays internal in lib/sms.ts).
+- Top-up packs now show estimated message counts ($10 ≈ 1,095 texts,
+  $50 ≈ 5,476, $100 ≈ 10,952) + "≈ 109 texts per $1" hint for custom
+  amounts, derived from the effective SMS_RATE so estimates always track
+  the configured carrier estimate.

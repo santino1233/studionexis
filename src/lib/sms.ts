@@ -8,6 +8,11 @@ export const SMS_MARKUP = 1.1;
 // price when the status webhook arrives.
 const EST_PRICE = Number(process.env.TWILIO_EST_PRICE ?? 0.0083);
 
+// What a 1-segment message costs the studio (markup already inside —
+// customers only ever see this as "the price").
+export const SMS_RATE = EST_PRICE * SMS_MARKUP;
+export const estMessages = (usd: number) => Math.floor(usd / SMS_RATE);
+
 const r4 = (n: number) => Math.round(n * 10000) / 10000;
 export const segmentsFor = (body: string) => Math.max(1, Math.ceil(body.length / 153));
 
