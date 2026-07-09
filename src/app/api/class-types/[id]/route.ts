@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { externalUrl } from "@/lib/request-url";
 import { materialiseClassType, slotsOf, type RecurringSlot } from "@/lib/blueprint";
+import { classFormats, isValidDifficulty } from "@/lib/class-config";
 
 function csv(v: FormDataEntryValue | null): string[] {
   return String(v ?? "").split(",").map((s) => s.trim()).filter(Boolean);
@@ -24,13 +25,16 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   if (section === "general") {
     const name = String(form.get("name") ?? "").trim();
     if (!name) return NextResponse.redirect(externalUrl(req, `/class-types/${id}?error=name`), 303);
+    const tenant = await db.tenant.findUniqueOrThrow({ where: { id: auth.tenantId } });
+    const format = String(form.get("format") ?? "");
     await db.classType.update({
       where: { id },
       data: {
         name,
         description: String(form.get("description") ?? "").trim() || null,
         kind: form.get("kind") === "PRIVATE" ? "PRIVATE" : "GROUP",
-        difficulty: ["BEGINNER", "INTERMEDIATE", "ADVANCED", "ALL_LEVELS"].includes(String(form.get("difficulty"))) ? String(form.get("difficulty")) : "ALL_LEVELS",
+        format: format && (classFormats(tenant).includes(format) || format === ct.format) ? format : null,
+        difficulty: isValidDifficulty(tenant, String(form.get("difficulty"))) ? String(form.get("difficulty")) : ct.difficulty,
         color: String(form.get("color") ?? ct.color),
         durationMin: Math.max(10, Number(form.get("durationMin")) || ct.durationMin),
         capacity: Math.max(1, Number(form.get("capacity")) || ct.capacity),

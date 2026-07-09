@@ -7,10 +7,9 @@ import { getCustomerSession } from "@/lib/customer-auth";
 import { dayKeyInTz, timeInTz } from "@/lib/tz";
 import { moneyFormatter } from "@/lib/tenant";
 import { CustomerNav } from "@/components/customer/nav";
+import { difficultyLabel } from "@/lib/class-config";
 
 export const dynamic = "force-dynamic";
-
-const LEVELS = [["", "All Classes"], ["BEGINNER", "Beginner"], ["INTERMEDIATE", "Intermediate"], ["ADVANCED", "Advanced"]] as const;
 const diffTone: Record<string, string> = {
   BEGINNER: "bg-green-wash text-green",
   INTERMEDIATE: "bg-brand-wash text-brand",
@@ -97,7 +96,7 @@ export default async function BookPage({ params, searchParams }: {
             return (
               <Link
                 key={day}
-                href={`?d=${day}${lvl ? `&lvl=${lvl}` : ""}`}
+                href={`?d=${day}${lvl ? `&lvl=${encodeURIComponent(lvl)}` : ""}`}
                 className={`flex w-[72px] shrink-0 flex-col items-center rounded-2xl border px-2 py-3 transition-colors ${isSel ? "border-transparent text-white" : "border-line-2 bg-surface text-ink hover:border-line"}`}
                 style={isSel ? { background: brand } : undefined}
               >
@@ -112,12 +111,12 @@ export default async function BookPage({ params, searchParams }: {
           })}
         </div>
 
-        {/* Level filter */}
+        {/* Level filter — from the difficulties this studio actually uses */}
         <div className="mt-3 flex flex-wrap gap-2">
-          {LEVELS.map(([v, label]) => {
+          {[["", "All Classes"] as const, ...[...new Set(all.map((x) => x.classType.difficulty))].sort().map((v) => [v, difficultyLabel(v)] as const)].map(([v, label]) => {
             const active = (lvl ?? "") === v;
             return (
-              <Link key={v} href={`?d=${showingDay}${v ? `&lvl=${v}` : ""}`}
+              <Link key={v} href={`?d=${showingDay}${v ? `&lvl=${encodeURIComponent(v)}` : ""}`}
                 className={`rounded-full border px-4 py-2 text-[13px] font-semibold transition-colors ${active ? "border-transparent text-white" : "border-line-2 bg-surface text-ink-2 hover:text-ink"}`}
                 style={active ? { background: "#17181C" } : undefined}>
                 {label}
@@ -153,9 +152,10 @@ export default async function BookPage({ params, searchParams }: {
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <Link href={`/book/${slug}/class/${x.id}`} className="text-[16px] font-bold text-ink hover:underline">{x.classType.name}</Link>
-                      <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold capitalize ${diffTone[x.classType.difficulty] ?? "bg-line-2 text-ink-2"}`}>
-                        {x.classType.difficulty.toLowerCase().replace("_", " ")}
+                      <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold ${diffTone[x.classType.difficulty] ?? "bg-line-2 text-ink-2"}`}>
+                        {difficultyLabel(x.classType.difficulty)}
                       </span>
+                      {x.classType.format && <span className="rounded-full bg-line-2 px-2.5 py-0.5 text-[11px] font-bold text-ink-2">{x.classType.format}</span>}
                     </div>
                     <div className="mt-0.5 text-[12.5px] text-muted">
                       {x.instructor ? `${x.instructor.name} · ` : ""}{fmt.format(Number(x.classType.price))}{x.location ? ` · ${x.location}` : ""}

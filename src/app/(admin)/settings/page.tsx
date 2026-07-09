@@ -1,5 +1,6 @@
 import { Card, CardHeader } from "@/components/ui/card";
 import { getCurrentTenant } from "@/lib/tenant";
+import { classFormats, difficultyLevels } from "@/lib/class-config";
 
 export const dynamic = "force-dynamic";
 
@@ -249,6 +250,25 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
           <p className="text-[12px] text-muted">Comma-separated, up to 20. Leave blank to use the standard list.</p>
           <div className="flex justify-end">
             <button className="rounded-[10px] bg-brand px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-brand-ink">Save categories</button>
+          </div>
+        </form>
+      </Card>
+
+      <Card className="mt-5">
+        <CardHeader eyebrow="Classes" title="Class setup" sub="The formats and difficulty labels your blueprint editor offers" />
+        <form method="post" action="/api/settings" className="space-y-4 p-6">
+          <input type="hidden" name="section" value="classsetup" />
+          <div>
+            <label className={label}>Class formats</label>
+            <input name="classFormats" defaultValue={classFormats(tenant).join(", ")} placeholder="Mat, Reformer, Barre, Private" className={field} />
+          </div>
+          <div>
+            <label className={label}>Difficulty labels</label>
+            <input name="difficultyLevels" defaultValue={difficultyLevels(tenant).join(", ")} placeholder="Beginner, Intermediate, Advanced, All levels" className={field} />
+          </div>
+          <p className="text-[12px] text-muted">Comma-separated. Classes already using an old label keep it until you edit them.</p>
+          <div className="flex justify-end">
+            <button className="rounded-[10px] bg-brand px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-brand-ink">Save class setup</button>
           </div>
         </form>
       </Card>

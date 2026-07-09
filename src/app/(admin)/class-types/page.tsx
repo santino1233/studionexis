@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Card, CardHeader } from "@/components/ui/card";
 import { db } from "@/lib/db";
 import { getCurrentTenant, moneyFormatter } from "@/lib/tenant";
+import { classFormats, difficultyLevels, difficultyLabel } from "@/lib/class-config";
 
 export const dynamic = "force-dynamic";
 
@@ -62,12 +63,15 @@ export default async function ClassTypesPage() {
           <form method="post" action="/api/class-types" className="space-y-3.5 p-5">
             <input name="name" required placeholder="e.g. Reformer Flow" className={`${field} w-full`} />
             <textarea name="description" rows={2} placeholder="What clients should expect (shows on your booking page)" className="w-full rounded-[10px] border border-line bg-surface px-3 py-2.5 text-sm outline-none placeholder:text-muted focus:border-brand focus:ring-4 focus:ring-brand/10" />
-            <select name="difficulty" className={`${field} w-full`}>
-              <option value="ALL_LEVELS">All levels</option>
-              <option value="BEGINNER">Beginner</option>
-              <option value="INTERMEDIATE">Intermediate</option>
-              <option value="ADVANCED">Advanced</option>
-            </select>
+            <div className="grid grid-cols-2 gap-3">
+              <select name="difficulty" className={field}>
+                {difficultyLevels(tenant).map((v) => <option key={v} value={v}>{difficultyLabel(v)}</option>)}
+              </select>
+              <select name="format" className={field}>
+                <option value="">Format —</option>
+                {classFormats(tenant).map((f) => <option key={f} value={f}>{f}</option>)}
+              </select>
+            </div>
             <div className="grid grid-cols-2 gap-3">
               <select name="kind" className={field}>
                 <option value="GROUP">Group</option>

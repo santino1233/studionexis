@@ -170,5 +170,5 @@ https://new.nexis.revsports.ca → commit → log → next.
       equipment, instructor) + booking w/ QUANTITY and payment choice:
       credits / at-studio (STUDIO TOGGLE, default on until Stripe) /
       deposit + pay-in-full stubs that activate with Stripe.
-- [ ] X9 Settings: studio-configurable class formats + difficulty labels
+- [x] X9 Settings: studio-configurable class formats + difficulty labels
       (used by blueprint editor).

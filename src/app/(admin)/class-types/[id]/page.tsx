@@ -4,6 +4,7 @@ import { Card, CardHeader } from "@/components/ui/card";
 import { db } from "@/lib/db";
 import { getCurrentTenant, moneyFormatter } from "@/lib/tenant";
 import { slotsOf } from "@/lib/blueprint";
+import { classFormats, difficultyLevels, difficultyLabel } from "@/lib/class-config";
 import MuscleMap from "@/components/muscle-map/MuscleMap";
 
 export const dynamic = "force-dynamic";
@@ -85,21 +86,25 @@ export default async function ClassTypeEditor({
                 <label className={label}>Description</label>
                 <textarea name="description" rows={3} defaultValue={ct.description ?? ""} placeholder="What clients should expect" className="w-full rounded-[10px] border border-line bg-surface px-3 py-2.5 text-sm outline-none placeholder:text-muted focus:border-brand focus:ring-4 focus:ring-brand/10" />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className={label}>Format</label>
+                  <label className={label}>Booking type</label>
                   <select name="kind" defaultValue={ct.kind} className={field}>
                     <option value="GROUP">Group</option>
                     <option value="PRIVATE">Private</option>
                   </select>
                 </div>
                 <div>
+                  <label className={label}>Format</label>
+                  <select name="format" defaultValue={ct.format ?? ""} className={field}>
+                    <option value="">—</option>
+                    {[...new Set([...(ct.format ? [ct.format] : []), ...classFormats(tenant)])].map((f) => <option key={f} value={f}>{f}</option>)}
+                  </select>
+                </div>
+                <div>
                   <label className={label}>Difficulty</label>
                   <select name="difficulty" defaultValue={ct.difficulty} className={field}>
-                    <option value="ALL_LEVELS">All levels</option>
-                    <option value="BEGINNER">Beginner</option>
-                    <option value="INTERMEDIATE">Intermediate</option>
-                    <option value="ADVANCED">Advanced</option>
+                    {[...new Set([ct.difficulty, ...difficultyLevels(tenant)])].map((v) => <option key={v} value={v}>{difficultyLabel(v)}</option>)}
                   </select>
                 </div>
               </div>

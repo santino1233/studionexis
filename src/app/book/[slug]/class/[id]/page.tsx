@@ -7,6 +7,7 @@ import { getCustomerSession } from "@/lib/customer-auth";
 import { timeInTz } from "@/lib/tz";
 import { moneyFormatter } from "@/lib/tenant";
 import { CustomerNav } from "@/components/customer/nav";
+import { difficultyLabel } from "@/lib/class-config";
 import MuscleMap from "@/components/muscle-map/MuscleMap";
 
 export const dynamic = "force-dynamic";
@@ -80,7 +81,8 @@ export default async function ClassDetailPage({ params, searchParams }: {
           )}
           <div className="relative bg-gradient-to-t from-black/60 via-black/20 to-transparent px-6 py-10 sm:px-10 sm:py-14">
             <div className="flex flex-wrap items-center gap-2">
-              <span className={`rounded-full px-3 py-1 text-[11px] font-bold capitalize ${diffTone[ct.difficulty] ?? "bg-white/20 text-white"}`}>{ct.difficulty.toLowerCase().replace("_", " ")}</span>
+              <span className={`rounded-full px-3 py-1 text-[11px] font-bold ${diffTone[ct.difficulty] ?? "bg-white/20 text-white"}`}>{difficultyLabel(ct.difficulty)}</span>
+              {ct.format && <span className="rounded-full bg-white/20 px-3 py-1 text-[11px] font-bold text-white">{ct.format}</span>}
               <span className="rounded-full bg-white/20 px-3 py-1 text-[11px] font-bold capitalize text-white">{ct.kind.toLowerCase()}</span>
               {ct.tags.map((t) => <span key={t} className="rounded-full bg-white/20 px-3 py-1 text-[11px] font-bold text-white">{t}</span>)}
             </div>

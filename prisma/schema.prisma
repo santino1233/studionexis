@@ -113,7 +113,8 @@ model ClassType {
   tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   name        String
   description String?
-  difficulty  String    @default("ALL_LEVELS") // BEGINNER / INTERMEDIATE / ADVANCED / ALL_LEVELS
+  difficulty  String    @default("ALL_LEVELS") // legacy enum values or a studio-defined label
+  format      String? // studio-defined format label (Mat, Reformer, Barre …)
   color       String    @default("#F97316")
   kind        ClassKind @default(GROUP)
   durationMin Int       @default(60)

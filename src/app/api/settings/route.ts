@@ -87,6 +87,14 @@ export async function POST(req: Request) {
         },
       },
     });
+  } else if (section === "classsetup") {
+    const prev = (tenant.policies ?? {}) as Record<string, unknown>;
+    const csv = (v: FormDataEntryValue | null) =>
+      String(v ?? "").split(",").map((s) => s.trim()).filter(Boolean).slice(0, 20);
+    await db.tenant.update({
+      where: { id: tenant.id },
+      data: { policies: { ...prev, classFormats: csv(form.get("classFormats")), difficultyLevels: csv(form.get("difficultyLevels")) } },
+    });
   } else if (section === "policies") {
     // Merge into the JSON policies blob — never replace wholesale.
     const prev = (tenant.policies ?? {}) as Record<string, unknown>;

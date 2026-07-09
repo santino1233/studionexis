@@ -558,3 +558,9 @@
 - `Booking.qty`: capacity, rosters, checkout and earnings are now people-aware — schedule rail shows ×N chips, mini-POS charges drop-in × qty, credit checkout consumes qty credits, session revenue counts credit value × qty.
 - Studio policy toggle in Settings → Booking policies: "Allow pay at the studio" (default on). Off = credit/online only; guests get pointed at packages; API enforces it (err=pay).
 - Verified live on dev-studio: guest booked 3 spots at-studio (6→3 left), overbook qty=4 rejected, member paid 2 spots with credits (2→0, pack linked), 0-credit retry rejected, toggle off blocked at-studio + hid the option, checkout order = 3×$18.50=$55.50, rail revenue $85.50 = drop-ins + credit value.
+
+## 2026-07-09 — X9: Studio-configurable class formats + difficulty labels (video spec — Wave 10 complete)
+- Settings → "Class setup": two comma lists — class formats (Mat, Reformer, Barre, Private) and difficulty labels (Beginner…All levels) — stored in the policies blob; defaults apply when blank.
+- New `ClassType.format` label; blueprint editor and the add-class form now offer the studio's own formats and difficulty labels (legacy enum values still render nicely); API validates against the configured lists.
+- Public booking: difficulty filter is built from the labels the studio actually uses (URL-encoded for spaces), class cards and the class detail hero show format + difficulty chips.
+- Verified live on dev-studio: saved "Gentle/Moderate/Athletic/All levels" + "Tower" format, editor offered them, Reformer Flow saved as Reformer/Athletic, bogus difficulty rejected, public list filter + detail chips render the custom vocabulary.
