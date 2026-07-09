@@ -543,3 +543,11 @@
   (quick add)" (name+phone → creates walk-in client AND books them in
   one submit, plan limits enforced). Verified end-to-end.
 - Fix en route: missing checkClientLimit import caught by build gate.
+
+## 2026-07-09 — X7: Class blueprint editor (video spec)
+- New `/class-types/[id]` editor with General / Pricing / Schedule tabs; class names + "Edit blueprint" on the list link into it.
+- Ported the MuscleMapJS body map from the original SoulPilates repo: clickable front/back female SVGs (`src/components/muscle-map/`), selected muscle groups fill in brand color, saved as `ClassType.muscles`.
+- General tab: basics, benefits / good-for / tags / equipment (comma lists), per-class hero image upload (kind=classhero in media route).
+- Schedule tab: default instructor, valid from/until window, public-by-default toggle, recurring weekly slots (day → time, optional per-slot capacity override) and skip dates (holidays).
+- Materialiser (`lib/blueprint.ts`): idempotently creates sessions ~4 weeks ahead in the studio timezone honoring exceptions/validity window; runs on every schedule edit and daily via `/api/cron/materialise` (03:25 cron, token-gated).
+- Verified live on dev-studio: slot Wed 07:30 cap 6 → 4 sessions at 07:30 local / cap 6 / public / 45 min; re-add = no dupes, 0 new; exception date not recreated; muscles/benefits/pricing persisted; hero upload served 200; cron 200 with token, 401 without.

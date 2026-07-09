@@ -34,6 +34,24 @@ export async function POST(req: Request) {
     return NextResponse.redirect(externalUrl(req, "/settings?saved=1"), 303);
   }
 
+  // Class blueprint hero image (video spec X7)
+  if (kind === "classhero") {
+    const classTypeId = String(form.get("classTypeId") ?? "");
+    const ct = await db.classType.findFirst({ where: { id: classTypeId, tenantId: auth.tenantId } });
+    if (!ct) return NextResponse.redirect(externalUrl(req, "/class-types"), 303);
+    const f = form.getAll("photos").find((x): x is File => x instanceof File && x.size > 0);
+    const ext = f ? TYPES[f.type] : undefined;
+    if (!f || !ext || f.size > MAX_BYTES) {
+      return NextResponse.redirect(externalUrl(req, `/class-types/${classTypeId}?error=phototype`), 303);
+    }
+    await mkdir(path.join(ROOT, tenant.id), { recursive: true });
+    const name = `ct-${Date.now()}-${Math.random().toString(36).slice(2, 7)}${ext}`;
+    await writeFile(path.join(ROOT, tenant.id, name), Buffer.from(await f.arrayBuffer()));
+    if (ct.heroImage) await unlink(path.join(ROOT, tenant.id, path.basename(ct.heroImage))).catch(() => {});
+    await db.classType.update({ where: { id: ct.id }, data: { heroImage: `/api/media/${tenant.id}/${name}` } });
+    return NextResponse.redirect(externalUrl(req, `/class-types/${classTypeId}?saved=1`), 303);
+  }
+
   const files = form.getAll("photos").filter((f): f is File => f instanceof File && f.size > 0);
   if (files.length === 0) return NextResponse.redirect(externalUrl(req, "/settings?error=nophoto"), 303);
 

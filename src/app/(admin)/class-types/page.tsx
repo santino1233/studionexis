@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Card, CardHeader } from "@/components/ui/card";
 import { db } from "@/lib/db";
 import { getCurrentTenant, moneyFormatter } from "@/lib/tenant";
@@ -25,8 +26,8 @@ export default async function ClassTypesPage() {
           <table className="w-full text-left">
             <thead>
               <tr className="border-b border-line-2">
-                {["Class", "Type", "Duration", "Capacity", "Price", "Sessions"].map((h) => (
-                  <th key={h} className="px-[18px] py-[13px] text-[10.5px] font-bold uppercase tracking-[0.08em] text-muted">{h}</th>
+                {["Class", "Type", "Duration", "Capacity", "Price", "Sessions", ""].map((h, i) => (
+                  <th key={i} className="px-[18px] py-[13px] text-[10.5px] font-bold uppercase tracking-[0.08em] text-muted">{h}</th>
                 ))}
               </tr>
             </thead>
@@ -34,20 +35,23 @@ export default async function ClassTypesPage() {
               {types.map((t) => (
                 <tr key={t.id} className="border-b border-line-2 last:border-0 hover:bg-raised">
                   <td className="px-[18px] py-[15px]">
-                    <div className="flex items-center gap-2.5">
+                    <Link href={`/class-types/${t.id}`} className="flex items-center gap-2.5">
                       <span className="size-3 shrink-0 rounded-full" style={{ background: t.color }} />
-                      <span className="text-[14px] font-semibold text-ink">{t.name}</span>
-                    </div>
+                      <span className="text-[14px] font-semibold text-ink hover:text-brand">{t.name}</span>
+                    </Link>
                   </td>
                   <td className="px-[18px] py-[15px] text-[13px] capitalize text-ink-2">{t.kind.toLowerCase()}</td>
                   <td className="px-[18px] py-[15px] text-[13px] text-ink-2">{t.durationMin} min</td>
                   <td className="px-[18px] py-[15px] text-[13px] text-ink-2">{t.capacity}</td>
                   <td className="px-[18px] py-[15px] text-[13px] font-semibold text-ink">{fmt.format(Number(t.price))}</td>
                   <td className="px-[18px] py-[15px] text-[13px] text-muted">{t._count.sessions}</td>
+                  <td className="px-[18px] py-[15px] text-right">
+                    <Link href={`/class-types/${t.id}`} className="rounded-lg bg-line-2 px-3 py-1.5 text-[11.5px] font-bold text-ink-2 hover:text-ink">Edit blueprint</Link>
+                  </td>
                 </tr>
               ))}
               {types.length === 0 && (
-                <tr><td colSpan={6} className="px-[18px] py-12 text-center text-sm text-muted">No class types yet — add your first on the right.</td></tr>
+                <tr><td colSpan={7} className="px-[18px] py-12 text-center text-sm text-muted">No class types yet — add your first on the right.</td></tr>
               )}
             </tbody>
           </table>

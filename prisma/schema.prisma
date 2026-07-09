@@ -120,6 +120,19 @@ model ClassType {
   capacity    Int       @default(10)
   price       Decimal   @default(0) @db.Decimal(12, 2)
   active      Boolean   @default(true)
+  // Blueprint richness (video spec X7)
+  benefits    String[]  @default([])
+  goodFor     String[]  @default([])
+  tags        String[]  @default([])
+  equipment   String[]  @default([])
+  muscles     String[]  @default([]) // MuscleMap slugs, e.g. abs, obliques
+  heroImage   String?
+  defaultInstructorId String?
+  publicByDefault     Boolean  @default(true)
+  validFrom           DateTime?
+  validTo             DateTime?
+  recurringSlots      Json     @default("[]") // [{day:0-6(Mon=0), time:"HH:MM", cap?:n}]
+  exceptionDates      String[] @default([]) // "YYYY-MM-DD" skipped by the materialiser
 
   sessions ClassSession[]
 
