@@ -40,6 +40,12 @@ export async function middleware(req: NextRequest) {
       url.search = req.nextUrl.search; // keep ?preview=, ?d=, ?ok=…
       return NextResponse.rewrite(url);
     }
+    // Class detail pages keep their pretty /class/<id> path.
+    if (pathname.startsWith("/class/")) {
+      const url = new URL(`/book/${slugParam}${pathname}`, req.url);
+      url.search = req.nextUrl.search;
+      return NextResponse.rewrite(url);
+    }
     // Already-slugged public routes and APIs pass through.
     if (pathname.startsWith("/s/") || pathname.startsWith("/book/") || pathname.startsWith("/api/")) {
       return NextResponse.next();

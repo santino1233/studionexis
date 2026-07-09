@@ -20,24 +20,33 @@ export async function POST(req: Request) {
   const name = String(form.get("name") ?? "").trim();
   const phone = String(form.get("phone") ?? "").trim();
   const email = String(form.get("email") ?? "").trim().toLowerCase();
+  const qty = Math.min(5, Math.max(1, Number(form.get("qty")) || 1));
+  const pay = String(form.get("pay") ?? ""); // "" = legacy quick-book (auto), credit, at_studio, deposit, online
+  // Errors return to the page the form lives on; success lands on the schedule.
+  const fromRaw = String(form.get("from") ?? "");
+  const errBack = fromRaw.startsWith(`/book/${slug}`) && !fromRaw.startsWith("//") ? fromRaw : `/book/${slug}`;
   const back = `/book/${slug}`;
+  const fail = (code: string) =>
+    NextResponse.redirect(externalUrl(req, `${errBack}?err=${code}&s=${sessionId}`), 303);
 
   const tenant = await tenantBySlugOrDomain(slug);
   if (!tenant || tenant.status === "SUSPENDED") return NextResponse.redirect(externalUrl(req, "/login"), 303);
+  const payAtStudioOk = ((tenant.policies ?? {}) as { payAtStudio?: boolean }).payAtStudio !== false;
 
   const isMember = customer && customer.tenantId === tenant.id;
-  if (!isMember && (!name || (!phone && !email))) {
-    return NextResponse.redirect(externalUrl(req, `${back}?err=missing&s=${sessionId}`), 303);
-  }
+  if (!isMember && (!name || (!phone && !email))) return fail("missing");
+  if (pay === "deposit" || pay === "online") return fail("online"); // stubs — activate with Stripe
+  if (pay === "credit" && !isMember) return fail("credits");
+  if (pay === "at_studio" && !payAtStudioOk) return fail("pay");
 
   const bookingLimit = await checkBookingLimit(tenant);
-  if (!bookingLimit.ok) return NextResponse.redirect(externalUrl(req, `${back}?err=full`), 303);
+  if (!bookingLimit.ok) return NextResponse.redirect(externalUrl(req, `${errBack}?err=full`), 303);
 
   try {
     const result = await db.$transaction(async (tx) => {
       const session = await tx.classSession.findFirstOrThrow({
         where: { id: sessionId, tenantId: tenant.id, status: "SCHEDULED", isPublic: true, startsAt: { gt: new Date() } },
-        include: { _count: { select: { bookings: { where: { status: { in: ["BOOKED", "CHECKED_IN"] } } } } } },
+        include: { bookings: { where: { status: { in: ["BOOKED", "CHECKED_IN"] } }, select: { qty: true } } },
       });
 
       // Logged-in members book as themselves; guests match by contact.
@@ -57,22 +66,44 @@ export async function POST(req: Request) {
         });
       }
 
-      const full = session._count.bookings >= session.capacity;
-      const pkg = await tx.clientPackage.findFirst({
-        where: { tenantId: tenant.id, clientId: client.id, creditsLeft: { gt: 0 }, frozen: false, expiresAt: { gt: new Date() } },
-        orderBy: { expiresAt: "asc" },
-      });
-      const usePkg = !full && !!pkg;
-      if (usePkg) await tx.clientPackage.update({ where: { id: pkg!.id }, data: { creditsLeft: { decrement: 1 } } });
+      const taken = session.bookings.reduce((n, b) => n + b.qty, 0);
+      const spotsLeft = session.capacity - taken;
+      const full = spotsLeft <= 0;
+      if (!full && qty > spotsLeft) throw new Error("spots"); // room, but not for the whole party
+
+      // Settle payment: explicit choice from the class page, or the legacy
+      // quick-book auto pick (credit if they have one, else pay at studio).
+      let usePkgId: string | null = null;
+      let method: string | null = null;
+      if (!full) {
+        if (pay === "credit" || pay === "") {
+          const pkg = await tx.clientPackage.findFirst({
+            where: { tenantId: tenant.id, clientId: client.id, creditsLeft: { gte: qty }, frozen: false, expiresAt: { gt: new Date() } },
+            orderBy: { expiresAt: "asc" },
+          });
+          if (pkg) {
+            await tx.clientPackage.update({ where: { id: pkg.id }, data: { creditsLeft: { decrement: qty } } });
+            usePkgId = pkg.id;
+            method = "package_credit";
+          } else if (pay === "credit") {
+            throw new Error("credits");
+          }
+        }
+        if (!method) {
+          if (!payAtStudioOk) throw new Error("pay");
+          method = "at_studio";
+        }
+      }
 
       await tx.booking.create({
         data: {
           tenantId: tenant.id,
           sessionId,
           clientId: client.id,
+          qty: full ? 1 : qty, // waitlist holds one place
           status: full ? "WAITLIST" : "BOOKED",
-          paymentMethod: full ? null : usePkg ? "package_credit" : "at_studio",
-          clientPackageId: usePkg ? pkg!.id : null,
+          paymentMethod: method,
+          clientPackageId: usePkgId,
         },
       });
       return { outcome: full ? "waitlist" : "booked", client, session };
@@ -99,8 +130,9 @@ export async function POST(req: Request) {
     }
     return NextResponse.redirect(externalUrl(req, `${back}?ok=${result.outcome}`), 303);
   } catch (e) {
+    const known = ["spots", "credits", "pay"].find((k) => e instanceof Error && e.message === k);
     const dup = e instanceof Error && e.message.includes("Unique constraint");
     const full = e instanceof Error && e.message === "studio-full";
-    return NextResponse.redirect(externalUrl(req, `${back}?err=${dup ? "already" : full ? "full" : "failed"}&s=${sessionId}`), 303);
+    return fail(known ?? (dup ? "already" : full ? "full" : "failed"));
   }
 }

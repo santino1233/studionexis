@@ -98,6 +98,7 @@ export async function POST(req: Request) {
           cancelWindowGroupHours: Math.max(0, Number(form.get("cancelWindowGroupHours") ?? 3) || 0),
           cancelWindowPrivateHours: Math.max(0, Number(form.get("cancelWindowPrivateHours") ?? 3) || 0),
           waitlistEnabled: form.get("waitlistEnabled") === "on",
+          payAtStudio: form.get("payAtStudio") === "on",
         },
       },
     });

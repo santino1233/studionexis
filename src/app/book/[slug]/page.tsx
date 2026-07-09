@@ -39,7 +39,7 @@ export default async function BookPage({ params, searchParams }: {
 
   const all = await db.classSession.findMany({
     where: { tenantId: tenant.id, status: "SCHEDULED", isPublic: true, startsAt: { gt: new Date(), lt: new Date(Date.now() + 15 * 86400_000) } },
-    include: { classType: true, instructor: true, _count: { select: { bookings: { where: { status: { in: ["BOOKED", "CHECKED_IN"] } } } } } },
+    include: { classType: true, instructor: true, bookings: { where: { status: { in: ["BOOKED", "CHECKED_IN"] } }, select: { qty: true } } },
     orderBy: { startsAt: "asc" },
   });
   const forDay = (day: string) => all.filter((x) => dayKeyInTz(x.startsAt, tenant.timezone) === day && (!lvl || x.classType.difficulty === lvl));
@@ -128,7 +128,7 @@ export default async function BookPage({ params, searchParams }: {
 
         {ok === "booked" && <div className="mt-5 rounded-2xl border border-green/20 bg-green-wash px-5 py-4 text-[14px] font-bold text-green">You&apos;re booked! See you in class. 🎉</div>}
         {ok === "waitlist" && <div className="mt-5 rounded-2xl border px-5 py-4 text-[14px] font-bold" style={{ borderColor: `${brand}33`, background: `${brand}14`, color: brand }}>That class is full — you&apos;re on the waitlist.</div>}
-        {err && <div className="mt-5 rounded-2xl border border-rose/20 bg-rose/5 px-5 py-4 text-[14px] font-medium text-rose">{err === "already" ? "You're already on that class." : err === "missing" ? "Please give your name and a phone or email." : err === "full" ? "The studio can't take online bookings right now — please contact them directly." : "That didn't work — try again."}</div>}
+        {err && <div className="mt-5 rounded-2xl border border-rose/20 bg-rose/5 px-5 py-4 text-[14px] font-medium text-rose">{err === "already" ? "You're already on that class." : err === "missing" ? "Please give your name and a phone or email." : err === "full" ? "The studio can't take online bookings right now — please contact them directly." : err === "pay" ? "This studio books with class credits — grab a package first." : "That didn't work — try again."}</div>}
         {rolled && (
           <div className="mt-5 rounded-2xl px-5 py-3.5 text-[13.5px] font-semibold" style={{ background: `${brand}14`, color: brand }}>
             🌿 No more classes today — here&apos;s the next available day.
@@ -141,7 +141,7 @@ export default async function BookPage({ params, searchParams }: {
 
         <div className="space-y-3">
           {list.map((x) => {
-            const spotsLeft = x.capacity - x._count.bookings;
+            const spotsLeft = x.capacity - x.bookings.reduce((n, b) => n + b.qty, 0);
             const open = errSession === x.id;
             return (
               <div key={x.id} className="overflow-hidden rounded-2xl border border-line-2 bg-surface shadow-[var(--shadow-card)]">
@@ -152,7 +152,7 @@ export default async function BookPage({ params, searchParams }: {
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-[16px] font-bold text-ink">{x.classType.name}</span>
+                      <Link href={`/book/${slug}/class/${x.id}`} className="text-[16px] font-bold text-ink hover:underline">{x.classType.name}</Link>
                       <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold capitalize ${diffTone[x.classType.difficulty] ?? "bg-line-2 text-ink-2"}`}>
                         {x.classType.difficulty.toLowerCase().replace("_", " ")}
                       </span>
@@ -161,6 +161,7 @@ export default async function BookPage({ params, searchParams }: {
                       {x.instructor ? `${x.instructor.name} · ` : ""}{fmt.format(Number(x.classType.price))}{x.location ? ` · ${x.location}` : ""}
                     </div>
                     {x.classType.description && <p className="mt-1 max-w-[520px] text-[12px] leading-relaxed text-muted">{x.classType.description}</p>}
+                    <Link href={`/book/${slug}/class/${x.id}`} className="mt-1 inline-block text-[12px] font-bold hover:underline" style={{ color: brand }}>Class details →</Link>
                   </div>
                   <div className="flex flex-col items-end gap-2">
                     <span className={`text-[12px] font-bold ${spotsLeft > 0 ? (spotsLeft <= 2 ? "text-brand" : "text-green") : "text-muted"}`}>

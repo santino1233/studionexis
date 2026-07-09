@@ -25,7 +25,7 @@ export async function computeSessionFinancials(sessionId: string) {
       const dropin = b.order.items.find((i) => i.kind === "dropin" && i.refId === sessionId);
       if (dropin) revenue += Number(dropin.unitPrice) * dropin.qty;
     } else if (b.clientPackage) {
-      revenue += Number(b.clientPackage.pricePaid) / Math.max(1, b.clientPackage.package.credits);
+      revenue += (Number(b.clientPackage.pricePaid) / Math.max(1, b.clientPackage.package.credits)) * b.qty;
     }
   }
   revenue = Math.round(revenue * 100) / 100;

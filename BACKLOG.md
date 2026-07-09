@@ -166,7 +166,7 @@ https://new.nexis.revsports.ca → commit → log → next.
       tags; Schedule tab: default instructor, valid from/to, public-by-
       default, recurring slots (day→times, per-slot cap), exception
       dates; auto-materialise sessions 4 weeks ahead (idempotent cron).
-- [ ] X8 Public class detail page (hero, tags, description, muscle map,
+- [x] X8 Public class detail page (hero, tags, description, muscle map,
       equipment, instructor) + booking w/ QUANTITY and payment choice:
       credits / at-studio (STUDIO TOGGLE, default on until Stripe) /
       deposit + pay-in-full stubs that activate with Stripe.

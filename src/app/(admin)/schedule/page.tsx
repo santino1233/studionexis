@@ -126,6 +126,8 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
   const selected = sel ? sessions.find((s) => s.id === sel) ?? null : null;
   const selActive = selected?.bookings.filter((b) => b.status === "BOOKED" || b.status === "CHECKED_IN") ?? [];
   const selWaitlist = selected?.bookings.filter((b) => b.status === "WAITLIST") ?? [];
+  const selActiveQty = selActive.reduce((n, b) => n + b.qty, 0);
+  const selWaitQty = selWaitlist.reduce((n, b) => n + b.qty, 0);
   const legendTypes = [...new Map(sessions.map((s) => [s.classType.id, s.classType])).values()].slice(0, 8);
   const fin = selected
     ? selected.status === "COMPLETED" && selected.revenue != null
@@ -145,7 +147,7 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
   const blockStyle = (s: (typeof sessions)[number]) => {
     const blocked = s.status === "BLOCKED";
     const completed = s.status === "COMPLETED";
-    const active = s.bookings.filter((b) => b.status !== "WAITLIST").length;
+    const active = s.bookings.filter((b) => b.status !== "WAITLIST").reduce((n, b) => n + b.qty, 0);
     const tone = colorBy === "status"
       ? blocked ? "#E5484D" : completed ? "#22A565" : active >= s.capacity ? "#F97316" : "#3B82F6"
       : s.classType.color;
@@ -347,7 +349,7 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
                 <div className="mt-2 flex flex-wrap gap-1.5">
                   <span className="rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white" style={{ background: selected.classType.color }}>{selected.classType.kind}</span>
                   {selected.classType.difficulty !== "ALL_LEVELS" && <span className="rounded-full bg-line-2 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-ink-2">{selected.classType.difficulty}</span>}
-                  {selActive.length >= selected.capacity && <span className="rounded-full bg-brand-wash px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-brand">Full</span>}
+                  {selActiveQty >= selected.capacity && <span className="rounded-full bg-brand-wash px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-brand">Full</span>}
                   {selected.status === "BLOCKED" && <span className="rounded-full bg-rose/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-rose">Blocked</span>}
                   {selected.status === "COMPLETED" && <span className="rounded-full bg-green-wash px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-green">Completed</span>}
                   {!selected.isPublic && <span className="rounded-full bg-line-2 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-ink-2">Hidden from public</span>}
@@ -359,7 +361,7 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
               <div>📅 {selected.startsAt.toLocaleDateString("en-US", { timeZone: tenant.timezone, weekday: "short", month: "short", day: "numeric", year: "numeric" })}</div>
               <div>🕐 {timeInTz(selected.startsAt, tenant.timezone)} – {timeInTz(selected.endsAt, tenant.timezone)}</div>
               {selected.instructor && <div>👤 {selected.instructor.name}</div>}
-              <div>👥 <b className="text-ink">{selActive.length} / {selected.capacity}</b> booked{selWaitlist.length > 0 ? ` · ${selWaitlist.length} waitlisted` : ""}</div>
+              <div>👥 <b className="text-ink">{selActiveQty} / {selected.capacity}</b> booked{selWaitQty > 0 ? ` · ${selWaitQty} waitlisted` : ""}</div>
               {selected.location && <div>📍 {selected.location}</div>}
               {selected.note && <div>📝 {selected.note}</div>}
             </div>
@@ -400,12 +402,12 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
               )}
             </div>
             <div className="p-4">
-              <div className="mb-2 text-[11px] font-bold uppercase tracking-[0.1em] text-muted">Attendees ({selActive.length})</div>
+              <div className="mb-2 text-[11px] font-bold uppercase tracking-[0.1em] text-muted">Attendees ({selActiveQty})</div>
               <ul className="space-y-2">
                 {selected.bookings.map((b) => (
                   <li key={b.id} className="rounded-xl bg-raised px-3 py-2.5">
                     <div className="flex items-center justify-between">
-                      <span className="text-[13px] font-bold text-ink">{b.client.name}</span>
+                      <span className="text-[13px] font-bold text-ink">{b.client.name}{b.qty > 1 && <span className="ml-1.5 rounded-full bg-line-2 px-1.5 py-0.5 text-[10px] font-bold text-ink-2">×{b.qty}</span>}</span>
                       <span className="flex items-center gap-1.5">
                         {b.paymentMethod === "at_studio" && !b.orderId && <span className="text-[10px] font-bold uppercase text-rose">Unpaid</span>}
                         <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${statusTone[b.status]}`}>{statusLabel[b.status]}</span>

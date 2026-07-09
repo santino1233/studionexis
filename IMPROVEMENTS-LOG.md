@@ -551,3 +551,10 @@
 - Schedule tab: default instructor, valid from/until window, public-by-default toggle, recurring weekly slots (day → time, optional per-slot capacity override) and skip dates (holidays).
 - Materialiser (`lib/blueprint.ts`): idempotently creates sessions ~4 weeks ahead in the studio timezone honoring exceptions/validity window; runs on every schedule edit and daily via `/api/cron/materialise` (03:25 cron, token-gated).
 - Verified live on dev-studio: slot Wed 07:30 cap 6 → 4 sessions at 07:30 local / cap 6 / public / 45 min; re-add = no dupes, 0 new; exception date not recreated; muscles/benefits/pricing persisted; hero upload served 200; cron 200 with token, 401 without.
+
+## 2026-07-09 — X8: Public class detail page + booking with quantity & payment choice (video spec)
+- New public page: `/class/<sessionId>` on studio domains (middleware rewrite) → hero image (or class-color gradient), difficulty/format/tags chips, date-time-instructor-location strip, description, benefits, good-for, read-only muscle map, equipment.
+- Booking card: price/person, live spots left, "How many people?" (1–5, capped at spots), payment choice — package credits (members, shows balance), pay at the studio, plus disabled "pay online" / "deposit" stubs that light up with Stripe.
+- `Booking.qty`: capacity, rosters, checkout and earnings are now people-aware — schedule rail shows ×N chips, mini-POS charges drop-in × qty, credit checkout consumes qty credits, session revenue counts credit value × qty.
+- Studio policy toggle in Settings → Booking policies: "Allow pay at the studio" (default on). Off = credit/online only; guests get pointed at packages; API enforces it (err=pay).
+- Verified live on dev-studio: guest booked 3 spots at-studio (6→3 left), overbook qty=4 rejected, member paid 2 spots with credits (2→0, pack linked), 0-credit retry rejected, toggle off blocked at-studio + hid the option, checkout order = 3×$18.50=$55.50, rail revenue $85.50 = drop-ins + credit value.

@@ -25,7 +25,7 @@ export default async function ClassesPage({ searchParams }: { searchParams: Prom
     include: {
       classType: true,
       instructor: true,
-      _count: { select: { bookings: { where: { status: { in: ["BOOKED", "CHECKED_IN"] } } } } },
+      bookings: { where: { status: { in: ["BOOKED", "CHECKED_IN"] } }, select: { qty: true } },
     },
     orderBy: { startsAt: past ? "desc" : "asc" },
     take: 100,
@@ -70,7 +70,7 @@ export default async function ClassesPage({ searchParams }: { searchParams: Prom
                   {s.startsAt.toLocaleDateString("en-US", { timeZone: tenant.timezone, weekday: "short", month: "short", day: "numeric" })} · {timeInTz(s.startsAt, tenant.timezone)}
                 </td>
                 <td className="px-[18px] py-[14px] text-[13.5px] text-ink-2">{s.instructor?.name ?? "—"}</td>
-                <td className="px-[18px] py-[14px] text-[13.5px] font-semibold text-ink">{s._count.bookings}/{s.capacity}</td>
+                <td className="px-[18px] py-[14px] text-[13.5px] font-semibold text-ink">{s.bookings.reduce((n, b) => n + b.qty, 0)}/{s.capacity}</td>
                 <td className="px-[18px] py-[14px]">
                   <span className={`rounded-full px-2.5 py-1 text-[11px] font-bold capitalize ${statusTone[s.status] ?? "bg-line-2 text-ink-2"}`}>{s.status.toLowerCase()}</span>
                 </td>

@@ -39,9 +39,9 @@ export async function POST(req: Request) {
     await db.$transaction(async (tx) => {
       const session = await tx.classSession.findFirstOrThrow({
         where: { id: sessionId, tenantId: auth.tenantId },
-        include: { _count: { select: { bookings: { where: { status: { in: ["BOOKED", "CHECKED_IN"] } } } } } },
+        include: { bookings: { where: { status: { in: ["BOOKED", "CHECKED_IN"] } }, select: { qty: true } } },
       });
-      const full = session._count.bookings >= session.capacity;
+      const full = session.bookings.reduce((n, b) => n + b.qty, 0) >= session.capacity;
 
       // Prefer paying with an active package credit.
       const pkg = await tx.clientPackage.findFirst({

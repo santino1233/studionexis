@@ -28,13 +28,13 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     await db.$transaction(async (tx) => {
       if (mode === "credit") {
         const pkg = await tx.clientPackage.findFirst({
-          where: { tenantId: auth.tenantId, clientId: booking.clientId, creditsLeft: { gt: 0 }, frozen: false, expiresAt: { gt: new Date() } },
+          where: { tenantId: auth.tenantId, clientId: booking.clientId, creditsLeft: { gte: booking.qty }, frozen: false, expiresAt: { gt: new Date() } },
           orderBy: { expiresAt: "asc" },
         });
         if (!pkg) throw new Error("no-credits");
-        // Don't double-spend if the booking already consumed a credit.
+        // Don't double-spend if the booking already consumed its credits.
         if (!booking.clientPackageId) {
-          await tx.clientPackage.update({ where: { id: pkg.id }, data: { creditsLeft: { decrement: 1 } } });
+          await tx.clientPackage.update({ where: { id: pkg.id }, data: { creditsLeft: { decrement: booking.qty } } });
         }
         await tx.booking.update({
           where: { id },
@@ -43,8 +43,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       } else {
         const method = ["cash", "transfer", "card"].includes(String(form.get("method"))) ? String(form.get("method")) : "cash";
         const lines: Array<{ kind: string; refId: string | null; productId: string | null; label: string; qty: number; unitPrice: number }> = [];
-        let total = Number(booking.session.classType.price);
-        lines.push({ kind: "dropin", refId: booking.sessionId, productId: null, label: `${booking.session.classType.name} (drop-in)`, qty: 1, unitPrice: total });
+        const dropinPrice = Number(booking.session.classType.price);
+        let total = dropinPrice * booking.qty;
+        lines.push({ kind: "dropin", refId: booking.sessionId, productId: null, label: `${booking.session.classType.name} (drop-in)`, qty: booking.qty, unitPrice: dropinPrice });
 
         // Optional merch lines: fields named product_<id> hold quantities.
         for (const [key, val] of form.entries()) {

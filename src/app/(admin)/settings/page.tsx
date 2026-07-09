@@ -16,7 +16,7 @@ const label = "mb-1.5 block text-[12.5px] font-semibold text-ink-2";
 export default async function SettingsPage({ searchParams }: { searchParams: Promise<{ saved?: string; error?: string }> }) {
   const { saved, error } = await searchParams;
   const tenant = await getCurrentTenant();
-  const pol = (tenant.policies ?? {}) as { cancelWindowGroupHours?: number; cancelWindowPrivateHours?: number; waitlistEnabled?: boolean };
+  const pol = (tenant.policies ?? {}) as { cancelWindowGroupHours?: number; cancelWindowPrivateHours?: number; waitlistEnabled?: boolean; payAtStudio?: boolean };
 
   return (
     <div className="mx-auto max-w-[760px]">
@@ -271,6 +271,10 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
           <label className="flex items-center gap-2.5 text-[13.5px] font-medium text-ink">
             <input name="waitlistEnabled" type="checkbox" defaultChecked={pol.waitlistEnabled ?? true} className="size-4 accent-[#F97316]" />
             Waitlist full classes automatically
+          </label>
+          <label className="flex items-start gap-2.5 text-[13.5px] font-medium text-ink">
+            <input name="payAtStudio" type="checkbox" defaultChecked={pol.payAtStudio ?? true} className="mt-0.5 size-4 accent-[#F97316]" />
+            <span>Allow &ldquo;pay at the studio&rdquo; bookings<span className="block text-[12px] font-normal text-muted">Turn off to require credits or online payment up front — cuts down no-shows.</span></span>
           </label>
           <div className="flex justify-end">
             <button className="rounded-[10px] bg-brand px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-brand-ink">Save policies</button>

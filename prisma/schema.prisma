@@ -187,6 +187,7 @@ model Booking {
   clientId        String
   client          Client         @relation(fields: [clientId], references: [id], onDelete: Cascade)
   status          BookingStatus  @default(BOOKED)
+  qty             Int            @default(1) // spots taken (client + guests)
   paymentMethod   String? // package_credit / online / at_studio
   clientPackageId String?
   clientPackage   ClientPackage? @relation(fields: [clientPackageId], references: [id])
