@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { externalUrl } from "@/lib/request-url";
-import { checkBookingLimit } from "@/lib/plans";
+import { checkBookingLimit, checkClientLimit } from "@/lib/plans";
 
 export async function POST(req: Request) {
   const auth = await getSession();
@@ -10,8 +10,26 @@ export async function POST(req: Request) {
 
   const form = await req.formData();
   const sessionId = String(form.get("sessionId") ?? "");
-  const clientId = String(form.get("clientId") ?? "");
-  const back = `/schedule/${sessionId}`;
+  let clientId = String(form.get("clientId") ?? "");
+  const backRaw = String(form.get("back") ?? "");
+  const back = backRaw.startsWith("/") && !backRaw.startsWith("//") ? backRaw : `/schedule/${sessionId}`;
+
+  // Quick-add: create the client on the spot (video spec X5)
+  const quickName = String(form.get("quickName") ?? "").trim();
+  if (!clientId && quickName) {
+    const tenant = await db.tenant.findUniqueOrThrow({ where: { id: auth.tenantId } });
+    const limit = await checkClientLimit(tenant);
+    if (!limit.ok) return NextResponse.redirect(externalUrl(req, `${back}?error=limit`), 303);
+    const created = await db.client.create({
+      data: {
+        tenantId: auth.tenantId,
+        name: quickName,
+        phone: String(form.get("quickPhone") ?? "").trim() || null,
+        channel: "walk-in",
+      },
+    });
+    clientId = created.id;
+  }
 
   const tenantRow = await db.tenant.findUniqueOrThrow({ where: { id: auth.tenantId } });
   const limit = await checkBookingLimit(tenantRow);

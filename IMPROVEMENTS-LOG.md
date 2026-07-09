@@ -532,3 +532,14 @@
   completed" freezes the figures onto the session (payroll/analytics
   ready). Verified: $28 drop-in + $15 credit value = $43.00 revenue,
   $12.90 at Mia's 30%, frozen on complete, rendered in the rail.
+
+## 2026-07-08 · X5 quick-add client + X6 Week/Day/Month views (live)
+- Calendar rebuilt cleanly with Week / Day / Month tabs (original had all
+  three): Day = single wide column w/ more attendee names on blocks;
+  Month = Monday-first grid, per-day mini class chips w/ fill counts,
+  "+n more", every cell clicks through to that day's Day view. Nav
+  arrows step by day/week/month per view.
+- Rail gained "add attendee": existing-client dropdown + "+ New client
+  (quick add)" (name+phone → creates walk-in client AND books them in
+  one submit, plan limits enforced). Verified end-to-end.
+- Fix en route: missing checkClientLimit import caught by build gate.

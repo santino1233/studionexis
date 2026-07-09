@@ -158,8 +158,8 @@ https://new.nexis.revsports.ca → commit → log → next.
 - [x] X4 Instructor earnings: User.commissionRate; session Details (rail)
       shows class revenue + instructor earning; Mark Completed freezes
       figures onto the session.
-- [ ] X5 Quick-add client (name+phone) inline in the roster panel.
-- [ ] X6 Day + Month calendar views w/ Week/Day/Month tabs.
+- [x] X5 Quick-add client (name+phone) inline in the roster panel.
+- [x] X6 Day + Month calendar views w/ Week/Day/Month tabs.
 - [ ] X7 Blueprint editor page (/class-types/[id], tabs General/Pricing/
       Schedule): equipment list, muscle-focus body map (port MuscleMapJS
       from /opt/studionexis), hero image per class, benefits/good-for/

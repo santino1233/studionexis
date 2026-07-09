@@ -22,20 +22,56 @@ const statusLabel: Record<string, string> = {
   CANCELLED: "Cancelled", LATE_CANCEL: "Late cancel", NO_SHOW: "No show",
 };
 
-export default async function SchedulePage({ searchParams }: { searchParams: Promise<{ w?: string; i?: string; sel?: string; c?: string; checkout?: string }> }) {
-  const { w, i: instructorFilter, sel, c, checkout } = await searchParams;
+type Search = { v?: string; w?: string; d?: string; mo?: string; i?: string; sel?: string; c?: string; checkout?: string };
+
+export default async function SchedulePage({ searchParams }: { searchParams: Promise<Search> }) {
+  const sp = await searchParams;
+  const view = sp.v === "day" ? "day" : sp.v === "month" ? "month" : "week";
+  const wOff = Number(sp.w ?? 0) || 0;
+  const dOff = Number(sp.d ?? 0) || 0;
+  const moOff = Number(sp.mo ?? 0) || 0;
+  const { i: instructorFilter, sel, c, checkout } = sp;
   const colorBy = c === "status" ? "status" : "format";
-  const offset = Number(w ?? 0) || 0;
+
   const tenant = await getCurrentTenant();
-  const days = weekDays(tenant.timezone, offset);
+  const fmt = moneyFormatter(tenant.currency);
+  const todayKey = dayKeyInTz(new Date(), tenant.timezone);
+
+  // ── Visible date range per view ───────────────────────────────────────
+  let days: string[];
+  let rangeLabel: string;
+  let monthKey = "";
+  let monthGrid: string[][] = [];
+  if (view === "day") {
+    const base = new Date(new Date(`${todayKey}T00:00:00Z`).getTime() + dOff * 86400_000);
+    days = [base.toISOString().slice(0, 10)];
+    rangeLabel = base.toLocaleDateString("en-US", { timeZone: "UTC", weekday: "long", month: "long", day: "numeric", year: "numeric" });
+  } else if (view === "month") {
+    const [ty, tm] = todayKey.split("-").map(Number);
+    const first = new Date(Date.UTC(ty, tm - 1 + moOff, 1));
+    monthKey = first.toISOString().slice(0, 7);
+    rangeLabel = first.toLocaleDateString("en-US", { timeZone: "UTC", month: "long", year: "numeric" });
+    const startDow = (first.getUTCDay() + 6) % 7; // Monday-first grid
+    const gridStart = new Date(first.getTime() - startDow * 86400_000);
+    days = Array.from({ length: 42 }, (_, n) => new Date(gridStart.getTime() + n * 86400_000).toISOString().slice(0, 10));
+    monthGrid = Array.from({ length: 6 }, (_, r) => days.slice(r * 7, r * 7 + 7));
+  } else {
+    days = weekDays(tenant.timezone, wOff);
+    rangeLabel = `${new Date(`${days[0]}T12:00:00Z`).toLocaleDateString("en-US", { month: "short", day: "numeric" })} – ${new Date(`${days[6]}T12:00:00Z`).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`;
+  }
   const rangeStart = new Date(`${days[0]}T00:00:00Z`);
   rangeStart.setUTCDate(rangeStart.getUTCDate() - 1);
-  const rangeEnd = new Date(`${days[6]}T00:00:00Z`);
+  const rangeEnd = new Date(`${days[days.length - 1]}T00:00:00Z`);
   rangeEnd.setUTCDate(rangeEnd.getUTCDate() + 2);
 
   const qs = (over: Record<string, string | number | undefined>) => {
     const p = new URLSearchParams();
-    const merged = { w: offset || undefined, i: instructorFilter, sel, c: c === "status" ? "status" : undefined, ...over };
+    const merged: Record<string, string | number | undefined> = {
+      v: view === "week" ? undefined : view,
+      w: wOff || undefined, d: dOff || undefined, mo: moOff || undefined,
+      i: instructorFilter, sel, c: colorBy === "status" ? "status" : undefined,
+      ...over,
+    };
     for (const [k, v] of Object.entries(merged)) if (v !== undefined && v !== "" && v !== 0) p.set(k, String(v));
     const s = p.toString();
     return s ? `/schedule?${s}` : "/schedule";
@@ -52,7 +88,7 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
       include: {
         classType: true,
         instructor: true,
-        bookings: { where: { status: { in: ["BOOKED", "CHECKED_IN", "WAITLIST"] } }, include: { client: { select: { name: true } } } },
+        bookings: { where: { status: { in: ["BOOKED", "CHECKED_IN", "WAITLIST"] } }, include: { client: { select: { id: true, name: true } } } },
       },
       orderBy: { startsAt: "asc" },
     }),
@@ -60,8 +96,8 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
     db.timeBlock.findMany({ where: { tenantId: tenant.id, startsAt: { gte: rangeStart, lt: rangeEnd } }, orderBy: { startsAt: "asc" } }),
   ]);
 
-  const minutesInTz = (d: Date) => {
-    const [h, m] = d.toLocaleTimeString("en-GB", { timeZone: tenant.timezone, hour: "2-digit", minute: "2-digit", hour12: false }).split(":").map(Number);
+  const minutesInTz = (dt: Date) => {
+    const [h, m] = dt.toLocaleTimeString("en-GB", { timeZone: tenant.timezone, hour: "2-digit", minute: "2-digit", hour12: false }).split(":").map(Number);
     return h * 60 + m;
   };
 
@@ -84,21 +120,37 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
   }
   const hours = Array.from({ length: maxH - minH }, (_, n) => minH + n);
   const gridH = hours.length * PX_PER_HOUR;
-  const todayKey = dayKeyInTz(new Date(), tenant.timezone);
   const nowMin = minutesInTz(new Date());
-  const rangeLabel = `${new Date(`${days[0]}T12:00:00Z`).toLocaleDateString("en-US", { month: "short", day: "numeric" })} – ${new Date(`${days[6]}T12:00:00Z`).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`;
   const hourLabel = (h: number) => new Date(Date.UTC(2000, 0, 1, h)).toLocaleTimeString("en-US", { hour: "numeric", timeZone: "UTC" });
 
   const selected = sel ? sessions.find((s) => s.id === sel) ?? null : null;
-  const fmt = moneyFormatter(tenant.currency);
+  const selActive = selected?.bookings.filter((b) => b.status === "BOOKED" || b.status === "CHECKED_IN") ?? [];
+  const selWaitlist = selected?.bookings.filter((b) => b.status === "WAITLIST") ?? [];
+  const legendTypes = [...new Map(sessions.map((s) => [s.classType.id, s.classType])).values()].slice(0, 8);
   const fin = selected
     ? selected.status === "COMPLETED" && selected.revenue != null
       ? { revenue: Number(selected.revenue), earnings: Number(selected.instructorEarnings ?? 0), rate: Number(selected.instructor?.commissionRate ?? 0), frozen: true }
       : { ...(await computeSessionFinancials(selected.id)), frozen: false }
     : null;
-  const selActive = selected?.bookings.filter((b) => b.status === "BOOKED" || b.status === "CHECKED_IN") ?? [];
-  const selWaitlist = selected?.bookings.filter((b) => b.status === "WAITLIST") ?? [];
-  const legendTypes = [...new Map(sessions.map((s) => [s.classType.id, s.classType])).values()].slice(0, 8);
+  const addableClients = selected && selected.status !== "COMPLETED"
+    ? (await db.client.findMany({ where: { tenantId: tenant.id }, orderBy: { name: "asc" }, take: 300, select: { id: true, name: true } }))
+        .filter((cl) => !selected.bookings.some((b) => b.client.id === cl.id))
+    : [];
+
+  const nav = (dir: number) =>
+    view === "day" ? qs({ d: dOff + dir, sel: undefined })
+    : view === "month" ? qs({ mo: moOff + dir, sel: undefined })
+    : qs({ w: wOff + dir, sel: undefined });
+
+  const blockStyle = (s: (typeof sessions)[number]) => {
+    const blocked = s.status === "BLOCKED";
+    const completed = s.status === "COMPLETED";
+    const active = s.bookings.filter((b) => b.status !== "WAITLIST").length;
+    const tone = colorBy === "status"
+      ? blocked ? "#E5484D" : completed ? "#22A565" : active >= s.capacity ? "#F97316" : "#3B82F6"
+      : s.classType.color;
+    return { blocked, completed, active, tone };
+  };
 
   return (
     <div className="mx-auto max-w-[1500px]">
@@ -109,9 +161,17 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
           <p className="mt-1 text-sm text-muted">View and manage all classes and bookings.</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Link href={qs({ w: undefined })} className="rounded-xl border border-line-2 bg-surface px-4 py-2.5 text-sm font-semibold text-ink-2 hover:bg-raised">Today</Link>
-          <Link href={qs({ w: offset - 1 })} className="grid size-10 place-items-center rounded-xl border border-line-2 bg-surface text-ink-2 hover:bg-raised"><ChevronLeft className="size-4" /></Link>
-          <Link href={qs({ w: offset + 1 })} className="grid size-10 place-items-center rounded-xl border border-line-2 bg-surface text-ink-2 hover:bg-raised"><ChevronRight className="size-4" /></Link>
+          <div className="flex rounded-xl bg-line-2 p-1">
+            {(["week", "day", "month"] as const).map((vv) => (
+              <Link key={vv} href={`/schedule${vv === "week" ? "" : `?v=${vv}`}${instructorFilter ? `${vv === "week" ? "?" : "&"}i=${instructorFilter}` : ""}`}
+                className={`rounded-lg px-3.5 py-1.5 text-[12.5px] font-bold capitalize ${view === vv ? "bg-surface text-ink shadow-sm" : "text-ink-2 hover:text-ink"}`}>
+                {vv}
+              </Link>
+            ))}
+          </div>
+          <Link href={qs({ w: undefined, d: undefined, mo: undefined, sel: undefined })} className="rounded-xl border border-line-2 bg-surface px-4 py-2.5 text-sm font-semibold text-ink-2 hover:bg-raised">Today</Link>
+          <Link href={nav(-1)} className="grid size-10 place-items-center rounded-xl border border-line-2 bg-surface text-ink-2 hover:bg-raised"><ChevronLeft className="size-4" /></Link>
+          <Link href={nav(1)} className="grid size-10 place-items-center rounded-xl border border-line-2 bg-surface text-ink-2 hover:bg-raised"><ChevronRight className="size-4" /></Link>
           <span className="rounded-xl border border-line-2 bg-surface px-4 py-2.5 text-sm font-bold text-ink">{rangeLabel}</span>
           <details className="relative ml-1">
             <summary className="inline-flex cursor-pointer list-none items-center gap-2 rounded-xl border border-line-2 bg-surface px-4 py-2.5 text-sm font-semibold text-ink-2 hover:bg-raised">🔒 Block time</summary>
@@ -133,19 +193,17 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
       </div>
 
       {checkout === "done" && (
-        <div className="mb-3 flex items-center gap-2 rounded-xl border border-green/20 bg-green-wash px-4 py-2.5 text-[13.5px] font-bold text-green">
-          ✓ Checked out &amp; checked in
+        <div className="mb-3 flex items-center gap-2 rounded-xl border border-green/20 bg-green-wash px-4 py-2.5 text-[13.5px] font-bold text-green">✓ Checked out &amp; checked in</div>
+      )}
+
+      {view !== "month" && (
+        <div className="mb-2 flex items-center justify-end gap-1.5 text-[11px] font-bold uppercase tracking-wider text-muted">
+          Color by
+          <Link href={qs({ c: undefined })} className={`rounded-full px-3 py-1 text-[11.5px] font-bold normal-case tracking-normal ${colorBy === "format" ? "bg-ink text-canvas" : "bg-line-2 text-ink-2"}`}>Class</Link>
+          <Link href={qs({ c: "status" })} className={`rounded-full px-3 py-1 text-[11.5px] font-bold normal-case tracking-normal ${colorBy === "status" ? "bg-ink text-canvas" : "bg-line-2 text-ink-2"}`}>Status</Link>
         </div>
       )}
 
-      {/* Color mode */}
-      <div className="mb-2 flex items-center justify-end gap-1.5 text-[11px] font-bold uppercase tracking-wider text-muted">
-        Color by
-        <Link href={qs({ c: undefined })} className={`rounded-full px-3 py-1 text-[11.5px] font-bold normal-case tracking-normal ${colorBy === "format" ? "bg-ink text-canvas" : "bg-line-2 text-ink-2"}`}>Class</Link>
-        <Link href={qs({ c: "status" })} className={`rounded-full px-3 py-1 text-[11.5px] font-bold normal-case tracking-normal ${colorBy === "status" ? "bg-ink text-canvas" : "bg-line-2 text-ink-2"}`}>Status</Link>
-      </div>
-
-      {/* Instructor filter */}
       {instructors.length > 1 && (
         <div className="mb-4 flex flex-wrap gap-2">
           <Link href={qs({ i: undefined })} className={`rounded-full px-3.5 py-1.5 text-[12.5px] font-bold ${!instructorFilter ? "bg-brand text-white" : "bg-line-2 text-ink-2 hover:text-ink"}`}>All instructors</Link>
@@ -156,107 +214,131 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
       )}
 
       <div className="flex items-start gap-4">
-        {/* Calendar */}
-        <div className="min-w-0 flex-1 overflow-x-auto rounded-2xl border border-line-2 bg-surface shadow-[var(--shadow-card)]">
-          <div className="min-w-[840px]">
-            <div className="grid border-b border-line-2" style={{ gridTemplateColumns: "52px repeat(7, 1fr)" }}>
-              <div />
-              {days.map((d) => {
-                const date = new Date(`${d}T12:00:00Z`);
-                const isToday = d === todayKey;
-                return (
-                  <div key={d} className="border-l border-line-2 px-2.5 py-2 text-center">
-                    <div className={`text-[10px] font-bold uppercase tracking-[0.1em] ${isToday ? "text-brand" : "text-muted"}`}>{date.toLocaleDateString("en-US", { weekday: "short" })}</div>
-                    <div className={`mx-auto mt-0.5 grid size-8 place-items-center rounded-full font-display text-[15px] font-extrabold ${isToday ? "bg-brand text-white" : "text-ink"}`}>{date.getUTCDate()}</div>
-                  </div>
-                );
-              })}
+        {view === "month" ? (
+          /* ── MONTH VIEW ── */
+          <div className="min-w-0 flex-1 overflow-x-auto rounded-2xl border border-line-2 bg-surface shadow-[var(--shadow-card)]">
+            <div className="grid min-w-[840px] grid-cols-7 border-b border-line-2">
+              {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((dw) => (
+                <div key={dw} className="px-3 py-2 text-[10.5px] font-bold uppercase tracking-[0.1em] text-muted">{dw}</div>
+              ))}
             </div>
-            <div className="grid" style={{ gridTemplateColumns: "52px repeat(7, 1fr)" }}>
-              <div className="relative" style={{ height: gridH }}>
-                {hours.map((h, n) => (
-                  <div key={h} className="absolute right-2 -translate-y-1/2 text-[10px] font-semibold text-muted" style={{ top: n * PX_PER_HOUR }}>{n > 0 && hourLabel(h)}</div>
-                ))}
-              </div>
-              {days.map((d) => {
-                const isToday = d === todayKey;
-                return (
-                  <div key={d} className={`relative border-l border-line-2 ${isToday ? "bg-brand/[0.03]" : ""}`} style={{ height: gridH }}>
-                    {hours.map((h, n) => n > 0 && <div key={h} className="absolute inset-x-0 border-t border-line-2" style={{ top: n * PX_PER_HOUR }} />)}
-                    {isToday && nowMin >= minH * 60 && nowMin <= maxH * 60 && (
-                      <div className="absolute inset-x-0 z-10 border-t-2 border-brand" style={{ top: (nowMin / 60 - minH) * PX_PER_HOUR }}>
-                        <span className="absolute -left-1 -top-[5px] size-2 rounded-full bg-brand" />
-                      </div>
-                    )}
-                    {(blocksByDay.get(d) ?? []).map((b) => {
-                      const top = (minutesInTz(b.startsAt) / 60 - minH) * PX_PER_HOUR;
-                      const height = Math.max(30, ((b.endsAt.getTime() - b.startsAt.getTime()) / 3600_000) * PX_PER_HOUR - 3);
-                      return (
-                        <form key={b.id} method="post" action={`/api/timeblocks/${b.id}`} className="absolute inset-x-1 z-10" style={{ top, height }}>
-                          <input type="hidden" name="back" value={qs({})} />
-                          <button
-                            type="submit"
-                            title="Click to unblock"
-                            className="h-full w-full overflow-hidden rounded-lg border border-dashed border-rose/40 px-2 py-1.5 text-left"
-                            style={{ background: "repeating-linear-gradient(45deg, color-mix(in srgb, #E5484D 8%, var(--color-surface)), color-mix(in srgb, #E5484D 8%, var(--color-surface)) 6px, var(--color-surface) 6px, var(--color-surface) 12px)" }}
-                          >
-                            <span className="block truncate text-[10.5px] font-bold text-rose">🔒 Blocked</span>
-                            {height > 44 && <span className="block truncate text-[10px] text-muted">{b.reason ?? "Studio time"} · click to unblock</span>}
-                          </button>
-                        </form>
-                      );
-                    })}
-                    {(byDay.get(d) ?? []).map((s, idx) => {
-                      const startMin = minutesInTz(s.startsAt);
-                      const durMin = Math.max(30, (s.endsAt.getTime() - s.startsAt.getTime()) / 60_000);
-                      const top = (startMin / 60 - minH) * PX_PER_HOUR;
-                      const height = Math.max(40, (durMin / 60) * PX_PER_HOUR - 3);
-                      const active = s.bookings.filter((b) => b.status !== "WAITLIST").length;
-                      const names = s.bookings.filter((b) => b.status !== "WAITLIST").slice(0, 2).map((b) => b.client.name.split(" ")[0]);
-                      const isSel = sel === s.id;
-                      const blocked = s.status === "BLOCKED";
-                      const completed = s.status === "COMPLETED";
-                      const tone = colorBy === "status"
-                        ? blocked ? "#E5484D" : completed ? "#22A565" : active >= s.capacity ? "#F97316" : "#3B82F6"
-                        : s.classType.color;
-                      return (
-                        <Link
-                          key={s.id}
-                          href={qs({ sel: isSel ? undefined : s.id })}
-                          className={`absolute inset-x-1 z-20 overflow-hidden rounded-lg border-l-[3px] px-2 py-1.5 transition-all hover:z-30 hover:shadow-md ${isSel ? "z-30 ring-2 ring-brand" : ""} ${blocked ? "opacity-80" : ""}`}
-                          style={{
-                            top, height,
-                            background: blocked
-                              ? `repeating-linear-gradient(45deg, color-mix(in srgb, #E5484D 12%, var(--color-surface)), color-mix(in srgb, #E5484D 12%, var(--color-surface)) 6px, var(--color-surface) 6px, var(--color-surface) 12px)`
-                              : `color-mix(in srgb, ${tone} 14%, var(--color-surface))`,
-                            borderLeftColor: blocked ? "#E5484D" : tone,
-                            marginLeft: (idx % 2) * 3,
-                          }}
-                        >
-                          <div className="truncate text-[10px] font-semibold text-muted">{timeInTz(s.startsAt, tenant.timezone)} – {timeInTz(s.endsAt, tenant.timezone)}</div>
-                          <div className="truncate text-[11.5px] font-bold leading-tight" style={{ color: blocked ? "#E5484D" : tone }}>
-                            {blocked ? "🔒 " : completed ? "✓ " : !s.isPublic ? "🙈 " : ""}{s.classType.name}
+            {monthGrid.map((row, r) => (
+              <div key={r} className="grid min-w-[840px] grid-cols-7 border-b border-line-2 last:border-0">
+                {row.map((dk) => {
+                  const inMonth = dk.startsWith(monthKey);
+                  const isToday = dk === todayKey;
+                  const list = byDay.get(dk) ?? [];
+                  const dayHref = `/schedule?v=day&d=${Math.round((new Date(`${dk}T00:00:00Z`).getTime() - new Date(`${todayKey}T00:00:00Z`).getTime()) / 86400_000)}`;
+                  return (
+                    <Link key={dk} href={dayHref}
+                      className={`min-h-[104px] border-l border-line-2 p-1.5 align-top transition-colors first:border-l-0 hover:bg-raised ${inMonth ? "" : "opacity-40"} ${isToday ? "bg-brand/[0.04]" : ""}`}>
+                      <div className={`mb-1 grid size-6 place-items-center rounded-full text-[12px] font-extrabold ${isToday ? "bg-brand text-white" : "text-ink"}`}>{Number(dk.slice(8))}</div>
+                      {list.slice(0, 4).map((s) => {
+                        const st = blockStyle(s);
+                        return (
+                          <div key={s.id} className="mb-0.5 truncate rounded border-l-2 px-1 text-[10px] font-semibold text-ink-2" style={{ borderColor: st.tone, background: `color-mix(in srgb, ${st.tone} 10%, var(--color-surface))` }}>
+                            {timeInTz(s.startsAt, tenant.timezone).replace(":00", "")} {s.classType.name} <span className="text-muted">{st.active}/{s.capacity}</span>
                           </div>
-                          {height > 56 && (
-                            <div className="mt-0.5 flex items-center gap-1.5 text-[10px] font-semibold text-ink-2">
-                              {s.instructor && <span className="inline-flex items-center gap-1"><span className="grid size-3.5 place-items-center rounded-full text-[7px] font-bold text-white" style={{ background: s.classType.color }}>{s.instructor.name[0]}</span>{s.instructor.name.split(" ")[0]}</span>}
-                              <span className="text-muted">{active}/{s.capacity}</span>
+                        );
+                      })}
+                      {list.length > 4 && <div className="px-1 text-[10px] font-bold text-brand">+{list.length - 4} more</div>}
+                    </Link>
+                  );
+                })}
+              </div>
+            ))}
+          </div>
+        ) : (
+          /* ── WEEK / DAY TIME GRID ── */
+          <div className="min-w-0 flex-1 overflow-x-auto rounded-2xl border border-line-2 bg-surface shadow-[var(--shadow-card)]">
+            <div className={view === "day" ? "" : "min-w-[840px]"}>
+              <div className="grid border-b border-line-2" style={{ gridTemplateColumns: `52px repeat(${days.length}, 1fr)` }}>
+                <div />
+                {days.map((d) => {
+                  const date = new Date(`${d}T12:00:00Z`);
+                  const isToday = d === todayKey;
+                  return (
+                    <div key={d} className="border-l border-line-2 px-2.5 py-2 text-center">
+                      <div className={`text-[10px] font-bold uppercase tracking-[0.1em] ${isToday ? "text-brand" : "text-muted"}`}>{date.toLocaleDateString("en-US", { timeZone: "UTC", weekday: view === "day" ? "long" : "short" })}</div>
+                      <div className={`mx-auto mt-0.5 grid size-8 place-items-center rounded-full font-display text-[15px] font-extrabold ${isToday ? "bg-brand text-white" : "text-ink"}`}>{date.getUTCDate()}</div>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="grid" style={{ gridTemplateColumns: `52px repeat(${days.length}, 1fr)` }}>
+                <div className="relative" style={{ height: gridH }}>
+                  {hours.map((h, n) => (
+                    <div key={h} className="absolute right-2 -translate-y-1/2 text-[10px] font-semibold text-muted" style={{ top: n * PX_PER_HOUR }}>{n > 0 && hourLabel(h)}</div>
+                  ))}
+                </div>
+                {days.map((d) => {
+                  const isToday = d === todayKey;
+                  return (
+                    <div key={d} className={`relative border-l border-line-2 ${isToday ? "bg-brand/[0.03]" : ""}`} style={{ height: gridH }}>
+                      {hours.map((h, n) => n > 0 && <div key={h} className="absolute inset-x-0 border-t border-line-2" style={{ top: n * PX_PER_HOUR }} />)}
+                      {isToday && nowMin >= minH * 60 && nowMin <= maxH * 60 && (
+                        <div className="absolute inset-x-0 z-10 border-t-2 border-brand" style={{ top: (nowMin / 60 - minH) * PX_PER_HOUR }}>
+                          <span className="absolute -left-1 -top-[5px] size-2 rounded-full bg-brand" />
+                        </div>
+                      )}
+                      {(blocksByDay.get(d) ?? []).map((b) => {
+                        const top = (minutesInTz(b.startsAt) / 60 - minH) * PX_PER_HOUR;
+                        const height = Math.max(30, ((b.endsAt.getTime() - b.startsAt.getTime()) / 3600_000) * PX_PER_HOUR - 3);
+                        return (
+                          <form key={b.id} method="post" action={`/api/timeblocks/${b.id}`} className="absolute inset-x-1 z-10" style={{ top, height }}>
+                            <input type="hidden" name="back" value={qs({})} />
+                            <button type="submit" title="Click to unblock" className="h-full w-full overflow-hidden rounded-lg border border-dashed border-rose/40 px-2 py-1.5 text-left"
+                              style={{ background: "repeating-linear-gradient(45deg, color-mix(in srgb, #E5484D 8%, var(--color-surface)), color-mix(in srgb, #E5484D 8%, var(--color-surface)) 6px, var(--color-surface) 6px, var(--color-surface) 12px)" }}>
+                              <span className="block truncate text-[10.5px] font-bold text-rose">🔒 Blocked</span>
+                              {height > 44 && <span className="block truncate text-[10px] text-muted">{b.reason ?? "Studio time"} · click to unblock</span>}
+                            </button>
+                          </form>
+                        );
+                      })}
+                      {(byDay.get(d) ?? []).map((s, idx) => {
+                        const startMin = minutesInTz(s.startsAt);
+                        const durMin = Math.max(30, (s.endsAt.getTime() - s.startsAt.getTime()) / 60_000);
+                        const top = (startMin / 60 - minH) * PX_PER_HOUR;
+                        const height = Math.max(40, (durMin / 60) * PX_PER_HOUR - 3);
+                        const st = blockStyle(s);
+                        const names = s.bookings.filter((b) => b.status !== "WAITLIST").slice(0, view === "day" ? 6 : 2).map((b) => b.client.name.split(" ")[0]);
+                        const isSel = sel === s.id;
+                        return (
+                          <Link key={s.id} href={qs({ sel: isSel ? undefined : s.id })}
+                            className={`absolute inset-x-1 z-20 overflow-hidden rounded-lg border-l-[3px] px-2 py-1.5 transition-all hover:z-30 hover:shadow-md ${isSel ? "z-30 ring-2 ring-brand" : ""} ${st.blocked ? "opacity-80" : ""}`}
+                            style={{
+                              top, height,
+                              background: st.blocked
+                                ? `repeating-linear-gradient(45deg, color-mix(in srgb, #E5484D 12%, var(--color-surface)), color-mix(in srgb, #E5484D 12%, var(--color-surface)) 6px, var(--color-surface) 6px, var(--color-surface) 12px)`
+                                : `color-mix(in srgb, ${st.tone} 14%, var(--color-surface))`,
+                              borderLeftColor: st.blocked ? "#E5484D" : st.tone,
+                              marginLeft: (idx % 2) * 3,
+                            }}>
+                            <div className="truncate text-[10px] font-semibold text-muted">{timeInTz(s.startsAt, tenant.timezone)} – {timeInTz(s.endsAt, tenant.timezone)}</div>
+                            <div className="truncate text-[11.5px] font-bold leading-tight" style={{ color: st.blocked ? "#E5484D" : st.tone }}>
+                              {st.blocked ? "🔒 " : st.completed ? "✓ " : !s.isPublic ? "🙈 " : ""}{s.classType.name}
                             </div>
-                          )}
-                          {height > 84 && names.map((n) => (
-                            <div key={n} className="flex items-center gap-1 truncate text-[9.5px] text-muted"><span className="size-1 rounded-full" style={{ background: s.classType.color }} />{n}</div>
-                          ))}
-                        </Link>
-                      );
-                    })}
-                  </div>
-                );
-              })}
+                            {height > 56 && (
+                              <div className="mt-0.5 flex items-center gap-1.5 text-[10px] font-semibold text-ink-2">
+                                {s.instructor && <span className="inline-flex items-center gap-1"><span className="grid size-3.5 place-items-center rounded-full text-[7px] font-bold text-white" style={{ background: st.tone }}>{s.instructor.name[0]}</span>{s.instructor.name.split(" ")[0]}</span>}
+                                <span className="text-muted">{st.active}/{s.capacity}</span>
+                              </div>
+                            )}
+                            {height > 84 && names.map((n) => (
+                              <div key={n} className="flex items-center gap-1 truncate text-[9.5px] text-muted"><span className="size-1 rounded-full" style={{ background: st.tone }} />{n}</div>
+                            ))}
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
-        {/* Detail rail */}
+        {/* ── DETAIL RAIL ── */}
         {selected && (
           <aside className="sticky top-20 w-[320px] shrink-0 rounded-2xl border border-line-2 bg-surface shadow-[var(--shadow-card)]">
             <div className="flex items-start justify-between border-b border-line-2 p-5">
@@ -279,6 +361,7 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
               {selected.instructor && <div>👤 {selected.instructor.name}</div>}
               <div>👥 <b className="text-ink">{selActive.length} / {selected.capacity}</b> booked{selWaitlist.length > 0 ? ` · ${selWaitlist.length} waitlisted` : ""}</div>
               {selected.location && <div>📍 {selected.location}</div>}
+              {selected.note && <div>📝 {selected.note}</div>}
             </div>
             {fin && (
               <div className="grid grid-cols-2 gap-3 border-b border-line-2 p-4">
@@ -329,7 +412,7 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
                       </span>
                     </div>
                     {(b.status === "BOOKED" || b.status === "WAITLIST") && (
-                      <div className="mt-2 flex gap-1.5">
+                      <div className="mt-2 flex flex-wrap gap-1.5">
                         {b.status === "BOOKED" && (
                           <>
                             <Link href={`/schedule/${selected.id}/checkout/${b.id}`} className="rounded-lg bg-brand px-2.5 py-1 text-[11px] font-bold text-white hover:bg-brand-ink">Checkout</Link>
@@ -344,13 +427,40 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
                 ))}
                 {selected.bookings.length === 0 && <li className="py-4 text-center text-[12.5px] text-muted">Nobody booked yet.</li>}
               </ul>
+
+              {/* Add attendee: existing client or quick-add (video spec X5) */}
+              {selected.status !== "COMPLETED" && (
+                <div className="mt-3 border-t border-line-2 pt-3">
+                  {addableClients.length > 0 && (
+                    <form method="post" action="/api/bookings" className="flex gap-1.5">
+                      <input type="hidden" name="sessionId" value={selected.id} />
+                      <input type="hidden" name="back" value={qs({})} />
+                      <select name="clientId" className="h-9 min-w-0 flex-1 rounded-lg border border-line bg-surface px-2 text-[12.5px] outline-none focus:border-brand">
+                        {addableClients.map((cl) => <option key={cl.id} value={cl.id}>{cl.name}</option>)}
+                      </select>
+                      <button className="rounded-lg bg-ink px-3 text-[12px] font-bold text-canvas hover:opacity-90">Add</button>
+                    </form>
+                  )}
+                  <details className="mt-2">
+                    <summary className="cursor-pointer text-[11.5px] font-bold text-brand">+ New client (quick add)</summary>
+                    <form method="post" action="/api/bookings" className="mt-2 space-y-1.5">
+                      <input type="hidden" name="sessionId" value={selected.id} />
+                      <input type="hidden" name="back" value={qs({})} />
+                      <input name="quickName" required placeholder="Full name" className="h-9 w-full rounded-lg border border-line bg-surface px-2.5 text-[12.5px] outline-none focus:border-brand" />
+                      <input name="quickPhone" placeholder="Phone (optional)" className="h-9 w-full rounded-lg border border-line bg-surface px-2.5 text-[12.5px] outline-none focus:border-brand" />
+                      <button className="w-full rounded-lg bg-brand py-2 text-[12px] font-bold text-white hover:bg-brand-ink">Create &amp; book</button>
+                    </form>
+                  </details>
+                </div>
+              )}
+              <Link href={`/schedule/${selected.id}`} className="mt-3 block text-center text-[12px] font-bold text-brand hover:underline">View full roster →</Link>
             </div>
           </aside>
         )}
       </div>
 
       {/* Legend */}
-      {legendTypes.length > 0 && (
+      {view !== "month" && legendTypes.length > 0 && (
         <div className="mt-4 flex flex-wrap items-center gap-4 px-1">
           {legendTypes.map((t) => (
             <span key={t.id} className="inline-flex items-center gap-1.5 text-[11.5px] font-semibold text-muted">
@@ -363,8 +473,8 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
         </div>
       )}
 
-      {sessions.length === 0 && (
-        <p className="mt-4 text-center text-sm text-muted">Nothing on the calendar this week — <Link href="/schedule/new" className="font-bold text-brand hover:underline">add a class</Link>.</p>
+      {sessions.length === 0 && view !== "month" && (
+        <p className="mt-4 text-center text-sm text-muted">Nothing on the calendar — <Link href="/schedule/new" className="font-bold text-brand hover:underline">add a class</Link>.</p>
       )}
     </div>
   );
