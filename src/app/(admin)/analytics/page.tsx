@@ -169,6 +169,91 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
           </div>
         </Card>
       </div>
+
+      {/* ── Website visitors (Wave 12 Z7) ── */}
+      {await (async () => {
+        const now = new Date();
+        const d7 = new Date(now.getTime() - 7 * 86400_000);
+        const d30 = new Date(now.getTime() - 30 * 86400_000);
+        const [liveRows, views7, uniques7, uniques30, sources, pages, webBookings7, daily] = await Promise.all([
+          db.pageView.groupBy({ by: ["visitorId"], where: { tenantId: tenant.id, createdAt: { gt: new Date(now.getTime() - 5 * 60_000) } } }),
+          db.pageView.count({ where: { tenantId: tenant.id, createdAt: { gt: d7 } } }),
+          db.pageView.groupBy({ by: ["visitorId"], where: { tenantId: tenant.id, createdAt: { gt: d7 } } }),
+          db.pageView.groupBy({ by: ["visitorId"], where: { tenantId: tenant.id, createdAt: { gt: d30 } } }),
+          db.pageView.groupBy({ by: ["source"], where: { tenantId: tenant.id, createdAt: { gt: d30 }, NOT: { source: "internal" } }, _count: { _all: true }, orderBy: { _count: { source: "desc" } }, take: 6 }),
+          db.pageView.groupBy({ by: ["path"], where: { tenantId: tenant.id, createdAt: { gt: d30 } }, _count: { _all: true }, orderBy: { _count: { path: "desc" } }, take: 6 }),
+          db.booking.count({ where: { tenantId: tenant.id, createdAt: { gt: d7 }, client: { channel: "website" } } }),
+          db.pageView.findMany({ where: { tenantId: tenant.id, createdAt: { gt: d7 } }, select: { createdAt: true } }),
+        ]);
+        const live = liveRows.length;
+        const conv = uniques7.length > 0 ? Math.round((webBookings7 / uniques7.length) * 100) : 0;
+        const byDay = new Map<string, number>();
+        for (let i = 6; i >= 0; i--) byDay.set(new Date(now.getTime() - i * 86400_000).toISOString().slice(0, 10), 0);
+        for (const v of daily) {
+          const k = v.createdAt.toISOString().slice(0, 10);
+          if (byDay.has(k)) byDay.set(k, (byDay.get(k) ?? 0) + 1);
+        }
+        const maxDay = Math.max(1, ...byDay.values());
+        const tile = (label: string, value: string, hint?: string, pulse?: boolean) => (
+          <div className="rounded-2xl border border-line-2 bg-surface p-5 shadow-[var(--shadow-card)]">
+            <div className="flex items-center gap-2 text-[10.5px] font-bold uppercase tracking-[0.1em] text-muted">
+              {pulse && <span className="relative flex size-2"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green opacity-60" /><span className="relative inline-flex size-2 rounded-full bg-green" /></span>}
+              {label}
+            </div>
+            <div className="mt-1.5 font-display text-[26px] font-extrabold text-ink">{value}</div>
+            {hint && <div className="mt-0.5 text-[11.5px] text-muted">{hint}</div>}
+          </div>
+        );
+        return (
+          <div className="mt-8">
+            <h2 className="font-display text-[20px] font-extrabold tracking-tight text-ink">Website visitors</h2>
+            <p className="mt-0.5 text-[13px] text-muted">Your public site and booking pages — tracked first-party, anonymously.</p>
+            <div className="mt-4 grid grid-cols-2 gap-4 lg:grid-cols-4">
+              {tile("Live right now", String(live), "active in the last 5 minutes", true)}
+              {tile("Views · 7 days", views7.toLocaleString())}
+              {tile("Unique visitors", `${uniques7.length}`, `7 days · ${uniques30.length} in 30 days`)}
+              {tile("Booking conversion", `${conv}%`, `${webBookings7} website bookings / ${uniques7.length} visitors`)}
+            </div>
+            <div className="mt-5 grid grid-cols-1 gap-5 lg:grid-cols-3">
+              <Card>
+                <CardHeader eyebrow="Last 7 days" title="Views per day" />
+                <div className="flex h-[120px] items-end gap-1.5 px-5 pb-5">
+                  {[...byDay.entries()].map(([k, n]) => (
+                    <div key={k} className="flex flex-1 flex-col items-center gap-1">
+                      <div className="w-full rounded-t-md bg-brand/80" style={{ height: `${Math.max(3, (n / maxDay) * 90)}px` }} title={`${k}: ${n}`} />
+                      <span className="text-[9px] font-bold text-muted">{new Date(`${k}T12:00:00Z`).toLocaleDateString("en-US", { weekday: "narrow", timeZone: "UTC" })}</span>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+              <Card>
+                <CardHeader eyebrow="Last 30 days" title="Top sources" />
+                <ul className="space-y-2 p-5 pt-2">
+                  {sources.map((s) => (
+                    <li key={s.source ?? "—"} className="flex items-center justify-between text-[13px]">
+                      <span className="font-semibold capitalize text-ink">{s.source ?? "unknown"}</span>
+                      <span className="font-bold text-ink-2">{s._count._all}</span>
+                    </li>
+                  ))}
+                  {sources.length === 0 && <li className="py-4 text-center text-[12.5px] text-muted">No visits tracked yet — share your site!</li>}
+                </ul>
+              </Card>
+              <Card>
+                <CardHeader eyebrow="Last 30 days" title="Top pages" />
+                <ul className="space-y-2 p-5 pt-2">
+                  {pages.map((p) => (
+                    <li key={p.path} className="flex items-center justify-between gap-2 text-[13px]">
+                      <span className="truncate font-mono text-[12px] text-ink">{p.path}</span>
+                      <span className="shrink-0 font-bold text-ink-2">{p._count._all}</span>
+                    </li>
+                  ))}
+                  {pages.length === 0 && <li className="py-4 text-center text-[12.5px] text-muted">Nothing yet.</li>}
+                </ul>
+              </Card>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }

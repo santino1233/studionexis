@@ -219,7 +219,7 @@ https://new.nexis.revsports.ca → commit → log → next.
       settings/billing, checkout for packages/memberships/SMS topups,
       subscription for SaaS plans, webhook route — all live the moment
       keys are added (graceful "connect Stripe" state until then).
-- [ ] Z7 In-depth analytics + visitor tracking: first-party PageView
+- [x] Z7 In-depth analytics + visitor tracking: first-party PageView
       pipeline on public pages (visitor cookie, source/referrer/UTM),
       analytics Visitors tab — live viewers (5 min), views, uniques,
       sources, top pages, booking conversion.

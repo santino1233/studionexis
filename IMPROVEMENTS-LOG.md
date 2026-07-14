@@ -625,3 +625,8 @@
 - New: stripe npm dep, lib/stripe.ts (platform/studio clients, key verification, zero-decimal currency handling), Order.stripeSessionId (unique).
 - Verified live: connect card renders; fake key rejected (error=stripekey, nothing stored); simulated connected studio → Pay online button appears and a bad-key checkout degrades to err=stripe banner; disconnect clears config; webhook 503 without keys.
 - Follow-up noted: per-class "pay online / deposit" booking options activate next once a studio is genuinely connected.
+
+## 2026-07-14 — Z7: Visitor tracking & website analytics (Wave 12)
+- First-party, anonymous page-view pipeline: TrackView beacon on every public page (site templates + all booking pages via CustomerNav) → /api/public/track — 1-year nx_vid cookie, path, UTM/referrer classified into sources (instagram/facebook/tiktok/google/…/direct), device, rate-limited, 6-month retention sweep. No third-party scripts.
+- Analytics page gains a "Website visitors" section: LIVE viewers (pulsing, last 5 min), views + unique visitors (7/30 days), booking conversion (website bookings ÷ uniques), views-per-day bar chart, Top sources and Top pages (30 days).
+- Verified live: simulated visits from Instagram(mobile)/Google/newsletter-UTM/direct classified correctly in DB; new visitors receive the cookie; analytics section renders all tiles, sources and pages.

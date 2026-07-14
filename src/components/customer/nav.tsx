@@ -1,3 +1,4 @@
+import { TrackView } from "@/components/track-view";
 import Link from "next/link";
 import { User } from "lucide-react";
 
@@ -11,6 +12,8 @@ const tabs = [
 export function CustomerNav({ slug, active, brand }: { slug: string; active: string; brand: string }) {
   const href = (t: string) => (t === "book" ? `/book/${slug}` : `/book/${slug}/${t}`);
   return (
+    <>
+    <TrackView slug={slug} />
     <nav className="sticky top-0 z-30 border-b border-line bg-surface/95 backdrop-blur">
       <div className="mx-auto flex max-w-[1100px] items-center justify-center gap-1 px-4 sm:gap-6">
         {tabs.map(([t, label]) => (
@@ -32,5 +35,6 @@ export function CustomerNav({ slug, active, brand }: { slug: string; active: str
         </Link>
       </div>
     </nav>
+  </>
   );
 }

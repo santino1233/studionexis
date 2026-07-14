@@ -46,6 +46,7 @@ model Tenant {
   smsMessages    SmsMessage[]
   smsTopups      SmsTopup[]
   timeBlocks     TimeBlock[]
+  pageViews      PageView[]
 }
 
 enum UserRole {
@@ -391,4 +392,20 @@ model TimeBlock {
   createdAt DateTime @default(now())
 
   @@index([tenantId, startsAt])
+}
+
+// First-party visitor analytics for the public site + booking pages (Wave 12 Z7).
+model PageView {
+  id        String   @id @default(cuid())
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  visitorId String // anonymous nx_vid cookie
+  path      String
+  source    String? // utm_source or classified referrer (instagram/google/…)
+  referrer  String?
+  device    String? // mobile | desktop
+  createdAt DateTime @default(now())
+
+  @@index([tenantId, createdAt])
+  @@index([tenantId, visitorId, createdAt])
 }
