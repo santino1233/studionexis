@@ -2,8 +2,11 @@ import { notFound } from "next/navigation";
 import { Building2, Timer, DollarSign, Users } from "lucide-react";
 import { Kpi } from "@/components/ui/kpi";
 import { Card, CardHeader } from "@/components/ui/card";
+import Link from "next/link";
 import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
+import { PLANS, annualMonthly } from "@/lib/plans";
+import { customFeatures, featureRequests } from "@/lib/features";
 
 export const dynamic = "force-dynamic";
 
@@ -34,6 +37,13 @@ export default async function HqPage({ params }: { params: Promise<{ secret: str
   ]);
   const fmt = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
   const trials = tenants.filter((t) => t.status === "TRIAL").length;
+  const mrr = tenants.filter((t) => t.status === "ACTIVE").reduce((n, t) => {
+    const plan = PLANS.find((p) => p.id === t.plan);
+    const cycle = ((t.policies ?? {}) as { billingCycle?: string }).billingCycle;
+    const planM = plan ? (cycle === "annual" ? annualMonthly(plan.monthly) : plan.monthly) : 0;
+    return n + planM + customFeatures(t).filter((f) => f.active).reduce((s, f) => s + f.price, 0);
+  }, 0);
+  const newRequests = tenants.flatMap((t) => featureRequests(t).filter((r) => r.status === "NEW").map((r) => ({ tenant: t, r })));
 
   return (
     <div className="min-h-screen bg-canvas px-6 py-8 lg:px-12">
@@ -47,7 +57,22 @@ export default async function HqPage({ params }: { params: Promise<{ secret: str
           <Kpi icon={Timer} tone="p" label="On trial" value={String(trials)} />
           <Kpi icon={DollarSign} tone="g" label="GMV (all studios)" value={fmt.format(Number(revenueAgg._sum.total ?? 0))} />
           <Kpi icon={Users} tone="b" label="End clients" value={String(clientTotal)} />
+          <Kpi icon={DollarSign} tone="g" label="MRR (active studios)" value={fmt.format(mrr)} />
         </div>
+
+        {newRequests.length > 0 && (
+          <Card className="mt-6">
+            <CardHeader title="New custom-feature requests" sub="Studios asking for bespoke work — review and quote" />
+            <ul className="divide-y divide-line-2">
+              {newRequests.map(({ tenant: t, r }, i) => (
+                <li key={i} className="flex items-center justify-between gap-3 px-5 py-3.5">
+                  <span className="min-w-0 text-[13px] text-ink-2"><b className="text-ink">{t.name}</b>: <span className="line-clamp-1">{r.text}</span></span>
+                  <Link href={`/hq/${secret}/t/${t.id}`} className="shrink-0 rounded-lg bg-brand-wash px-3 py-1.5 text-[11.5px] font-bold text-brand">Review</Link>
+                </li>
+              ))}
+            </ul>
+          </Card>
+        )}
 
         {pendingTopups.length > 0 && (
           <Card className="mt-6">
@@ -79,8 +104,10 @@ export default async function HqPage({ params }: { params: Promise<{ secret: str
               {tenants.map((t) => (
                 <tr key={t.id} className="border-b border-line-2 last:border-0 hover:bg-raised">
                   <td className="px-[18px] py-[14px]">
-                    <div className="text-[14px] font-semibold text-ink">{t.name}</div>
-                    <div className="text-[11.5px] text-muted">/{t.slug} · {t.currency}</div>
+                    <Link href={`/hq/${secret}/t/${t.id}`} className="group block">
+                      <div className="text-[14px] font-semibold text-ink group-hover:text-brand">{t.name}</div>
+                      <div className="text-[11.5px] text-muted">/{t.slug} · {t.currency} · {t.plan}</div>
+                    </Link>
                   </td>
                   <td className="px-[18px] py-[14px]">
                     <span className={`rounded-full px-2.5 py-1 text-[11px] font-bold capitalize ${statusTone[t.status]}`}>{t.status.toLowerCase().replace("_", " ")}</span>

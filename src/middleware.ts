@@ -25,6 +25,16 @@ export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const host = (req.headers.get("x-forwarded-host") ?? req.headers.get("host") ?? "").split(":")[0].toLowerCase();
 
+  // ── Super-admin portal on its own subdomain (Wave 12 Z9) ─────────────
+  if (host === `hq.${BASE}`) {
+    if (pathname === "/login" || pathname.startsWith("/api/") || pathname.startsWith(`/${process.env.HQ_PATH ?? "hq"}`)) {
+      return NextResponse.next();
+    }
+    const url = new URL(`/${process.env.HQ_PATH ?? "hq"}${pathname === "/" ? "" : pathname}`, req.url);
+    url.search = req.nextUrl.search;
+    return NextResponse.rewrite(url);
+  }
+
   // ── Tenant hosts: <slug>.BASE and custom domains ──────────────────────
   let slugParam: string | null = null;
   if (host.endsWith(`.${BASE}`) && !ADMIN_HOSTS.includes(host)) {

@@ -223,9 +223,9 @@ https://new.nexis.revsports.ca → commit → log → next.
       pipeline on public pages (visitor cookie, source/referrer/UTM),
       analytics Visitors tab — live viewers (5 min), views, uniques,
       sources, top pages, booking conversion.
-- [ ] Z8 Custom features per tenant: HQ grants paid feature flags w/
+- [x] Z8 Custom features per tenant: HQ grants paid feature flags w/
       price (policies.customFeatures), Billing shows active add-ons +
       "request a custom feature" → HQ queue; flags gate tenant-only code.
-- [ ] Z9 Super-admin portal on its own subdomain (hq.nexis.revsports.ca):
+- [x] Z9 Super-admin portal on its own subdomain (hq.nexis.revsports.ca):
       tenant directory w/ per-studio stats (bookings, revenue, clients,
       MRR), subscription management, drill-down per tenant.

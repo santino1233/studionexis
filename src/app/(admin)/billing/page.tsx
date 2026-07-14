@@ -4,6 +4,7 @@ import { Card, CardHeader } from "@/components/ui/card";
 import { getCurrentTenant } from "@/lib/tenant";
 import { getSession } from "@/lib/auth";
 import { PLANS, ADDONS, ANNUAL_DISCOUNT, annualMonthly, getLimits, planUsage, getPlan } from "@/lib/plans";
+import { customFeatures, featureRequests } from "@/lib/features";
 import { db } from "@/lib/db";
 import { estMessages } from "@/lib/sms";
 
@@ -200,6 +201,38 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
               <Link href="/settings" className="mt-1.5 inline-block text-[11.5px] font-bold text-brand hover:underline">Set up in Settings →</Link>
             </div>
           </div>
+        </div>
+      </Card>
+
+      {/* Custom features (Wave 12 Z8) */}
+      <Card className="mt-6">
+        <CardHeader eyebrow="Bespoke" title="Custom features" sub="Features built just for your studio — yours alone, priced per feature" />
+        <div className="space-y-4 p-6">
+          {customFeatures(tenant).length > 0 && (
+            <ul className="space-y-2">
+              {customFeatures(tenant).map((f) => (
+                <li key={f.id} className="flex items-center justify-between rounded-xl border border-line-2 px-4 py-3">
+                  <span className="text-[13.5px] font-bold text-ink">{f.label}</span>
+                  <span className="flex items-center gap-2.5">
+                    <span className="text-[13px] font-semibold text-ink-2">${f.price}/mo</span>
+                    <span className={`rounded-full px-2.5 py-1 text-[10.5px] font-bold ${f.active ? "bg-green-wash text-green" : "bg-line-2 text-muted"}`}>{f.active ? "Active" : "Paused"}</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+          {featureRequests(tenant).filter((r) => r.status === "NEW" || r.status === "REVIEWING").length > 0 && (
+            <p className="text-[12.5px] font-medium text-muted">
+              {featureRequests(tenant).filter((r) => r.status === "NEW" || r.status === "REVIEWING").length} request(s) with our team — we&apos;ll be in touch with a quote.
+            </p>
+          )}
+          {saved === "feature" && <div className="rounded-xl border border-green/20 bg-green-wash px-3.5 py-2.5 text-[13px] font-medium text-green">Request sent! Our team will reply with a quote.</div>}
+          {isOwner && (
+            <form method="post" action="/api/billing/feature-request" className="space-y-2.5">
+              <textarea name="text" rows={3} required placeholder="Describe the feature you need — e.g. 'A waiver form clients must sign before their first class'" className="w-full rounded-[10px] border border-line bg-surface px-3 py-2.5 text-sm outline-none placeholder:text-muted focus:border-brand focus:ring-4 focus:ring-brand/10" />
+              <button className="rounded-[10px] bg-ink px-5 py-2.5 text-sm font-bold text-canvas hover:opacity-90">Request a custom feature</button>
+            </form>
+          )}
         </div>
       </Card>
 
