@@ -31,7 +31,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         email,
         phone: String(form.get("phone") ?? "").trim() || null,
         // The owner account keeps its role; others can switch staff/instructor.
-        ...(user.role !== "OWNER" && ["STAFF", "INSTRUCTOR"].includes(role) ? { role: role as "STAFF" | "INSTRUCTOR" } : {}),
+        ...(user.role !== "OWNER" && ["STAFF", "INSTRUCTOR", "MANAGER"].includes(role) ? { role: role as "STAFF" | "INSTRUCTOR" | "MANAGER" } : {}),
       },
     });
     return NextResponse.redirect(externalUrl(req, `${profile}?saved=1`), 303);

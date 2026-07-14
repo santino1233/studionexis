@@ -9,7 +9,7 @@ import { SECTION_IDS, type SectionId } from "@/components/site/types";
 // content into the tenant.website JSON blob — never replaces it wholesale.
 export async function POST(req: Request) {
   const auth = await getSession();
-  if (!auth || auth.role === "INSTRUCTOR") return NextResponse.redirect(externalUrl(req, "/login"), 303);
+  if (!auth || ["STAFF", "INSTRUCTOR"].includes(auth.role)) return NextResponse.redirect(externalUrl(req, "/login"), 303);
 
   const form = await req.formData();
   const section = String(form.get("section") ?? "");

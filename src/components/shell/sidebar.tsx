@@ -6,8 +6,9 @@ import { cn } from "@/lib/cn";
 import { ThemeToggle } from "@/components/shell/theme-toggle";
 import {
   LayoutGrid, Calendar, Star, ClipboardList, BookOpen, Users, CreditCard,
-  Hexagon, FileText, UserCog, LineChart, Settings, Wallet, LogOut, Globe,
+  Hexagon, FileText, UserCog, LineChart, Settings, Wallet, LogOut, Globe, Coins,
 } from "lucide-react";
+import { canAccess } from "@/lib/access";
 
 type Item = { href: string; label: string; icon: React.ComponentType<{ className?: string }> };
 type Group = { label: string; items: Item[] };
@@ -39,8 +40,16 @@ const groups: Group[] = [
   ]},
 ];
 
-export function Sidebar({ mobile = false, slug = "" }: { mobile?: boolean; slug?: string }) {
+export function Sidebar({ mobile = false, slug = "", role = "OWNER" }: { mobile?: boolean; slug?: string; role?: string }) {
   const pathname = usePathname();
+  const visible = groups
+    .map((g) => ({
+      ...g,
+      items: g.items
+        .concat(g.label === "My Portal" && role === "INSTRUCTOR" ? [{ href: "/my-earnings", label: "My Earnings", icon: Coins }] : [])
+        .filter((it) => canAccess(role, it.href)),
+    }))
+    .filter((g) => g.items.length > 0);
   return (
     <aside className={cn("w-[236px] shrink-0 flex-col border-r border-line bg-surface", mobile ? "flex h-full" : "hidden lg:flex")}>
       <Link href="/dashboard" className="flex flex-col gap-0.5 px-[18px] pb-2 pt-5">
@@ -52,7 +61,7 @@ export function Sidebar({ mobile = false, slug = "" }: { mobile?: boolean; slug?
       </Link>
 
       <nav className="flex-1 overflow-y-auto px-2 py-1">
-        {groups.map((g) => (
+        {visible.map((g) => (
           <div key={g.label}>
             <div className="mt-[18px] mb-1.5 px-3 text-[10.5px] font-bold uppercase tracking-[0.09em] text-muted">{g.label}</div>
             {g.items.map((it) => {

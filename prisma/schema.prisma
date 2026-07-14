@@ -50,7 +50,8 @@ model Tenant {
 
 enum UserRole {
   OWNER
-  STAFF
+  MANAGER
+  STAFF // front desk / reception
   INSTRUCTOR
   SUPERADMIN
 }

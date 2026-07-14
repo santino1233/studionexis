@@ -194,7 +194,7 @@ https://new.nexis.revsports.ca → commit → log → next.
       on/off, fixed $ per class, per-head $ table (1→$20, 2→$30…).
       Earnings engine + calendar rail use the mode; payroll month report
       (per staff: classes, hours, base, commission — retro vs non-retro).
-- [ ] Y5 Roles & module access: MANAGER + RECEPTION roles (portals:
+- [x] Y5 Roles & module access: MANAGER + RECEPTION roles (portals:
       reception = schedule/clients/POS/products; manager = all but
       billing+HQ; instructor = own schedule + My Earnings; owner = all).
       Middleware guards, role-filtered nav, role-based landing page.

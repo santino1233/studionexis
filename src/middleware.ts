@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { jwtVerify } from "jose";
+import { canAccess, homeFor } from "@/lib/access";
 
 const PUBLIC = ["/login", "/api/login", "/signup", "/api/signup", "/book", "/s", "/api/public", "/api/cron", "/api/media", "/api/twilio"];
 
@@ -65,9 +66,8 @@ export async function middleware(req: NextRequest) {
     try {
       const { payload } = await jwtVerify(token, new TextEncoder().encode(process.env.AUTH_SECRET!));
       const role = payload.role as string;
-      const RESTRICTED = ["/pos", "/products", "/invoices", "/analytics", "/settings", "/billing", "/team", "/welcome", "/expenses"];
-      if (role === "INSTRUCTOR" && RESTRICTED.some((p) => pathname === p || pathname.startsWith(p + "/"))) {
-        return NextResponse.redirect(new URL("/schedule", req.url));
+      if (!canAccess(role, pathname)) {
+        return NextResponse.redirect(new URL(homeFor(role), req.url));
       }
       return NextResponse.next();
     } catch {

@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
 import { createSession } from "@/lib/auth";
 import { externalUrl } from "@/lib/request-url";
+import { homeFor } from "@/lib/access";
 
 export async function POST(req: Request) {
   if (!rateLimit(req, "login", 10, 60)) {
@@ -28,5 +29,5 @@ export async function POST(req: Request) {
   if (!user.tenantId) return NextResponse.redirect(externalUrl(req, "/login?error=1"), 303);
 
   await createSession({ userId: user.id, tenantId: user.tenantId, role: user.role, name: user.name });
-  return NextResponse.redirect(externalUrl(req, "/dashboard"), 303);
+  return NextResponse.redirect(externalUrl(req, homeFor(user.role)), 303);
 }

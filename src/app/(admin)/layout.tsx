@@ -2,6 +2,7 @@ import { Sidebar } from "@/components/shell/sidebar";
 import { Topbar } from "@/components/shell/topbar";
 import { MobileNav } from "@/components/shell/mobile-nav";
 import { getCurrentTenant } from "@/lib/tenant";
+import { getSession } from "@/lib/auth";
 
 function PlanBanner({ status, trialEndsAt }: { status: string; trialEndsAt: Date | null }) {
   if (status === "TRIAL" && trialEndsAt) {
@@ -24,10 +25,12 @@ function PlanBanner({ status, trialEndsAt }: { status: string; trialEndsAt: Date
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const tenant = await getCurrentTenant();
+  const session = await getSession();
+  const role = session?.role ?? "OWNER";
   return (
     <div className="nx-admin flex h-screen overflow-hidden bg-canvas text-ink">
-      <Sidebar slug={tenant.slug} />
-      <MobileNav slug={tenant.slug} />
+      <Sidebar slug={tenant.slug} role={role} />
+      <MobileNav slug={tenant.slug} role={role} />
       <div className="flex min-w-0 flex-1 flex-col">
         <PlanBanner status={tenant.status} trialEndsAt={tenant.trialEndsAt} />
         <Topbar />

@@ -4,6 +4,7 @@ import { Card, CardHeader } from "@/components/ui/card";
 import { db } from "@/lib/db";
 import { getCurrentTenant, moneyFormatter } from "@/lib/tenant";
 import { getSession } from "@/lib/auth";
+import { ROLE_LABELS } from "@/lib/access";
 import { configOf } from "@/lib/earnings";
 
 export const dynamic = "force-dynamic";
@@ -14,6 +15,7 @@ const save = "rounded-[10px] bg-brand px-5 py-2.5 text-sm font-bold text-white t
 
 const roleTone: Record<string, string> = {
   OWNER: "bg-brand-wash text-brand",
+  MANAGER: "bg-green-wash text-green",
   STAFF: "bg-blue-wash text-blue",
   INSTRUCTOR: "bg-purple-wash text-purple",
 };
@@ -47,7 +49,7 @@ export default async function StaffProfilePage({ params, searchParams }: {
       <Link href="/team" className="text-[12.5px] font-bold text-muted hover:text-ink">← Team</Link>
       <div className="mt-1 flex flex-wrap items-center gap-3">
         <h1 className="font-display text-[30px] font-extrabold tracking-tight text-ink">{user.name}</h1>
-        <span className={`rounded-full px-2.5 py-1 text-[11px] font-bold capitalize ${roleTone[user.role] ?? "bg-line-2 text-ink-2"}`}>{user.role.toLowerCase()}</span>
+        <span className={`rounded-full px-2.5 py-1 text-[11px] font-bold ${roleTone[user.role] ?? "bg-line-2 text-ink-2"}`}>{ROLE_LABELS[user.role] ?? user.role}</span>
         <span className={`rounded-full px-2.5 py-1 text-[11px] font-bold ${user.active ? "bg-green-wash text-green" : "bg-line-2 text-muted"}`}>{user.active ? "Active" : "Deactivated"}</span>
         {user.role === "INSTRUCTOR" && <span className="text-[12.5px] text-muted">{taughtThisMonth} classes this month · {taughtTotal} all-time</span>}
       </div>
@@ -83,8 +85,9 @@ export default async function StaffProfilePage({ params, searchParams }: {
                 <div>
                   <label className={label}>Role</label>
                   <select name="role" defaultValue={user.role} className={field}>
-                    <option value="STAFF">Staff — front desk & sales</option>
+                    <option value="STAFF">Reception — front desk & sales</option>
                     <option value="INSTRUCTOR">Instructor — teaches classes</option>
+                    <option value="MANAGER">Manager — runs the studio (no billing/payroll)</option>
                   </select>
                 </div>
               )}

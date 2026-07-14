@@ -7,7 +7,7 @@ const CURRENCIES = ["USD", "EUR", "GBP", "AUD", "CAD", "SGD", "THB", "VND", "IDR
 
 export async function POST(req: Request) {
   const auth = await getSession();
-  if (!auth) return NextResponse.redirect(externalUrl(req, "/login"), 303);
+  if (!auth || ["STAFF", "INSTRUCTOR"].includes(auth.role)) return NextResponse.redirect(externalUrl(req, "/login"), 303);
 
   const form = await req.formData();
   const section = String(form.get("section") ?? "identity");

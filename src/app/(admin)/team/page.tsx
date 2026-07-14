@@ -3,12 +3,14 @@ import { Card, CardHeader } from "@/components/ui/card";
 import { db } from "@/lib/db";
 import { getCurrentTenant } from "@/lib/tenant";
 import { getSession } from "@/lib/auth";
+import { ROLE_LABELS } from "@/lib/access";
 
 export const dynamic = "force-dynamic";
 
 const field = "h-10 w-full rounded-[10px] border border-line bg-surface px-3 text-sm outline-none focus:border-brand focus:ring-4 focus:ring-brand/10";
 const roleTone: Record<string, string> = {
   OWNER: "bg-brand-wash text-brand",
+  MANAGER: "bg-green-wash text-green",
   STAFF: "bg-blue-wash text-blue",
   INSTRUCTOR: "bg-purple-wash text-purple",
 };
@@ -62,7 +64,7 @@ export default async function TeamPage({ searchParams }: { searchParams: Promise
                     )}
                   </td>
                   <td className="px-[18px] py-[14px]">
-                    <span className={`rounded-full px-2.5 py-1 text-[11px] font-bold capitalize ${roleTone[u.role] ?? "bg-line-2 text-ink-2"}`}>{u.role.toLowerCase()}</span>
+                    <span className={`rounded-full px-2.5 py-1 text-[11px] font-bold ${roleTone[u.role] ?? "bg-line-2 text-ink-2"}`}>{ROLE_LABELS[u.role] ?? u.role}</span>
                   </td>
                   <td className="px-[18px] py-[14px]">
                     {isOwner ? (
@@ -103,8 +105,9 @@ export default async function TeamPage({ searchParams }: { searchParams: Promise
               <input name="name" required placeholder="Full name" className={field} />
               <input name="email" type="email" required placeholder="Email" className={field} />
               <select name="role" className={field}>
-                <option value="STAFF">Staff — front desk & sales</option>
+                <option value="STAFF">Reception — front desk & sales</option>
                 <option value="INSTRUCTOR">Instructor — teaches classes</option>
+                <option value="MANAGER">Manager — runs the studio (no billing/payroll)</option>
               </select>
               <input name="password" type="text" required minLength={8} placeholder="Temporary password (8+ chars)" className={field} />
               <button className="w-full rounded-[10px] bg-brand py-2.5 text-sm font-bold text-white transition-colors hover:bg-brand-ink">Add member</button>

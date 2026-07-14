@@ -13,7 +13,8 @@ export async function POST(req: Request) {
   const name = String(form.get("name") ?? "").trim();
   const email = String(form.get("email") ?? "").trim().toLowerCase();
   const password = String(form.get("password") ?? "");
-  const role = form.get("role") === "INSTRUCTOR" ? "INSTRUCTOR" : "STAFF";
+  const roleRaw = String(form.get("role"));
+  const role = ["INSTRUCTOR", "MANAGER", "STAFF"].includes(roleRaw) ? (roleRaw as "INSTRUCTOR" | "MANAGER" | "STAFF") : "STAFF";
 
   if (!name || !email || password.length < 8) {
     return NextResponse.redirect(externalUrl(req, "/team?error=missing"), 303);
