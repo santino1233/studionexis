@@ -198,3 +198,34 @@ https://new.nexis.revsports.ca → commit → log → next.
       reception = schedule/clients/POS/products; manager = all but
       billing+HQ; instructor = own schedule + My Earnings; owner = all).
       Middleware guards, role-filtered nav, role-based landing page.
+
+## Wave 12 — Owner brief 2026-07-14 (calendar UX, products, memberships, Stripe, analytics, HQ portal)
+- [ ] Z1 GitHub: create repo, push /opt/nexis, and push on every future commit.
+- [ ] Z2 Calendar UX cluster: (a) checkout as popup on the schedule page,
+      not a separate page; (b) checked-in attendees can still be checked
+      out (take payment) if unpaid; (c) click an empty calendar slot →
+      popup: Add class here / Block this time (prefilled day+time);
+      (d) Add-class popup (not page) incl. isPublic toggle to hide from
+      public booking.
+- [ ] Z3 Products: full settings — edit name/price/stock/photo/active,
+      restock action, low-stock badge, stock counts surfaced.
+- [ ] Z4 Memberships: monthly or yearly billing on packages (interval
+      none/month/year; membership = auto-renewing, unlimited or N
+      credits/period), client purchase + renewal flow (manual mark-paid
+      until Stripe), booking engine honors active memberships.
+- [ ] Z5 Settings split into sub-menu categories (General / Branding /
+      Classes / Policies / Money / Domain & Website …).
+- [ ] Z6 Stripe payments framework: lib/stripe.ts, connect card in
+      settings/billing, checkout for packages/memberships/SMS topups,
+      subscription for SaaS plans, webhook route — all live the moment
+      keys are added (graceful "connect Stripe" state until then).
+- [ ] Z7 In-depth analytics + visitor tracking: first-party PageView
+      pipeline on public pages (visitor cookie, source/referrer/UTM),
+      analytics Visitors tab — live viewers (5 min), views, uniques,
+      sources, top pages, booking conversion.
+- [ ] Z8 Custom features per tenant: HQ grants paid feature flags w/
+      price (policies.customFeatures), Billing shows active add-ons +
+      "request a custom feature" → HQ queue; flags gate tenant-only code.
+- [ ] Z9 Super-admin portal on its own subdomain (hq.nexis.revsports.ca):
+      tenant directory w/ per-studio stats (bookings, revenue, clients,
+      MRR), subscription management, drill-down per tenant.
