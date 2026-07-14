@@ -570,3 +570,9 @@
 - Each template passes its own SiteSkin (colors, serif, radius, dark) so sections match the design — Boutique cream/serif, Luxury black/sharp, Minimal hairline, Serene rounded sage, Bold neon dark.
 - SiteData expanded; tenant.website blob now holds philosophy/why/testimonials/faqs/socials/sections-enabled map + per-instructor bios (editors land with Y2 builder). All sections respect the enabled map (default on) — the Y2 builder toggles them.
 - Seeded dev-studio with philosophy/why/testimonials; verified all five templates live render philosophy, classes, team, testimonials, FAQ and CTA with real blueprint + instructor data.
+
+## 2026-07-14 — Y2: Mini website builder (Wave 11)
+- New admin page /website ("Website" in the sidebar): every site section has a Shown/Hidden toggle and an inline editor — philosophy + why-us lines, up to 3 testimonials, up to 6 FAQ pairs (blank = friendly defaults), contact/hours/map + Instagram/Facebook/TikTok, and per-instructor bios with portrait photo uploads (media kind=teamphoto).
+- Automatic sections (classes/schedule/pricing/gallery) show where their data comes from with jump links, plus preview chips for all five templates.
+- /api/website merges each section into the tenant.website blob; toggles feed the enabled map added in Y1.
+- Verified live: toggle removed/restored the testimonials band on the public site, custom FAQ ("Do you have showers?"), Mia's bio and uploaded portrait all render on dev-studio's site.

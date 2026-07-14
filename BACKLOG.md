@@ -181,7 +181,7 @@ https://new.nexis.revsports.ca → commit → log → next.
       set by default (soulpilates.com.vn + pilatesbyrecharged.com style):
       hero, about/philosophy, classes, schedule, team, pricing,
       testimonials, gallery, FAQ, contact/map, book CTA.
-- [ ] Y2 Mini website builder ("Customize my template"): admin Website
+- [x] Y2 Mini website builder ("Customize my template"): admin Website
       page — per-section on/off toggles + inline content editors
       (texts, why-us list, testimonial quotes, FAQ pairs, socials,
       instructor bios/photos), live preview links; sections respect the

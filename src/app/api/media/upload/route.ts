@@ -34,6 +34,25 @@ export async function POST(req: Request) {
     return NextResponse.redirect(externalUrl(req, "/settings?saved=1"), 303);
   }
 
+  // Instructor portrait for the website team section (Wave 11 Y2)
+  if (kind === "teamphoto") {
+    const userId = String(form.get("userId") ?? "");
+    const user = await db.user.findFirst({ where: { id: userId, tenantId: auth.tenantId } });
+    if (!user) return NextResponse.redirect(externalUrl(req, "/website"), 303);
+    const f = form.getAll("photos").find((x): x is File => x instanceof File && x.size > 0);
+    const ext = f ? TYPES[f.type] : undefined;
+    if (!f || !ext || f.size > MAX_BYTES) return NextResponse.redirect(externalUrl(req, "/website?error=phototype"), 303);
+    await mkdir(path.join(ROOT, tenant.id), { recursive: true });
+    const name = `team-${Date.now()}-${Math.random().toString(36).slice(2, 7)}${ext}`;
+    await writeFile(path.join(ROOT, tenant.id, name), Buffer.from(await f.arrayBuffer()));
+    const bios = { ...(((site as Record<string, unknown>).teamBios as Record<string, { bio?: string; photo?: string }>) ?? {}) };
+    if (bios[userId]?.photo) await unlink(path.join(ROOT, tenant.id, path.basename(bios[userId].photo!))).catch(() => {});
+    bios[userId] = { ...bios[userId], photo: `/api/media/${tenant.id}/${name}` };
+    (site as Record<string, unknown>).teamBios = bios;
+    await db.tenant.update({ where: { id: tenant.id }, data: { website: site as Prisma.InputJsonValue } });
+    return NextResponse.redirect(externalUrl(req, "/website?saved=1"), 303);
+  }
+
   // Class blueprint hero image (video spec X7)
   if (kind === "classhero") {
     const classTypeId = String(form.get("classTypeId") ?? "");
