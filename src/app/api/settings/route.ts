@@ -111,5 +111,7 @@ export async function POST(req: Request) {
       },
     });
   }
-  return NextResponse.redirect(externalUrl(req, "/settings?saved=1"), 303);
+  let tab = "";
+  try { const r = req.headers.get("referer"); tab = r ? new URL(r).searchParams.get("tab") ?? "" : ""; } catch {}
+  return NextResponse.redirect(externalUrl(req, `/settings?${tab ? `tab=${encodeURIComponent(tab)}&` : ""}saved=1`), 303);
 }

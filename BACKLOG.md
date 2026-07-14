@@ -213,7 +213,7 @@ https://new.nexis.revsports.ca → commit → log → next.
       none/month/year; membership = auto-renewing, unlimited or N
       credits/period), client purchase + renewal flow (manual mark-paid
       until Stripe), booking engine honors active memberships.
-- [ ] Z5 Settings split into sub-menu categories (General / Branding /
+- [x] Z5 Settings split into sub-menu categories (General / Branding /
       Classes / Policies / Money / Domain & Website …).
 - [ ] Z6 Stripe payments framework: lib/stripe.ts, connect card in
       settings/billing, checkout for packages/memberships/SMS topups,

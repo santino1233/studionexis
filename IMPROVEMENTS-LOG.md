@@ -612,3 +612,8 @@
 - Purchases (POS + invoice mark-paid) give memberships a one-period expiry; daily 03:35 cron (lib/memberships.ts, /api/cron/renewals) rolls lapsed memberships forward — credits reset, expiry advances one period from the OLD expiry, and a PENDING "membership renewal" order is logged for the desk to collect (Stripe auto-charge takes over when connected). Frozen memberships pause.
 - Admin table shows MONTHLY/YEARLY chips, "credits / month", "Auto-renews", price "/mo·/yr"; public packages page shows "$99/month", "12 credits every month", "Renews automatically — cancel anytime".
 - Verified live: created $99/mo membership, sold via POS (expiry +1 month), simulated lapse → cron renewed (credits 2→12, period rolled, $99 PENDING renewal order).
+
+## 2026-07-14 — Z5: Settings split into sub-menu categories (Wave 12)
+- Settings is now tabbed: General (identity/currency/timezone/brand) · Classes & Policies (class setup + booking policies) · Website (template picker, texts, photos) · Domain (custom domain) · Money (expense categories — Stripe connect lands here with Z6).
+- Saving any card returns to the tab you were on (referer-aware redirect in /api/settings).
+- Verified live: each tab renders only its cards; policy save from the Classes tab redirected back to ?tab=classes&saved=1.

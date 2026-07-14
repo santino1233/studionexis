@@ -14,8 +14,17 @@ const TIMEZONES = [
 const field = "h-11 w-full rounded-[10px] border border-line bg-surface px-3.5 text-sm outline-none focus:border-brand focus:ring-4 focus:ring-brand/10";
 const label = "mb-1.5 block text-[12.5px] font-semibold text-ink-2";
 
-export default async function SettingsPage({ searchParams }: { searchParams: Promise<{ saved?: string; error?: string }> }) {
-  const { saved, error } = await searchParams;
+const TABS = [
+  ["general", "General"],
+  ["classes", "Classes & Policies"],
+  ["website", "Website"],
+  ["domain", "Domain"],
+  ["money", "Money"],
+] as const;
+
+export default async function SettingsPage({ searchParams }: { searchParams: Promise<{ saved?: string; error?: string; tab?: string }> }) {
+  const { saved, error, tab: tabRaw } = await searchParams;
+  const tab = TABS.some(([id]) => id === tabRaw) ? tabRaw! : "general";
   const tenant = await getCurrentTenant();
   const pol = (tenant.policies ?? {}) as { cancelWindowGroupHours?: number; cancelWindowPrivateHours?: number; waitlistEnabled?: boolean; payAtStudio?: boolean };
 
@@ -24,9 +33,19 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
       <h1 className="font-display text-[30px] font-extrabold tracking-tight text-ink">Settings</h1>
       <p className="mt-1 text-sm text-muted">Your identity flows through everything — receipts, booking pages, money and times.</p>
 
+      <div className="mt-5 flex flex-wrap gap-1.5 border-b border-line-2 pb-0">
+        {TABS.map(([id, label]) => (
+          <a key={id} href={`/settings?tab=${id}`}
+            className={`rounded-t-[10px] px-4 py-2.5 text-[13px] font-bold ${tab === id ? "border border-b-0 border-line-2 bg-surface text-ink" : "text-muted hover:text-ink"}`}>
+            {label}
+          </a>
+        ))}
+      </div>
+
       {saved && <div className="mt-4 rounded-xl border border-green/20 bg-green-wash px-3.5 py-2.5 text-[13px] font-bold text-green">Saved.</div>}
       {error === "tz" && <div className="mt-4 rounded-xl border border-rose/20 bg-rose/5 px-3.5 py-2.5 text-[13px] font-medium text-rose">That timezone wasn&apos;t recognized.</div>}
 
+      {tab === "general" && (<>
       <Card className="mt-6">
         <CardHeader eyebrow="Identity" title="Studio identity" sub="Name, money and time — applied everywhere instantly" />
         <form method="post" action="/api/settings" className="space-y-4 p-6">
@@ -58,7 +77,9 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
           </div>
         </form>
       </Card>
+      </>)}
 
+      {tab === "website" && (<>
       <Card className="mt-5">
         <CardHeader eyebrow="Public" title="Website design" sub="Pick a template and colour — preview before you commit" />
         <form method="post" action="/api/settings" className="space-y-5 p-6">
@@ -206,7 +227,9 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
           })()}
         </div>
       </Card>
+      </>)}
 
+      {tab === "domain" && (<>
       <Card className="mt-5">
         <CardHeader eyebrow="Add-on" title="Custom domain" sub="Serve your website on your own domain" />
         <form method="post" action="/api/settings" className="space-y-4 p-6">
@@ -236,7 +259,9 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
           </div>
         </form>
       </Card>
+      </>)}
 
+      {tab === "money" && (<>
       <Card className="mt-5">
         <CardHeader eyebrow="Money" title="Expense categories" sub="The choices in your expense form — make them match how you think" />
         <form method="post" action="/api/settings" className="space-y-4 p-6">
@@ -253,7 +278,9 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
           </div>
         </form>
       </Card>
+      </>)}
 
+      {tab === "classes" && (<>
       <Card className="mt-5">
         <CardHeader eyebrow="Classes" title="Class setup" sub="The formats and difficulty labels your blueprint editor offers" />
         <form method="post" action="/api/settings" className="space-y-4 p-6">
@@ -301,6 +328,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
           </div>
         </form>
       </Card>
+      </>)}
     </div>
   );
 }
