@@ -1,4 +1,7 @@
-import type { SiteData } from "@/components/site/types";
+import type { SiteData, SiteSkin } from "@/components/site/types";
+import { AboutSection, ClassesShowcase, TeamSection, Testimonials, FaqSection, CtaBanner, SocialLinks } from "@/components/site/sections";
+
+const skin: SiteSkin = { bg: "#FFFFFF", bg2: "#F6F6F4", fg: "#111113", line: "#0000001a", cardBg: "#FFFFFF", serif: false, radius: "0px", dark: false };
 
 // Minimal — white, oversized sans type, hairline rules, one accent.
 export function Minimal(d: SiteData) {
@@ -18,8 +21,11 @@ export function Minimal(d: SiteData) {
         <img src={d.hero} alt={d.name} className="mt-14 aspect-[21/9] w-full object-cover" />
       </header>
 
-      {/* Classes */}
-      {d.sessions.length > 0 && (
+      <AboutSection d={d} s={skin} />
+      <ClassesShowcase d={d} s={skin} />
+
+      {/* This week */}
+      {d.enabled.schedule && d.sessions.length > 0 && (
         <section className="mx-auto max-w-[1040px] border-t border-black/10 px-6 py-14">
           <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-black/40">This week</div>
           <div className="mt-6">
@@ -36,8 +42,10 @@ export function Minimal(d: SiteData) {
         </section>
       )}
 
+      <TeamSection d={d} s={skin} />
+
       {/* Packages */}
-      {d.packages.length > 0 && (
+      {d.enabled.pricing && d.packages.length > 0 && (
         <section className="mx-auto max-w-[1040px] px-6 py-14">
           <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-black/40">Pricing</div>
           <div className="mt-6 grid gap-px bg-black/10 sm:grid-cols-3" style={{ border: "1px solid rgba(0,0,0,.1)" }}>
@@ -52,12 +60,19 @@ export function Minimal(d: SiteData) {
         </section>
       )}
 
+      <Testimonials d={d} s={skin} />
+
       {/* Gallery */}
-      <section className="mx-auto grid max-w-[1040px] grid-cols-3 gap-px px-6 pb-14">
-        {d.gallery.slice(0, 3).map((g) => (
-          <img key={g} src={g} alt="" loading="lazy" className="aspect-square w-full object-cover" />
-        ))}
-      </section>
+      {d.enabled.gallery && (
+        <section className="mx-auto grid max-w-[1040px] grid-cols-3 gap-px px-6 pb-14">
+          {d.gallery.slice(0, 3).map((g) => (
+            <img key={g} src={g} alt="" loading="lazy" className="aspect-square w-full object-cover" />
+          ))}
+        </section>
+      )}
+
+      <FaqSection d={d} s={skin} />
+      <CtaBanner d={d} s={skin} />
 
       {/* Contact + map */}
       <footer className="border-t border-black/10">
@@ -68,7 +83,7 @@ export function Minimal(d: SiteData) {
               {d.address && <p>{d.address}</p>}
               {d.phone && <p>{d.phone}</p>}
               {d.hours && <p>{d.hours}</p>}
-              {d.instagram && <p><a className="underline underline-offset-4" href={`https://instagram.com/${d.instagram}`}>@{d.instagram}</a></p>}
+              <SocialLinks d={d} />
             </div>
             <a href={d.bookHref} className="mt-8 inline-block px-8 py-4 text-[14px] font-bold text-white" style={{ background: d.brand }}>Book a Class</a>
             <p className="mt-10 text-[11px] text-black/30">Powered by StudioNexis</p>

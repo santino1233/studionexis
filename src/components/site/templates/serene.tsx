@@ -1,4 +1,7 @@
-import type { SiteData } from "@/components/site/types";
+import type { SiteData, SiteSkin } from "@/components/site/types";
+import { AboutSection, ClassesShowcase, TeamSection, Testimonials, FaqSection, CtaBanner, SocialLinks } from "@/components/site/sections";
+
+const skin: SiteSkin = { bg: "#F2F4EF", bg2: "#FFFFFFb3", fg: "#2B322B", line: "#2B322B14", cardBg: "#FFFFFF", serif: false, radius: "24px", dark: false };
 
 // Serene — soft sage & stone, airy rounded shapes, calm and natural.
 export function Serene(d: SiteData) {
@@ -25,8 +28,11 @@ export function Serene(d: SiteData) {
         </div>
       </header>
 
-      {/* Classes */}
-      {d.sessions.length > 0 && (
+      <AboutSection d={d} s={skin} />
+      <ClassesShowcase d={d} s={skin} />
+
+      {/* Upcoming */}
+      {d.enabled.schedule && d.sessions.length > 0 && (
         <section className="bg-white/70">
           <div className="mx-auto max-w-[1080px] px-6 py-16">
             <h2 className="text-center font-display text-[28px] font-extrabold tracking-tight">Upcoming classes</h2>
@@ -43,8 +49,10 @@ export function Serene(d: SiteData) {
         </section>
       )}
 
+      <TeamSection d={d} s={skin} />
+
       {/* Packages */}
-      {d.packages.length > 0 && (
+      {d.enabled.pricing && d.packages.length > 0 && (
         <section className="mx-auto max-w-[1080px] px-6 py-16">
           <h2 className="text-center font-display text-[28px] font-extrabold tracking-tight">Gentle on your wallet too</h2>
           <div className="mt-8 grid gap-5 sm:grid-cols-3">
@@ -60,14 +68,21 @@ export function Serene(d: SiteData) {
         </section>
       )}
 
+      <Testimonials d={d} s={skin} />
+
       {/* Gallery */}
-      <section className="mx-auto max-w-[1080px] px-6 pb-16">
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-          {d.gallery.slice(0, 4).map((g, i) => (
-            <img key={g} src={g} alt="" loading="lazy" className="w-full object-cover shadow-sm" style={{ aspectRatio: "3/4", borderRadius: i % 2 ? "28px" : "120px 120px 28px 28px" }} />
-          ))}
-        </div>
-      </section>
+      {d.enabled.gallery && (
+        <section className="mx-auto max-w-[1080px] px-6 py-16">
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+            {d.gallery.slice(0, 4).map((g, i) => (
+              <img key={g} src={g} alt="" loading="lazy" className="w-full object-cover shadow-sm" style={{ aspectRatio: "3/4", borderRadius: i % 2 ? "28px" : "120px 120px 28px 28px" }} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      <FaqSection d={d} s={skin} />
+      <CtaBanner d={d} s={skin} />
 
       {/* Contact + map */}
       <footer id="find-us" className="rounded-t-[48px] bg-white">
@@ -78,7 +93,7 @@ export function Serene(d: SiteData) {
               {d.address && <p>📍 {d.address}</p>}
               {d.phone && <p>📞 {d.phone}</p>}
               {d.hours && <p>🕐 {d.hours}</p>}
-              {d.instagram && <p>◎ <a className="underline underline-offset-4" href={`https://instagram.com/${d.instagram}`}>@{d.instagram}</a></p>}
+              <SocialLinks d={d} />
             </div>
             <a href={d.bookHref} className="mt-8 inline-block rounded-full px-7 py-3.5 text-[14px] font-bold text-white" style={{ background: d.brand }}>Book a Class</a>
             <p className="mt-10 text-[11.5px] opacity-40">Powered by StudioNexis</p>

@@ -564,3 +564,9 @@
 - New `ClassType.format` label; blueprint editor and the add-class form now offer the studio's own formats and difficulty labels (legacy enum values still render nicely); API validates against the configured lists.
 - Public booking: difficulty filter is built from the labels the studio actually uses (URL-encoded for spaces), class cards and the class detail hero show format + difficulty chips.
 - Verified live on dev-studio: saved "Gentle/Moderate/Athletic/All levels" + "Tower" format, editor offered them, Reformer Flow saved as Reformer/Athletic, bogus difficulty rejected, public list filter + detail chips render the custom vocabulary.
+
+## 2026-07-14 — Y1: Rich website sections on all 5 templates (Wave 11)
+- New shared skin-driven section library (src/components/site/sections.tsx): About & philosophy w/ why-us checklist, Classes showcase (auto from blueprints: hero/color, format+difficulty chips, description, benefits, price), Meet the team (instructors, photo or initials), Testimonials (5-star quote cards), FAQ accordion (sensible defaults incl. cancellation window from settings), big Book CTA banner, socials (IG/FB/TikTok) in footers.
+- Each template passes its own SiteSkin (colors, serif, radius, dark) so sections match the design — Boutique cream/serif, Luxury black/sharp, Minimal hairline, Serene rounded sage, Bold neon dark.
+- SiteData expanded; tenant.website blob now holds philosophy/why/testimonials/faqs/socials/sections-enabled map + per-instructor bios (editors land with Y2 builder). All sections respect the enabled map (default on) — the Y2 builder toggles them.
+- Seeded dev-studio with philosophy/why/testimonials; verified all five templates live render philosophy, classes, team, testimonials, FAQ and CTA with real blueprint + instructor data.

@@ -1,4 +1,7 @@
-import type { SiteData } from "@/components/site/types";
+import type { SiteData, SiteSkin } from "@/components/site/types";
+import { AboutSection, ClassesShowcase, TeamSection, Testimonials, FaqSection, CtaBanner, SocialLinks } from "@/components/site/sections";
+
+const skin: SiteSkin = { bg: "#121110", bg2: "#1A1816", fg: "#EFEAE2", line: "#EFEAE21a", cardBg: "#1E1B18", serif: true, radius: "0px", dark: true };
 
 // Luxury — near-black, thin uppercase tracking, gold-leaning accent, full-bleed hero.
 export function Luxury(d: SiteData) {
@@ -20,8 +23,11 @@ export function Luxury(d: SiteData) {
         </div>
       </header>
 
-      {/* Classes */}
-      {d.sessions.length > 0 && (
+      <AboutSection d={d} s={skin} />
+      <ClassesShowcase d={d} s={skin} />
+
+      {/* Schedule */}
+      {d.enabled.schedule && d.sessions.length > 0 && (
         <section className="mx-auto max-w-[1100px] px-6 py-20">
           <div className="mb-10 flex items-end justify-between">
             <h2 className="font-serif text-[32px] font-medium">The Schedule</h2>
@@ -41,15 +47,19 @@ export function Luxury(d: SiteData) {
         </section>
       )}
 
+      <TeamSection d={d} s={skin} />
+
       {/* Gallery strip */}
-      <section className="grid grid-cols-2 gap-1 md:grid-cols-4">
-        {d.gallery.slice(0, 4).map((g) => (
-          <img key={g} src={g} alt="" loading="lazy" className="aspect-square w-full object-cover opacity-80 transition-opacity hover:opacity-100" />
-        ))}
-      </section>
+      {d.enabled.gallery && (
+        <section className="grid grid-cols-2 gap-1 md:grid-cols-4">
+          {d.gallery.slice(0, 4).map((g) => (
+            <img key={g} src={g} alt="" loading="lazy" className="aspect-square w-full object-cover opacity-80 transition-opacity hover:opacity-100" />
+          ))}
+        </section>
+      )}
 
       {/* Packages */}
-      {d.packages.length > 0 && (
+      {d.enabled.pricing && d.packages.length > 0 && (
         <section className="mx-auto max-w-[1100px] px-6 py-20">
           <h2 className="text-center font-serif text-[32px] font-medium">Memberships</h2>
           <div className="mt-10 grid gap-6 md:grid-cols-3">
@@ -65,6 +75,10 @@ export function Luxury(d: SiteData) {
         </section>
       )}
 
+      <Testimonials d={d} s={skin} />
+      <FaqSection d={d} s={skin} />
+      <CtaBanner d={d} s={skin} />
+
       {/* Contact + map */}
       <footer className="border-t px-6 py-20" style={{ borderColor: "#EFEAE21a" }}>
         <div className="mx-auto grid max-w-[1100px] gap-12 md:grid-cols-2">
@@ -74,7 +88,7 @@ export function Luxury(d: SiteData) {
               {d.address && <p>{d.address}</p>}
               {d.phone && <p>{d.phone}</p>}
               {d.hours && <p>{d.hours}</p>}
-              {d.instagram && <p><a className="underline underline-offset-4" href={`https://instagram.com/${d.instagram}`}>@{d.instagram}</a></p>}
+              <SocialLinks d={d} />
             </div>
             <a href={d.bookHref} className="mt-10 inline-block px-9 py-3.5 text-[11px] font-bold uppercase tracking-[0.3em] text-black" style={{ background: d.brand }}>Book a Class</a>
             <p className="mt-12 text-[10px] uppercase tracking-[0.3em] opacity-30">Powered by StudioNexis</p>

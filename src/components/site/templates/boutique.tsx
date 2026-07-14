@@ -1,4 +1,7 @@
-import type { SiteData } from "@/components/site/types";
+import type { SiteData, SiteSkin } from "@/components/site/types";
+import { AboutSection, ClassesShowcase, TeamSection, Testimonials, FaqSection, CtaBanner, SocialLinks } from "@/components/site/sections";
+
+const skin: SiteSkin = { bg: "#FAF5EE", bg2: "#F4EDE2", fg: "#2A241D", line: "#2A241D14", cardBg: "#FFFFFF", serif: true, radius: "24px", dark: false };
 
 // Boutique — warm cream, serif editorial, overlapping photo cards.
 export function Boutique(d: SiteData) {
@@ -28,8 +31,11 @@ export function Boutique(d: SiteData) {
         </div>
       </header>
 
-      {/* Classes */}
-      {d.sessions.length > 0 && (
+      <AboutSection d={d} s={skin} />
+      <ClassesShowcase d={d} s={skin} />
+
+      {/* This week */}
+      {d.enabled.schedule && d.sessions.length > 0 && (
         <section className="border-y" style={{ borderColor: "#2A241D14", background: "#F4EDE2" }}>
           <div className="mx-auto max-w-[1080px] px-6 py-16">
             <h2 className="font-serif text-[30px] font-medium">This week at the studio</h2>
@@ -47,8 +53,10 @@ export function Boutique(d: SiteData) {
         </section>
       )}
 
+      <TeamSection d={d} s={skin} />
+
       {/* Packages */}
-      {d.packages.length > 0 && (
+      {d.enabled.pricing && d.packages.length > 0 && (
         <section className="mx-auto max-w-[1080px] px-6 py-16">
           <h2 className="text-center font-serif text-[30px] font-medium">Packages</h2>
           <div className="mt-8 grid gap-5 sm:grid-cols-3">
@@ -64,14 +72,21 @@ export function Boutique(d: SiteData) {
         </section>
       )}
 
+      <Testimonials d={d} s={skin} />
+
       {/* Gallery */}
-      <section className="mx-auto max-w-[1080px] px-6 pb-16">
-        <div className="grid grid-cols-3 gap-3">
-          {d.gallery.slice(0, 3).map((g, i) => (
-            <img key={g} src={g} alt="" loading="lazy" className={`w-full rounded-2xl object-cover ${i === 1 ? "mt-6" : ""}`} style={{ aspectRatio: "3/4" }} />
-          ))}
-        </div>
-      </section>
+      {d.enabled.gallery && (
+        <section className="mx-auto max-w-[1080px] px-6 py-16">
+          <div className="grid grid-cols-3 gap-3">
+            {d.gallery.slice(0, 3).map((g, i) => (
+              <img key={g} src={g} alt="" loading="lazy" className={`w-full rounded-2xl object-cover ${i === 1 ? "mt-6" : ""}`} style={{ aspectRatio: "3/4" }} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      <FaqSection d={d} s={skin} />
+      <CtaBanner d={d} s={skin} />
 
       {/* Contact + map */}
       <footer id="visit" className="border-t" style={{ borderColor: "#2A241D14", background: "#2A241D", color: "#FAF5EE" }}>
@@ -82,7 +97,7 @@ export function Boutique(d: SiteData) {
               {d.address && <p>📍 {d.address}</p>}
               {d.phone && <p>📞 {d.phone}</p>}
               {d.hours && <p>🕐 {d.hours}</p>}
-              {d.instagram && <p>◎ <a className="underline underline-offset-4" href={`https://instagram.com/${d.instagram}`}>@{d.instagram}</a></p>}
+              <SocialLinks d={d} />
             </div>
             <a href={d.bookHref} className="mt-8 inline-block rounded-full px-7 py-3.5 text-[14px] font-bold text-white" style={{ background: d.brand }}>Book a Class</a>
             <p className="mt-10 text-[11px] uppercase tracking-widest opacity-40">Powered by StudioNexis</p>

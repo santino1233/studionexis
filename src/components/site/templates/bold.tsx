@@ -1,4 +1,7 @@
-import type { SiteData } from "@/components/site/types";
+import type { SiteData, SiteSkin } from "@/components/site/types";
+import { AboutSection, ClassesShowcase, TeamSection, Testimonials, FaqSection, CtaBanner, SocialLinks } from "@/components/site/sections";
+
+const skin: SiteSkin = { bg: "#17181C", bg2: "#1E2026", fg: "#FFFFFF", line: "#ffffff1a", cardBg: "#ffffff0d", serif: false, radius: "20px", dark: true };
 
 // Bold — brand-color-drenched, oversized display type, high energy.
 export function Bold(d: SiteData) {
@@ -33,8 +36,11 @@ export function Bold(d: SiteData) {
         </div>
       </div>
 
-      {/* Classes */}
-      {d.sessions.length > 0 && (
+      <AboutSection d={d} s={skin} />
+      <ClassesShowcase d={d} s={skin} />
+
+      {/* This week */}
+      {d.enabled.schedule && d.sessions.length > 0 && (
         <section className="mx-auto max-w-[1100px] px-6 py-16">
           <h2 className="font-display text-[34px] font-extrabold uppercase tracking-tight">This week</h2>
           <div className="mt-7 grid gap-3 sm:grid-cols-2">
@@ -51,8 +57,10 @@ export function Bold(d: SiteData) {
         </section>
       )}
 
+      <TeamSection d={d} s={skin} />
+
       {/* Packages */}
-      {d.packages.length > 0 && (
+      {d.enabled.pricing && d.packages.length > 0 && (
         <section id="prices" className="mx-auto max-w-[1100px] px-6 pb-16">
           <h2 className="font-display text-[34px] font-extrabold uppercase tracking-tight">Packs</h2>
           <div className="mt-7 grid gap-4 sm:grid-cols-3">
@@ -68,12 +76,19 @@ export function Bold(d: SiteData) {
         </section>
       )}
 
+      <Testimonials d={d} s={skin} />
+
       {/* Gallery */}
-      <section className="mx-auto grid max-w-[1100px] grid-cols-2 gap-3 px-6 pb-16 md:grid-cols-4">
-        {d.gallery.slice(0, 4).map((g) => (
-          <img key={g} src={g} alt="" loading="lazy" className="aspect-square w-full rounded-2xl object-cover" />
-        ))}
-      </section>
+      {d.enabled.gallery && (
+        <section className="mx-auto grid max-w-[1100px] grid-cols-2 gap-3 px-6 py-16 md:grid-cols-4">
+          {d.gallery.slice(0, 4).map((g) => (
+            <img key={g} src={g} alt="" loading="lazy" className="aspect-square w-full rounded-2xl object-cover" />
+          ))}
+        </section>
+      )}
+
+      <FaqSection d={d} s={skin} />
+      <CtaBanner d={d} s={skin} />
 
       {/* Contact + map */}
       <footer className="border-t border-white/10">
@@ -84,7 +99,7 @@ export function Bold(d: SiteData) {
               {d.address && <p>📍 {d.address}</p>}
               {d.phone && <p>📞 {d.phone}</p>}
               {d.hours && <p>🕐 {d.hours}</p>}
-              {d.instagram && <p>◎ <a className="underline underline-offset-4" href={`https://instagram.com/${d.instagram}`}>@{d.instagram}</a></p>}
+              <SocialLinks d={d} />
             </div>
             <a href={d.bookHref} className="mt-8 inline-block rounded-xl px-8 py-4 text-[14px] font-extrabold uppercase text-black" style={{ background: d.brand }}>Book a Class</a>
             <p className="mt-10 text-[11px] uppercase tracking-widest text-white/25">Powered by StudioNexis</p>
