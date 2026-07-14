@@ -207,7 +207,7 @@ https://new.nexis.revsports.ca → commit → log → next.
       popup: Add class here / Block this time (prefilled day+time);
       (d) Add-class popup (not page) incl. isPublic toggle to hide from
       public booking.
-- [ ] Z3 Products: full settings — edit name/price/stock/photo/active,
+- [x] Z3 Products: full settings — edit name/price/stock/photo/active,
       restock action, low-stock badge, stock counts surfaced.
 - [ ] Z4 Memberships: monthly or yearly billing on packages (interval
       none/month/year; membership = auto-renewing, unlimited or N

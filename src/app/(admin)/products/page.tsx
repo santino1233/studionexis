@@ -7,19 +7,23 @@ export const dynamic = "force-dynamic";
 const field = "h-10 rounded-[10px] border border-line bg-surface px-3 text-sm outline-none focus:border-brand focus:ring-4 focus:ring-brand/10";
 const microLabel = "mb-1 block text-[11px] font-bold uppercase tracking-wider text-muted";
 
-export default async function ProductsPage() {
+export default async function ProductsPage({ searchParams }: { searchParams: Promise<{ saved?: string; archived?: string }> }) {
+  const { saved, archived } = await searchParams;
+  const showArchived = archived === "1";
   const tenant = await getCurrentTenant();
   const fmt = moneyFormatter(tenant.currency);
-  const [packages, products, vouchers] = await Promise.all([
+  const [packages, products, vouchers, archivedCount] = await Promise.all([
     db.package.findMany({ where: { tenantId: tenant.id, active: true }, orderBy: { price: "asc" }, include: { _count: { select: { purchases: true } } } }),
-    db.product.findMany({ where: { tenantId: tenant.id, active: true }, orderBy: { name: "asc" } }),
+    db.product.findMany({ where: { tenantId: tenant.id, active: !showArchived }, orderBy: { name: "asc" } }),
     db.voucher.findMany({ where: { tenantId: tenant.id, active: true }, orderBy: { createdAt: "desc" }, take: 20 }),
+    db.product.count({ where: { tenantId: tenant.id, active: false } }),
   ]);
 
   return (
     <div className="mx-auto max-w-[1100px]">
       <h1 className="font-display text-[30px] font-extrabold tracking-tight text-ink">Products &amp; Packages</h1>
       <p className="mt-1 text-sm text-muted">Everything your studio sells — class packages and retail items, all in your currency.</p>
+      {saved && <div className="mt-4 rounded-xl border border-green/20 bg-green-wash px-3.5 py-2.5 text-[13px] font-medium text-green">Saved.</div>}
 
       {/* Packages */}
       <div className="mt-6 grid grid-cols-1 gap-5 lg:grid-cols-3">
@@ -69,28 +73,57 @@ export default async function ProductsPage() {
       {/* Products */}
       <div className="mt-6 grid grid-cols-1 gap-5 lg:grid-cols-3">
         <Card className="lg:col-span-2">
-          <CardHeader eyebrow="Retail" title="Products" sub="Merchandise sold at the front desk" />
+          <div className="flex items-center justify-between pr-5">
+            <CardHeader eyebrow="Retail" title={showArchived ? "Archived products" : "Products"} sub={showArchived ? "Hidden from the register — restore anytime" : "Merchandise sold at the front desk — edit anything inline"} />
+            {(archivedCount > 0 || showArchived) && (
+              <a href={showArchived ? "/products" : "/products?archived=1"} className="rounded-lg bg-line-2 px-3 py-1.5 text-[11.5px] font-bold text-ink-2 hover:text-ink">
+                {showArchived ? "← Active products" : `Archived (${archivedCount})`}
+              </a>
+            )}
+          </div>
           <table className="w-full text-left">
             <thead>
               <tr className="border-b border-line-2">
-                {["Product", "Price", "In stock"].map((h) => (
-                  <th key={h} className="px-[18px] py-[13px] text-[10.5px] font-bold uppercase tracking-[0.08em] text-muted">{h}</th>
+                {["Product", "Price", "Stock", "Restock", ""].map((h, i) => (
+                  <th key={i} className="px-[14px] py-[13px] text-[10.5px] font-bold uppercase tracking-[0.08em] text-muted">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {products.map((p) => (
                 <tr key={p.id} className="border-b border-line-2 last:border-0 hover:bg-raised">
-                  <td className="px-[18px] py-[14px] text-[14px] font-semibold text-ink">{p.name}</td>
-                  <td className="px-[18px] py-[14px] text-[13px] font-semibold text-ink">{fmt.format(Number(p.price))}</td>
-                  <td className="px-[18px] py-[14px]">
-                    <span className={`rounded-full px-2.5 py-1 text-[11px] font-bold ${p.stock > 5 ? "bg-green-wash text-green" : p.stock > 0 ? "bg-brand-wash text-brand" : "bg-rose/10 text-rose"}`}>
-                      {p.stock > 0 ? `${p.stock} left` : "Out of stock"}
+                  <td className="px-[14px] py-[10px]" colSpan={2}>
+                    <form method="post" action={`/api/products/${p.id}`} className="flex items-center gap-2">
+                      <input type="hidden" name="action" value="update" />
+                      <input name="name" defaultValue={p.name} className="h-9 min-w-0 flex-1 rounded-lg border border-line bg-surface px-2.5 text-[13px] font-semibold outline-none focus:border-brand" />
+                      <input name="price" type="number" step="0.01" min={0} defaultValue={Number(p.price)} className="h-9 w-[84px] rounded-lg border border-line bg-surface px-2 text-right text-[13px] outline-none focus:border-brand" />
+                      <input name="stock" type="number" min={0} defaultValue={p.stock} title="Set exact stock count" className="h-9 w-[64px] rounded-lg border border-line bg-surface px-2 text-center text-[13px] outline-none focus:border-brand" />
+                      <button className="rounded-lg bg-line-2 px-2.5 py-1.5 text-[11px] font-bold text-ink-2 hover:text-ink">Save</button>
+                    </form>
+                  </td>
+                  <td className="px-[14px] py-[10px]">
+                    <span className={`whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-bold ${p.stock > 5 ? "bg-green-wash text-green" : p.stock > 0 ? "bg-brand-wash text-brand" : "bg-rose/10 text-rose"}`}>
+                      {p.stock > 5 ? `${p.stock} left` : p.stock > 0 ? `Low · ${p.stock} left` : "Out of stock"}
                     </span>
+                  </td>
+                  <td className="px-[14px] py-[10px]">
+                    <form method="post" action={`/api/products/${p.id}`} className="flex items-center gap-1.5">
+                      <input type="hidden" name="action" value="restock" />
+                      <input name="qty" type="number" min={1} placeholder="+" className="h-9 w-[58px] rounded-lg border border-line bg-surface px-2 text-center text-[13px] outline-none focus:border-brand" />
+                      <button className="whitespace-nowrap rounded-lg bg-green-wash px-2.5 py-1.5 text-[11px] font-bold text-green hover:brightness-95">Add</button>
+                    </form>
+                  </td>
+                  <td className="px-[14px] py-[10px] text-right">
+                    <form method="post" action={`/api/products/${p.id}`}>
+                      <input type="hidden" name="action" value={showArchived ? "restore" : "archive"} />
+                      <button className={`rounded-lg px-2.5 py-1.5 text-[11px] font-bold ${showArchived ? "bg-green-wash text-green" : "bg-line-2 text-ink-2 hover:bg-rose/10 hover:text-rose"}`}>
+                        {showArchived ? "Restore" : "Archive"}
+                      </button>
+                    </form>
                   </td>
                 </tr>
               ))}
-              {products.length === 0 && <tr><td colSpan={3} className="px-[18px] py-10 text-center text-sm text-muted">No products yet.</td></tr>}
+              {products.length === 0 && <tr><td colSpan={5} className="px-[18px] py-10 text-center text-sm text-muted">{showArchived ? "Nothing archived." : "No products yet."}</td></tr>}
             </tbody>
           </table>
         </Card>

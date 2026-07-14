@@ -601,3 +601,8 @@
 - Click any EMPTY slot on the week/day grid (196 hover-highlighted hour cells) → popup: "➕ Add a class here" (prefilled) or "🔒 Block this hour" (one click).
 - "Add Class" is a popup too (?nw=…): class type, date/time (prefilled from the clicked slot), instructor, repeat-weekly, room, and a "Show in the public booking system" toggle — untick = private session (🙈 on the grid, invisible to clients). /api/sessions honors isPublic + back.
 - Verified live: slot modal, prefilled add modal, hidden class created via popup absent from public /book, charge-via-popup → CHECKED_IN + cash order + done toast, take-payment on a checked-in booking.
+
+## 2026-07-14 — Z3: Product settings & stock management (Wave 12)
+- Product rows are fully editable inline: name, price and exact stock count with Save; separate quick "Restock +N" action; Archive/Restore with an "Archived (N)" view toggle (archived items leave the register and POS).
+- Stock chips now flag "Low · N left" (≤5) and "Out of stock". New /api/products/[id] (update/restock/archive/restore, reception allowed, instructors blocked).
+- Verified live on dev-studio: price 12→13.50, stock set to 4, restock +10 → 14, archive → appears in archived view, restore → active again.
