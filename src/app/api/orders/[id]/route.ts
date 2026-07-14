@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { externalUrl } from "@/lib/request-url";
+import { initialExpiry } from "@/lib/memberships";
 
 // Staff marks a PENDING (reserved-online) order as paid at the desk;
 // that's the moment package credits are granted.
@@ -32,7 +33,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
             clientId: order.clientId,
             packageId: pkg.id,
             creditsLeft: pkg.credits,
-            expiresAt: new Date(Date.now() + pkg.validityDays * 86400_000),
+            expiresAt: initialExpiry(pkg),
             pricePaid: pkg.price,
           },
         });

@@ -218,6 +218,7 @@ model Package {
   validityDays Int     @default(90)
   price        Decimal @db.Decimal(12, 2)
   kind         ClassKind @default(GROUP)
+  interval     String  @default("none") // none = one-time pack | month | year = auto-renewing membership
   active       Boolean @default(true)
 
   purchases ClientPackage[]

@@ -19,6 +19,7 @@ export async function POST(req: Request) {
       validityDays: Math.max(1, Number(form.get("validityDays") ?? 90) || 90),
       price: String(Number(form.get("price") ?? 0) || 0),
       kind: form.get("kind") === "PRIVATE" ? "PRIVATE" : "GROUP",
+      interval: ["month", "year"].includes(String(form.get("interval"))) ? String(form.get("interval")) : "none",
     },
   });
   return NextResponse.redirect(externalUrl(req, "/products"), 303);

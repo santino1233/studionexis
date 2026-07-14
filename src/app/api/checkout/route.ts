@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
+import { initialExpiry } from "@/lib/memberships";
 
 type Item = { kind: "package" | "product"; refId: string; qty: number };
 
@@ -89,7 +90,7 @@ export async function POST(req: Request) {
                 clientId: clientId!,
                 packageId: p.id,
                 creditsLeft: p.credits,
-                expiresAt: new Date(Date.now() + p.validityDays * 86400_000),
+                expiresAt: initialExpiry(p),
                 pricePaid: p.price,
               },
             });

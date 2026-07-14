@@ -209,7 +209,7 @@ https://new.nexis.revsports.ca → commit → log → next.
       public booking.
 - [x] Z3 Products: full settings — edit name/price/stock/photo/active,
       restock action, low-stock badge, stock counts surfaced.
-- [ ] Z4 Memberships: monthly or yearly billing on packages (interval
+- [x] Z4 Memberships: monthly or yearly billing on packages (interval
       none/month/year; membership = auto-renewing, unlimited or N
       credits/period), client purchase + renewal flow (manual mark-paid
       until Stripe), booking engine honors active memberships.

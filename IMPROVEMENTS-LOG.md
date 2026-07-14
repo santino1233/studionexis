@@ -606,3 +606,9 @@
 - Product rows are fully editable inline: name, price and exact stock count with Save; separate quick "Restock +N" action; Archive/Restore with an "Archived (N)" view toggle (archived items leave the register and POS).
 - Stock chips now flag "Low · N left" (≤5) and "Out of stock". New /api/products/[id] (update/restock/archive/restore, reception allowed, instructors blocked).
 - Verified live on dev-studio: price 12→13.50, stock set to 4, restock +10 → 14, archive → appears in archived view, restore → active again.
+
+## 2026-07-14 — Z4: Monthly & yearly memberships (Wave 12)
+- Packages now have a Billing setting: one-time pack (unchanged) / monthly membership / yearly membership. Membership = credits reset every period and it auto-renews.
+- Purchases (POS + invoice mark-paid) give memberships a one-period expiry; daily 03:35 cron (lib/memberships.ts, /api/cron/renewals) rolls lapsed memberships forward — credits reset, expiry advances one period from the OLD expiry, and a PENDING "membership renewal" order is logged for the desk to collect (Stripe auto-charge takes over when connected). Frozen memberships pause.
+- Admin table shows MONTHLY/YEARLY chips, "credits / month", "Auto-renews", price "/mo·/yr"; public packages page shows "$99/month", "12 credits every month", "Renews automatically — cancel anytime".
+- Verified live: created $99/mo membership, sold via POS (expiry +1 month), simulated lapse → cron renewed (credits 2→12, period rolled, $99 PENDING renewal order).

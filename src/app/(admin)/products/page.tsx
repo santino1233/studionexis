@@ -40,10 +40,13 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
             <tbody>
               {packages.map((p) => (
                 <tr key={p.id} className="border-b border-line-2 last:border-0 hover:bg-raised">
-                  <td className="px-[18px] py-[14px] text-[14px] font-semibold text-ink">{p.name}</td>
-                  <td className="px-[18px] py-[14px] text-[13px] text-ink-2">{p.credits}</td>
-                  <td className="px-[18px] py-[14px] text-[13px] text-ink-2">{p.validityDays} days</td>
-                  <td className="px-[18px] py-[14px] text-[13px] font-semibold text-ink">{fmt.format(Number(p.price))}</td>
+                  <td className="px-[18px] py-[14px] text-[14px] font-semibold text-ink">
+                    {p.name}
+                    {p.interval !== "none" && <span className="ml-2 rounded-full bg-purple-wash px-2 py-0.5 text-[10px] font-bold uppercase text-purple">{p.interval}ly</span>}
+                  </td>
+                  <td className="px-[18px] py-[14px] text-[13px] text-ink-2">{p.credits}{p.interval !== "none" ? ` / ${p.interval}` : ""}</td>
+                  <td className="px-[18px] py-[14px] text-[13px] text-ink-2">{p.interval !== "none" ? "Auto-renews" : `${p.validityDays} days`}</td>
+                  <td className="px-[18px] py-[14px] text-[13px] font-semibold text-ink">{fmt.format(Number(p.price))}{p.interval === "month" ? "/mo" : p.interval === "year" ? "/yr" : ""}</td>
                   <td className="px-[18px] py-[14px] text-[13px] text-muted">{p._count.purchases}</td>
                 </tr>
               ))}
@@ -65,6 +68,14 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
               <option value="GROUP">For group classes</option>
               <option value="PRIVATE">For private sessions</option>
             </select>
+            <div>
+              <label className={microLabel}>Billing</label>
+              <select name="interval" className={`${field} w-full`}>
+                <option value="none">One-time pack — expires after the days above</option>
+                <option value="month">Monthly membership — credits reset every month</option>
+                <option value="year">Yearly membership — credits reset every year</option>
+              </select>
+            </div>
             <button className="w-full rounded-[10px] bg-brand py-2.5 text-sm font-bold text-white transition-colors hover:bg-brand-ink">Add package</button>
           </form>
         </Card>

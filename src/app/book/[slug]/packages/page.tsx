@@ -85,10 +85,16 @@ export default async function BuyPackagesPage({ params, searchParams }: {
                 <h2 className="mt-1 font-display text-[22px] font-extrabold tracking-tight text-ink">{p.name}</h2>
                 <div className="mt-4 flex items-baseline gap-2">
                   <span className="font-display text-[30px] font-extrabold tracking-tight text-ink">{fmt.format(Number(p.price))}</span>
+                  {p.interval !== "none" && <span className="text-[15px] font-bold text-muted">{p.interval === "month" ? "/month" : "/year"}</span>}
                 </div>
                 <div className="text-[12px] text-muted">≈ {fmt.format(Number(p.price) / Math.max(1, p.credits))} per class</div>
                 <ul className="mt-5 space-y-2">
-                  {[`${p.credits} class credits`, "Book any class, anytime", `Cancel up to ${windowH} hours before`, `Valid for ${p.validityDays} days`].map((f) => (
+                  {[
+                    p.interval !== "none" ? `${p.credits} credits every ${p.interval}` : `${p.credits} class credits`,
+                    "Book any class, anytime",
+                    `Cancel up to ${windowH} hours before`,
+                    p.interval !== "none" ? "Renews automatically — cancel anytime" : `Valid for ${p.validityDays} days`,
+                  ].map((f) => (
                     <li key={f} className="flex items-center gap-2 text-[13px] text-ink-2">
                       <Check className="size-4 shrink-0" style={{ color: brand }} /> {f}
                     </li>
