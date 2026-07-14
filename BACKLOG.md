@@ -189,7 +189,7 @@ https://new.nexis.revsports.ca → commit → log → next.
 - [x] Y3 Staff settings: /team/[id] profile page — contact info (phone),
       role, pay (monthly base salary + hourly rate), commission settings,
       active toggle, password reset; team list links in.
-- [ ] Y4 Commission engines per instructor: percent (existing), tiered %
+- [x] Y4 Commission engines per instructor: percent (existing), tiered %
       by monthly class count (e.g. 50→25%, 100→30%) with retroactive
       on/off, fixed $ per class, per-head $ table (1→$20, 2→$30…).
       Earnings engine + calendar rail use the mode; payroll month report

@@ -131,7 +131,7 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
   const legendTypes = [...new Map(sessions.map((s) => [s.classType.id, s.classType])).values()].slice(0, 8);
   const fin = selected
     ? selected.status === "COMPLETED" && selected.revenue != null
-      ? { revenue: Number(selected.revenue), earnings: Number(selected.instructorEarnings ?? 0), rate: Number(selected.instructor?.commissionRate ?? 0), frozen: true }
+      ? { revenue: Number(selected.revenue), earnings: Number(selected.instructorEarnings ?? 0), rate: Number(selected.instructor?.commissionRate ?? 0), label: "", frozen: true }
       : { ...(await computeSessionFinancials(selected.id)), frozen: false }
     : null;
   const addableClients = selected && selected.status !== "COMPLETED"
@@ -372,7 +372,7 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
                   <div className="font-display text-[17px] font-extrabold text-ink">{fmt.format(fin.revenue)}</div>
                 </div>
                 <div className="rounded-xl bg-raised px-3 py-2.5">
-                  <div className="text-[9.5px] font-bold uppercase tracking-wider text-muted">Instructor earns{fin.rate ? ` (${fin.rate}%)` : ""}</div>
+                  <div className="text-[9.5px] font-bold uppercase tracking-wider text-muted">Instructor earns{fin.label ? ` (${fin.label})` : fin.rate ? ` (${fin.rate}%)` : ""}</div>
                   <div className="font-display text-[17px] font-extrabold" style={{ color: "var(--color-green)" }}>{fmt.format(fin.earnings)}</div>
                 </div>
               </div>

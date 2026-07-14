@@ -4,6 +4,7 @@ import { Card, CardHeader } from "@/components/ui/card";
 import { db } from "@/lib/db";
 import { getCurrentTenant, moneyFormatter } from "@/lib/tenant";
 import { getSession } from "@/lib/auth";
+import { configOf } from "@/lib/earnings";
 
 export const dynamic = "force-dynamic";
 
@@ -134,21 +135,79 @@ export default async function StaffProfilePage({ params, searchParams }: {
             </form>
           </Card>
 
-          {user.role === "INSTRUCTOR" && (
-            <Card>
-              <CardHeader title="Commission" sub="How this instructor earns from classes" />
-              <form method="post" action={`/api/team/${user.id}`} className="space-y-3.5 p-5">
-                <input type="hidden" name="action" value="rate" />
-                <input type="hidden" name="back" value={`/team/${user.id}`} />
-                <div className="flex items-center gap-2">
-                  <input name="rate" type="number" min={0} max={100} step="0.5" defaultValue={Number(user.commissionRate)} className={`${field} w-28`} />
-                  <span className="text-[13.5px] font-semibold text-ink-2">% of class revenue</span>
-                </div>
-                <p className="text-[12px] text-muted">Tiered %, fixed-per-class and per-head commission modes are next on the roadmap and will appear here.</p>
-                <button className={save}>Save commission</button>
-              </form>
-            </Card>
-          )}
+          {user.role === "INSTRUCTOR" && (() => {
+            const cfg = configOf(user);
+            const tiers = cfg.tiers?.length ? cfg.tiers : [{ classes: 0, pct: Number(user.commissionRate) || 20 }, { classes: 50, pct: 25 }, { classes: 100, pct: 30 }];
+            const rows = cfg.rows?.length ? cfg.rows : [{ people: 1, amount: 20 }, { people: 2, amount: 30 }, { people: 4, amount: 40 }, { people: 6, amount: 50 }];
+            const radio = "flex items-start gap-3 rounded-xl border border-line-2 p-4 has-[:checked]:border-brand has-[:checked]:bg-brand-wash/40";
+            return (
+              <Card>
+                <CardHeader title="Commission" sub="Pick how this instructor earns from classes" />
+                <form method="post" action={`/api/team/${user.id}`} className="space-y-3 p-5">
+                  <input type="hidden" name="action" value="commission" />
+
+                  <label className={radio}>
+                    <input type="radio" name="mode" value="percent" defaultChecked={user.commissionMode === "percent"} className="mt-1 accent-[#F97316]" />
+                    <div className="flex-1">
+                      <div className="text-[13.5px] font-bold text-ink">Percentage of class revenue</div>
+                      <div className="mt-2 flex items-center gap-2">
+                        <input name="rate" type="number" min={0} max={100} step="0.5" defaultValue={Number(user.commissionRate)} className={`${field} w-24`} />
+                        <span className="text-[12.5px] text-muted">% of every class&apos;s revenue</span>
+                      </div>
+                    </div>
+                  </label>
+
+                  <label className={radio}>
+                    <input type="radio" name="mode" value="percent_tiered" defaultChecked={user.commissionMode === "percent_tiered"} className="mt-1 accent-[#F97316]" />
+                    <div className="flex-1">
+                      <div className="text-[13.5px] font-bold text-ink">Tiered % by classes taught per month</div>
+                      <div className="mt-2 space-y-1.5">
+                        {[0, 1, 2].map((i) => (
+                          <div key={i} className="flex items-center gap-2 text-[12.5px] text-muted">
+                            From <input name={`tier_classes_${i}`} type="number" min={0} defaultValue={tiers[i]?.classes ?? ""} className={`${field} w-20`} /> classes →
+                            <input name={`tier_pct_${i}`} type="number" min={0} max={100} step="0.5" defaultValue={tiers[i]?.pct ?? ""} className={`${field} w-20`} /> %
+                          </div>
+                        ))}
+                      </div>
+                      <label className="mt-2.5 flex items-center gap-2 text-[12.5px] font-medium text-ink-2">
+                        <input type="checkbox" name="retroactive" defaultChecked={cfg.retroactive ?? false} className="size-4 accent-[#F97316]" />
+                        Retroactive — reaching a tier re-prices ALL of that month&apos;s classes in payroll
+                      </label>
+                    </div>
+                  </label>
+
+                  <label className={radio}>
+                    <input type="radio" name="mode" value="fixed_per_class" defaultChecked={user.commissionMode === "fixed_per_class"} className="mt-1 accent-[#F97316]" />
+                    <div className="flex-1">
+                      <div className="text-[13.5px] font-bold text-ink">Fixed amount per class</div>
+                      <div className="mt-2 flex items-center gap-2">
+                        <input name="fixedAmount" type="number" min={0} step="0.01" defaultValue={cfg.amount ?? 15} className={`${field} w-28`} />
+                        <span className="text-[12.5px] text-muted">{tenant.currency} per class taught</span>
+                      </div>
+                    </div>
+                  </label>
+
+                  <label className={radio}>
+                    <input type="radio" name="mode" value="per_head" defaultChecked={user.commissionMode === "per_head"} className="mt-1 accent-[#F97316]" />
+                    <div className="flex-1">
+                      <div className="text-[13.5px] font-bold text-ink">By people in the class</div>
+                      <div className="mt-2 space-y-1.5">
+                        {[0, 1, 2, 3].map((i) => (
+                          <div key={i} className="flex items-center gap-2 text-[12.5px] text-muted">
+                            <input name={`head_people_${i}`} type="number" min={1} defaultValue={rows[i]?.people ?? ""} className={`${field} w-20`} />+ people →
+                            <input name={`head_amount_${i}`} type="number" min={0} step="0.01" defaultValue={rows[i]?.amount ?? ""} className={`${field} w-24`} /> {tenant.currency}
+                          </div>
+                        ))}
+                      </div>
+                      <p className="mt-1.5 text-[11.5px] text-muted">The highest matching row applies (e.g. 1→$20, 2→$30: a class of 3 pays $30).</p>
+                    </div>
+                  </label>
+
+                  <button className={save}>Save commission</button>
+                </form>
+              </Card>
+            );
+          })()}
         </div>
       </div>
     </div>

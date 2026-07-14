@@ -29,6 +29,7 @@ const groups: Group[] = [
   { label: "Team & Insights", items: [
     { href: "/team", label: "Team", icon: UserCog },
     { href: "/analytics", label: "Analytics", icon: LineChart },
+    { href: "/payroll", label: "Payroll", icon: Wallet },
     { href: "/expenses", label: "Expenses & P&L", icon: Wallet },
   ]},
   { label: "Workspace", items: [

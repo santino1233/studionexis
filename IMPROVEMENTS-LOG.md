@@ -582,3 +582,9 @@
 - Pay card: monthly base salary + hourly rate (new User columns, Decimal 12,2) — feeds the Y4 payroll report. Commission card shows the current % for instructors; tiered/fixed/per-head modes land with Y4 (schema columns commissionMode/commissionConfig already migrated).
 - Instructor stat line: classes taught this month + all-time.
 - Verified live on Mia: phone/salary/hourly persisted, new password logs in, duplicate email rejected with error chip.
+
+## 2026-07-14 — Y4: Commission engines + payroll report (Wave 11)
+- Four commission modes per instructor (Team → profile → Commission): % of revenue, tiered % by monthly class count (3 tiers + RETROACTIVE toggle), fixed $ per class, per-head $ table (highest matching row applies).
+- Earnings engine (lib/earnings.ts) is mode-aware: session financials compute attendees (qty-aware) + instructor's month class count for tiers; "Mark completed" freezes mode-correct figures; calendar rail shows the basis live (e.g. "Instructor earns (8 ppl)").
+- New /payroll page (owner, month picker): per member — commission plan chip, classes, taught hours, base salary, hourly pay, commission, total; retroactive tiered plans re-price the whole month at the final tier (shown as "retro N%"); grand total row.
+- Verified live on dev-studio: Mia tiered retro (0→20/10→25/100→30) with 7 July classes → chip "retro 20%", commission $143.50 = 20%×$717.50 (frozen $215.25 correctly overridden), hourly $123.75 = 5.5h×$22.50, total $1,067.25; Sofia per-head (1→20/2→30/4→40/6→50): rail shows "(8 ppl)" → $50.00 on a full class; non-retro staff keep frozen sums.

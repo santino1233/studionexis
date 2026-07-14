@@ -53,6 +53,37 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     return NextResponse.redirect(externalUrl(req, `${profile}?saved=1`), 303);
   }
 
+  if (action === "commission") {
+    const mode = String(form.get("mode") ?? "");
+    if (!["percent", "percent_tiered", "fixed_per_class", "per_head"].includes(mode)) {
+      return NextResponse.redirect(externalUrl(req, profile), 303);
+    }
+    const num = (k: string) => {
+      const v = Number(form.get(k));
+      return Number.isFinite(v) && v >= 0 ? v : null;
+    };
+    const tiers = [0, 1, 2]
+      .map((i) => ({ classes: num(`tier_classes_${i}`), pct: num(`tier_pct_${i}`) }))
+      .filter((t): t is { classes: number; pct: number } => t.classes !== null && t.pct !== null && t.pct <= 100);
+    const rows = [0, 1, 2, 3]
+      .map((i) => ({ people: num(`head_people_${i}`), amount: num(`head_amount_${i}`) }))
+      .filter((r): r is { people: number; amount: number } => !!r.people && r.people >= 1 && r.amount !== null);
+    await db.user.update({
+      where: { id },
+      data: {
+        commissionMode: mode,
+        commissionRate: (num("rate") ?? Number(user.commissionRate)).toFixed(2),
+        commissionConfig: {
+          tiers,
+          retroactive: form.get("retroactive") === "on",
+          amount: num("fixedAmount") ?? 0,
+          rows,
+        },
+      },
+    });
+    return NextResponse.redirect(externalUrl(req, `${profile}?saved=1`), 303);
+  }
+
   if (action === "rate") {
     const rate = Number(form.get("rate"));
     if (Number.isFinite(rate) && rate >= 0 && rate <= 100) {
