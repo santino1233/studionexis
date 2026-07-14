@@ -186,7 +186,7 @@ https://new.nexis.revsports.ca → commit → log → next.
       (texts, why-us list, testimonial quotes, FAQ pairs, socials,
       instructor bios/photos), live preview links; sections respect the
       enabled map on all templates.
-- [ ] Y3 Staff settings: /team/[id] profile page — contact info (phone),
+- [x] Y3 Staff settings: /team/[id] profile page — contact info (phone),
       role, pay (monthly base salary + hourly rate), commission settings,
       active toggle, password reset; team list links in.
 - [ ] Y4 Commission engines per instructor: percent (existing), tiered %

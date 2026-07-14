@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Card, CardHeader } from "@/components/ui/card";
 import { db } from "@/lib/db";
 import { getCurrentTenant } from "@/lib/tenant";
@@ -48,8 +49,17 @@ export default async function TeamPage({ searchParams }: { searchParams: Promise
               {team.map((u) => (
                 <tr key={u.id} className="border-b border-line-2 last:border-0 hover:bg-raised">
                   <td className="px-[18px] py-[14px]">
-                    <div className="text-[14px] font-semibold text-ink">{u.name}</div>
-                    <div className="text-[12px] text-muted">{u.email}</div>
+                    {isOwner ? (
+                      <Link href={`/team/${u.id}`} className="group block">
+                        <div className="text-[14px] font-semibold text-ink group-hover:text-brand">{u.name}</div>
+                        <div className="text-[12px] text-muted">{u.email}</div>
+                      </Link>
+                    ) : (
+                      <>
+                        <div className="text-[14px] font-semibold text-ink">{u.name}</div>
+                        <div className="text-[12px] text-muted">{u.email}</div>
+                      </>
+                    )}
                   </td>
                   <td className="px-[18px] py-[14px]">
                     <span className={`rounded-full px-2.5 py-1 text-[11px] font-bold capitalize ${roleTone[u.role] ?? "bg-line-2 text-ink-2"}`}>{u.role.toLowerCase()}</span>

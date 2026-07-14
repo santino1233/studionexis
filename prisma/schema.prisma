@@ -62,8 +62,13 @@ model User {
   email        String
   passwordHash String
   name         String
+  phone        String?
   role           UserRole @default(STAFF)
-  commissionRate Decimal  @default(0) @db.Decimal(5, 2) // % of class revenue
+  baseSalary     Decimal  @default(0) @db.Decimal(12, 2) // per month
+  hourlyRate     Decimal  @default(0) @db.Decimal(12, 2)
+  commissionMode String   @default("percent") // percent | percent_tiered | fixed_per_class | per_head
+  commissionRate Decimal  @default(0) @db.Decimal(5, 2) // % of class revenue (percent mode)
+  commissionConfig Json   @default("{}") // tiers/fixed/per-head settings (Wave 11 Y4)
   active         Boolean  @default(true)
   createdAt    DateTime @default(now())
 

@@ -576,3 +576,9 @@
 - Automatic sections (classes/schedule/pricing/gallery) show where their data comes from with jump links, plus preview chips for all five templates.
 - /api/website merges each section into the tenant.website blob; toggles feed the enabled map added in Y1.
 - Verified live: toggle removed/restored the testimonials band on the public site, custom FAQ ("Do you have showers?"), Mia's bio and uploaded portrait all render on dev-studio's site.
+
+## 2026-07-14 — Y3: Staff profile & settings pages (Wave 11)
+- New /team/[id] profile (owner-only; team list names link in): contact card (name, login email w/ clash guard, phone), role switch (staff ↔ instructor), password reset (bcrypt, verified by real login), deactivate/reactivate.
+- Pay card: monthly base salary + hourly rate (new User columns, Decimal 12,2) — feeds the Y4 payroll report. Commission card shows the current % for instructors; tiered/fixed/per-head modes land with Y4 (schema columns commissionMode/commissionConfig already migrated).
+- Instructor stat line: classes taught this month + all-time.
+- Verified live on Mia: phone/salary/hourly persisted, new password logs in, duplicate email rejected with error chip.
