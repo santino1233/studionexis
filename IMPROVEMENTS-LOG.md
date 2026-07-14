@@ -594,3 +594,10 @@
 - Role-aware login landing (instructors → schedule), API hardening (settings/website APIs reject reception+instructor), Team forms offer all three roles with plain-English descriptions.
 - /my-earnings (instructor-only): month picker, per-class table (people, class revenue, their cut) + stat cards for classes, commission (retro-aware), base+hourly, total pay.
 - Verified live with real logins: Ben (reception) blocked from payroll/settings/website/analytics/team but works the desk; Priya (new manager) gets analytics/settings/website but not payroll/team/billing; Mia (instructor) lands on schedule, sees My Earnings ($143.50 retro-20% + $923.75 base+hourly = $1,067.25 — matches payroll), blocked from clients/POS; sidebars filtered per role.
+
+## 2026-07-14 — Z2: Calendar popups & payment-at-a-glance (Wave 12)
+- Checkout is now a POPUP on the calendar (?co=<booking>): shared CheckoutPanel component (credits card + charge card w/ merch + voucher) rendered in an overlay; errors reopen the popup, success closes it with the ✓ toast. Old full page still works for deep links.
+- Checked-in but unpaid attendees show a "💳 Take payment" button in the rail (was only available before check-in).
+- Click any EMPTY slot on the week/day grid (196 hover-highlighted hour cells) → popup: "➕ Add a class here" (prefilled) or "🔒 Block this hour" (one click).
+- "Add Class" is a popup too (?nw=…): class type, date/time (prefilled from the clicked slot), instructor, repeat-weekly, room, and a "Show in the public booking system" toggle — untick = private session (🙈 on the grid, invisible to clients). /api/sessions honors isPublic + back.
+- Verified live: slot modal, prefilled add modal, hidden class created via popup absent from public /book, charge-via-popup → CHECKED_IN + cash order + done toast, take-payment on a checked-in booking.

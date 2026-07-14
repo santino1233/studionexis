@@ -12,6 +12,10 @@ export async function POST(req: Request) {
   const classTypeId = String(form.get("classTypeId") ?? "");
   const date = String(form.get("date") ?? "");
   const time = String(form.get("time") ?? "");
+  const backRaw = String(form.get("back") ?? "");
+  const back = backRaw.startsWith("/") && !backRaw.startsWith("//") ? backRaw : "/schedule";
+  // Checkbox pattern: hidden "0" + checkbox "1" — absent entirely (old form) = public.
+  const isPublic = form.has("isPublic") ? form.getAll("isPublic").includes("1") : true;
 
   const [tenant, classType] = await Promise.all([
     db.tenant.findUnique({ where: { id: session.tenantId } }),
@@ -38,8 +42,9 @@ export async function POST(req: Request) {
         endsAt: new Date(s.getTime() + classType.durationMin * 60_000),
         capacity,
         location,
+        isPublic,
       };
     }),
   });
-  return NextResponse.redirect(externalUrl(req, "/schedule"), 303);
+  return NextResponse.redirect(externalUrl(req, back), 303);
 }

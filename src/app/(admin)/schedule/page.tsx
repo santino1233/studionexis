@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { getCurrentTenant, moneyFormatter } from "@/lib/tenant";
 import { computeSessionFinancials } from "@/lib/earnings";
 import { dayKeyInTz, timeInTz, weekDays } from "@/lib/tz";
+import { CheckoutPanel } from "@/components/pos/checkout-panel";
 
 export const dynamic = "force-dynamic";
 
@@ -22,7 +23,7 @@ const statusLabel: Record<string, string> = {
   CANCELLED: "Cancelled", LATE_CANCEL: "Late cancel", NO_SHOW: "No show",
 };
 
-type Search = { v?: string; w?: string; d?: string; mo?: string; i?: string; sel?: string; c?: string; checkout?: string };
+type Search = { v?: string; w?: string; d?: string; mo?: string; i?: string; sel?: string; c?: string; checkout?: string; co?: string; nw?: string; slot?: string };
 
 export default async function SchedulePage({ searchParams }: { searchParams: Promise<Search> }) {
   const sp = await searchParams;
@@ -32,6 +33,10 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
   const moOff = Number(sp.mo ?? 0) || 0;
   const { i: instructorFilter, sel, c, checkout } = sp;
   const colorBy = c === "status" ? "status" : "format";
+  // Popups (Wave 12 Z2): co = checkout booking, nw = add-class ("1" or "YYYY-MM-DDTHH:MM"), slot = clicked empty slot.
+  const co = checkout === "done" ? undefined : sp.co;
+  const nw = sp.nw;
+  const slotPick = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(sp.slot ?? "") ? sp.slot : undefined;
 
   const tenant = await getCurrentTenant();
   const fmt = moneyFormatter(tenant.currency);
@@ -95,6 +100,7 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
     db.user.findMany({ where: { tenantId: tenant.id, active: true, role: { in: ["INSTRUCTOR", "OWNER"] } }, orderBy: { name: "asc" } }),
     db.timeBlock.findMany({ where: { tenantId: tenant.id, startsAt: { gte: rangeStart, lt: rangeEnd } }, orderBy: { startsAt: "asc" } }),
   ]);
+  const classTypes = (nw || slotPick) ? await db.classType.findMany({ where: { tenantId: tenant.id, active: true }, orderBy: { name: "asc" } }) : [];
 
   const minutesInTz = (dt: Date) => {
     const [h, m] = dt.toLocaleTimeString("en-GB", { timeZone: tenant.timezone, hour: "2-digit", minute: "2-digit", hour12: false }).split(":").map(Number);
@@ -188,7 +194,7 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
               <button className="w-full rounded-[10px] bg-ink py-2.5 text-[13px] font-bold text-canvas hover:opacity-90">Block this time</button>
             </form>
           </details>
-          <Link href="/schedule/new" className="ml-1 inline-flex items-center gap-2 rounded-xl bg-brand px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-brand-ink">
+          <Link href={qs({ nw: "1" })} className="ml-1 inline-flex items-center gap-2 rounded-xl bg-brand px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-brand-ink">
             <Plus className="size-4" /> Add Class
           </Link>
         </div>
@@ -278,6 +284,13 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
                   return (
                     <div key={d} className={`relative border-l border-line-2 ${isToday ? "bg-brand/[0.03]" : ""}`} style={{ height: gridH }}>
                       {hours.map((h, n) => n > 0 && <div key={h} className="absolute inset-x-0 border-t border-line-2" style={{ top: n * PX_PER_HOUR }} />)}
+                      {/* Click an empty slot → add a class or block it (Z2c) */}
+                      {hours.map((h, n) => (
+                        <Link key={`slot-${h}`} href={qs({ slot: `${d}T${String(h).padStart(2, "0")}:00`, sel: undefined })} title="Add a class or block this time"
+                          className="group/slot absolute inset-x-0 z-0" style={{ top: n * PX_PER_HOUR, height: PX_PER_HOUR }}>
+                          <span className="pointer-events-none absolute inset-0.5 hidden place-items-center rounded-lg border border-dashed border-brand/40 bg-brand/[0.05] text-[11px] font-bold text-brand group-hover/slot:grid">+ {hourLabel(h)}</span>
+                        </Link>
+                      ))}
                       {isToday && nowMin >= minH * 60 && nowMin <= maxH * 60 && (
                         <div className="absolute inset-x-0 z-10 border-t-2 border-brand" style={{ top: (nowMin / 60 - minH) * PX_PER_HOUR }}>
                           <span className="absolute -left-1 -top-[5px] size-2 rounded-full bg-brand" />
@@ -417,12 +430,17 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
                       <div className="mt-2 flex flex-wrap gap-1.5">
                         {b.status === "BOOKED" && (
                           <>
-                            <Link href={`/schedule/${selected.id}/checkout/${b.id}`} className="rounded-lg bg-brand px-2.5 py-1 text-[11px] font-bold text-white hover:bg-brand-ink">Checkout</Link>
+                            <Link href={qs({ co: b.id })} className="rounded-lg bg-brand px-2.5 py-1 text-[11px] font-bold text-white hover:bg-brand-ink">Checkout</Link>
                             <form method="post" action={`/api/bookings/${b.id}`}><input type="hidden" name="action" value="checkin" /><input type="hidden" name="back" value={qs({})} /><button className="rounded-lg bg-green-wash px-2.5 py-1 text-[11px] font-bold text-green hover:brightness-95">Arrived</button></form>
                             <form method="post" action={`/api/bookings/${b.id}`}><input type="hidden" name="action" value="noshow" /><input type="hidden" name="back" value={qs({})} /><button className="rounded-lg bg-rose/10 px-2.5 py-1 text-[11px] font-bold text-rose hover:brightness-95">No show</button></form>
                           </>
                         )}
                         <form method="post" action={`/api/bookings/${b.id}`}><input type="hidden" name="action" value="cancel" /><input type="hidden" name="back" value={qs({})} /><button className="rounded-lg bg-line-2 px-2.5 py-1 text-[11px] font-bold text-ink-2 hover:bg-rose/10 hover:text-rose">Remove</button></form>
+                      </div>
+                    )}
+                    {b.status === "CHECKED_IN" && !b.orderId && b.paymentMethod !== "package_credit" && (
+                      <div className="mt-2">
+                        <Link href={qs({ co: b.id })} className="rounded-lg bg-brand px-2.5 py-1 text-[11px] font-bold text-white hover:bg-brand-ink">💳 Take payment</Link>
                       </div>
                     )}
                   </li>
@@ -476,7 +494,103 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
       )}
 
       {sessions.length === 0 && view !== "month" && (
-        <p className="mt-4 text-center text-sm text-muted">Nothing on the calendar — <Link href="/schedule/new" className="font-bold text-brand hover:underline">add a class</Link>.</p>
+        <p className="mt-4 text-center text-sm text-muted">Nothing on the calendar — <Link href={qs({ nw: "1" })} className="font-bold text-brand hover:underline">add a class</Link>.</p>
+      )}
+
+      {/* ── POPUPS (Wave 12 Z2) ── */}
+      {slotPick && (() => {
+        const [sd, st] = slotPick.split("T");
+        const endT = `${String(Math.min(23, Number(st.slice(0, 2)) + 1)).padStart(2, "0")}:00`;
+        const when = `${new Date(`${sd}T12:00:00Z`).toLocaleDateString("en-US", { timeZone: "UTC", weekday: "long", month: "long", day: "numeric" })} · ${hourLabel(Number(st.slice(0, 2)))}`;
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <Link href={qs({ slot: undefined })} className="absolute inset-0 bg-black/50" aria-label="Close" />
+            <div className="relative w-full max-w-[380px] rounded-2xl border border-line-2 bg-surface p-6 shadow-2xl">
+              <div className="text-[11px] font-bold uppercase tracking-[0.1em] text-muted">Empty slot</div>
+              <h2 className="mt-1 font-display text-[20px] font-extrabold tracking-tight text-ink">{when}</h2>
+              <div className="mt-5 space-y-2.5">
+                <Link href={qs({ slot: undefined, nw: slotPick })} className="block w-full rounded-xl bg-brand py-3 text-center text-[14px] font-bold text-white hover:bg-brand-ink">➕ Add a class here</Link>
+                <form method="post" action="/api/timeblocks">
+                  <input type="hidden" name="back" value={qs({ slot: undefined })} />
+                  <input type="hidden" name="date" value={sd} />
+                  <input type="hidden" name="from" value={st} />
+                  <input type="hidden" name="to" value={endT} />
+                  <input type="hidden" name="reason" value="Blocked from calendar" />
+                  <button className="w-full rounded-xl bg-ink py-3 text-[14px] font-bold text-canvas hover:opacity-90">🔒 Block this hour</button>
+                </form>
+                <Link href={qs({ slot: undefined })} className="block py-1 text-center text-[12.5px] font-bold text-muted hover:text-ink">Cancel</Link>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {nw && (() => {
+        const pre = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(nw) ? nw.split("T") : null;
+        const field = "h-10 w-full rounded-[10px] border border-line bg-surface px-3 text-sm outline-none focus:border-brand focus:ring-4 focus:ring-brand/10";
+        const flabel = "mb-1 block text-[11px] font-bold uppercase tracking-wider text-muted";
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <Link href={qs({ nw: undefined })} className="absolute inset-0 bg-black/50" aria-label="Close" />
+            <div className="relative max-h-[90vh] w-full max-w-[440px] overflow-y-auto rounded-2xl border border-line-2 bg-surface p-6 shadow-2xl">
+              <div className="flex items-start justify-between">
+                <h2 className="font-display text-[21px] font-extrabold tracking-tight text-ink">Add a class</h2>
+                <Link href={qs({ nw: undefined })} className="grid size-8 place-items-center rounded-lg text-muted hover:bg-line-2 hover:text-ink"><X className="size-4" /></Link>
+              </div>
+              <form method="post" action="/api/sessions" className="mt-4 space-y-3.5">
+                <input type="hidden" name="back" value={qs({ nw: undefined })} />
+                <div>
+                  <label className={flabel}>Class type</label>
+                  <select name="classTypeId" required className={field}>
+                    {classTypes.map((t) => <option key={t.id} value={t.id}>{t.name} · {t.durationMin} min</option>)}
+                  </select>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className={flabel}>Date</label>
+                    <input name="date" type="date" required defaultValue={pre ? pre[0] : (view === "day" ? days[0] : todayKey)} className={field} />
+                  </div>
+                  <div>
+                    <label className={flabel}>Time</label>
+                    <input name="time" type="time" required defaultValue={pre ? pre[1] : "09:00"} className={field} />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className={flabel}>Instructor</label>
+                    <select name="instructorId" className={field}>
+                      <option value="">— None —</option>
+                      {instructors.map((u) => <option key={u.id} value={u.id}>{u.name}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className={flabel}>Repeat weekly</label>
+                    <select name="repeatWeeks" className={field}>
+                      {[1, 2, 4, 8, 12].map((n) => <option key={n} value={n}>{n === 1 ? "Just once" : `${n} weeks`}</option>)}
+                    </select>
+                  </div>
+                </div>
+                <input name="location" placeholder="Room / location (optional)" className={field} />
+                <label className="flex items-start gap-2.5 text-[13.5px] font-medium text-ink-2">
+                  <input type="hidden" name="isPublic" value="0" />
+                  <input type="checkbox" name="isPublic" value="1" defaultChecked className="mt-0.5 size-4 accent-[#F97316]" />
+                  <span>Show in the public booking system<span className="block text-[11.5px] font-normal text-muted">Untick for private or internal sessions — clients won&apos;t see it.</span></span>
+                </label>
+                <button className="w-full rounded-xl bg-brand py-3 text-[14px] font-bold text-white hover:bg-brand-ink">Add to calendar</button>
+              </form>
+            </div>
+          </div>
+        );
+      })()}
+
+      {co && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <Link href={qs({ co: undefined })} className="absolute inset-0 bg-black/50" aria-label="Close" />
+          <div className="relative max-h-[90vh] w-full max-w-[720px] overflow-y-auto rounded-2xl border border-line-2 bg-surface p-6 shadow-2xl">
+            <Link href={qs({ co: undefined })} className="absolute right-4 top-4 grid size-8 place-items-center rounded-lg text-muted hover:bg-line-2 hover:text-ink"><X className="size-4" /></Link>
+            <CheckoutPanel bookingId={co} tenantId={tenant.id} currency={tenant.currency} timezone={tenant.timezone} back={qs({ co })} error={checkout} />
+          </div>
+        </div>
       )}
     </div>
   );
