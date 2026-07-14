@@ -31,6 +31,7 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
   const session = await getSession();
   const isOwner = session?.role === "OWNER";
   const pol = (tenant.policies ?? {}) as { billingCycle?: string };
+  const stripeReady = !!process.env.STRIPE_SECRET_KEY;
   const cycle = cycleParam === "annual" || (!cycleParam && pol.billingCycle === "annual") ? "annual" : "monthly";
   const limits = getLimits(tenant);
   const usage = await planUsage(tenant);
@@ -106,11 +107,11 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
                   current ? (
                     <div className="rounded-xl border border-line-2 bg-raised py-3 text-center text-[13.5px] font-bold text-muted">Current plan</div>
                   ) : (
-                    <form method="post" action="/api/billing">
+                    <form method="post" action={stripeReady ? "/api/billing/checkout" : "/api/billing"}>
                       <input type="hidden" name="plan" value={p.id} />
                       <input type="hidden" name="cycle" value={cycle} />
                       <button className={`w-full rounded-xl py-3 text-[14px] font-bold transition-colors ${popular ? "bg-brand text-white hover:bg-brand-ink" : "bg-ink text-canvas hover:opacity-90"}`}>
-                        Choose {p.name}
+                        {stripeReady ? `Subscribe — ${p.name}` : `Choose ${p.name}`}
                       </button>
                     </form>
                   )

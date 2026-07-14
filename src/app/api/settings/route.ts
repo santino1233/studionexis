@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { externalUrl } from "@/lib/request-url";
+import { verifyStripeKey } from "@/lib/stripe";
 
 const CURRENCIES = ["USD", "EUR", "GBP", "AUD", "CAD", "SGD", "THB", "VND", "IDR", "PHP", "MYR", "JPY", "KRW", "AED", "INR"];
 
@@ -87,6 +88,19 @@ export async function POST(req: Request) {
         },
       },
     });
+  } else if (section === "stripe") {
+    const prev = (tenant.policies ?? {}) as Record<string, unknown>;
+    if (String(form.get("action")) === "disconnect") {
+      await db.tenant.update({ where: { id: tenant.id }, data: { policies: { ...prev, stripe: {} } } });
+    } else {
+      const secretKey = String(form.get("secretKey") ?? "").trim();
+      const check = secretKey.startsWith("sk_") ? await verifyStripeKey(secretKey) : { ok: false as const };
+      if (!check.ok) return NextResponse.redirect(externalUrl(req, "/settings?tab=money&error=stripekey"), 303);
+      await db.tenant.update({
+        where: { id: tenant.id },
+        data: { policies: { ...prev, stripe: { secretKey, accountLabel: check.label, connectedAt: new Date().toISOString() } } },
+      });
+    }
   } else if (section === "classsetup") {
     const prev = (tenant.policies ?? {}) as Record<string, unknown>;
     const csv = (v: FormDataEntryValue | null) =>

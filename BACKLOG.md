@@ -215,7 +215,7 @@ https://new.nexis.revsports.ca → commit → log → next.
       until Stripe), booking engine honors active memberships.
 - [x] Z5 Settings split into sub-menu categories (General / Branding /
       Classes / Policies / Money / Domain & Website …).
-- [ ] Z6 Stripe payments framework: lib/stripe.ts, connect card in
+- [x] Z6 Stripe payments framework: lib/stripe.ts, connect card in
       settings/billing, checkout for packages/memberships/SMS topups,
       subscription for SaaS plans, webhook route — all live the moment
       keys are added (graceful "connect Stripe" state until then).

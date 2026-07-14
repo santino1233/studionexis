@@ -278,8 +278,9 @@ model Order {
   discount  Decimal     @default(0) @db.Decimal(12, 2)
   voucherId String?
   voucher   Voucher?    @relation(fields: [voucherId], references: [id])
-  method    String // cash / transfer / card / online
+  method    String // cash / transfer / card / online / stripe / membership
   status    OrderStatus @default(PAID)
+  stripeSessionId String? @unique // set when paid through Stripe Checkout
   createdAt DateTime    @default(now())
 
   items    OrderItem[]

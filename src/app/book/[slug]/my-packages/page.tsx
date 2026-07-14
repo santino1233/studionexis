@@ -10,10 +10,10 @@ export const dynamic = "force-dynamic";
 
 export default async function MyPackagesPage({ params, searchParams }: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ t?: string }>;
+  searchParams: Promise<{ t?: string; ok?: string }>;
 }) {
   const { slug } = await params;
-  const { t } = await searchParams;
+  const { t, ok } = await searchParams;
   const tenant = await tenantBySlugOrDomain(slug);
   if (!tenant || tenant.status === "SUSPENDED") notFound();
   const brand = tenant.brandColor || "#F97316";
@@ -48,6 +48,11 @@ export default async function MyPackagesPage({ params, searchParams }: {
     <div className="min-h-screen bg-canvas">
       <CustomerNav slug={slug} active="my-packages" brand={brand} />
       <main className="mx-auto max-w-[860px] px-4 py-8 sm:px-6">
+        {ok === "paid" && (
+          <div className="mb-5 rounded-2xl border border-green/20 bg-green-wash px-5 py-4 text-[14px] font-bold text-green">
+            🎉 Payment received — your credits are active and ready to book.
+          </div>
+        )}
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <h1 className="font-display text-[28px] font-extrabold tracking-tight text-ink">My Packages</h1>

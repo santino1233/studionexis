@@ -617,3 +617,11 @@
 - Settings is now tabbed: General (identity/currency/timezone/brand) · Classes & Policies (class setup + booking policies) · Website (template picker, texts, photos) · Domain (custom domain) · Money (expense categories — Stripe connect lands here with Z6).
 - Saving any card returns to the tab you were on (referer-aware redirect in /api/settings).
 - Verified live: each tab renders only its cards; policy save from the Classes tab redirected back to ?tab=classes&saved=1.
+
+## 2026-07-14 — Z6: Stripe payments framework (Wave 12) — live the moment keys are added
+- Two independent levels:
+  · STUDIO: Settings → Money → "Stripe" card — studio pastes its own secret key (validated against the live Stripe API before saving; bad keys rejected). Once connected, the public packages page grows a "Pay online now" button for signed-in members → Stripe Checkout in the studio's currency → success handler verifies the session server-side (no webhook needed), creates a PAID order (method=stripe, unique stripeSessionId = idempotent) and grants the package/membership instantly ("Payment received" banner on My Packages). Disconnect supported. Money goes directly to the studio's Stripe.
+  · PLATFORM: with STRIPE_SECRET_KEY env, Plan & Billing buttons switch from "Choose" to "Subscribe —" and create real subscription Checkouts (monthly/annual incl. 20% discount); /api/stripe/webhook (STRIPE_WEBHOOK_SECRET) activates plans on checkout.session.completed and flags PAST_DUE on failed payment / cancellation. Returns 503 until configured.
+- New: stripe npm dep, lib/stripe.ts (platform/studio clients, key verification, zero-decimal currency handling), Order.stripeSessionId (unique).
+- Verified live: connect card renders; fake key rejected (error=stripekey, nothing stored); simulated connected studio → Pay online button appears and a bad-key checkout degrades to err=stripe banner; disconnect clears config; webhook 503 without keys.
+- Follow-up noted: per-class "pay online / deposit" booking options activate next once a studio is genuinely connected.

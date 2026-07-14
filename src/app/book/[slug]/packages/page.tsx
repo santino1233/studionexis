@@ -4,6 +4,7 @@ import { Check, Package } from "lucide-react";
 import { db } from "@/lib/db";
 import { tenantBySlugOrDomain } from "@/lib/public-tenant";
 import { getCustomerSession } from "@/lib/customer-auth";
+import { studioStripeEnabled } from "@/lib/stripe";
 import { moneyFormatter } from "@/lib/tenant";
 import { CustomerNav } from "@/components/customer/nav";
 
@@ -11,13 +12,14 @@ export const dynamic = "force-dynamic";
 
 export default async function BuyPackagesPage({ params, searchParams }: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ ok?: string; kind?: string }>;
+  searchParams: Promise<{ ok?: string; kind?: string; err?: string }>;
 }) {
   const { slug } = await params;
-  const { ok, kind } = await searchParams;
+  const { ok, kind, err } = await searchParams;
   const tenant = await tenantBySlugOrDomain(slug);
   if (!tenant || tenant.status === "SUSPENDED") notFound();
   const brand = tenant.brandColor || "#F97316";
+  const stripeOn = studioStripeEnabled(tenant);
   const fmt = moneyFormatter(tenant.currency);
   const cs = await getCustomerSession();
   const authed = cs && cs.tenantId === tenant.id;
@@ -47,6 +49,11 @@ export default async function BuyPackagesPage({ params, searchParams }: {
         {ok === "reserved" && (
           <div className="mt-6 rounded-2xl border border-green/20 bg-green-wash px-5 py-4 text-[14px] font-bold text-green">
             Package reserved! Pay at the studio on your next visit and your credits activate right away.
+          </div>
+        )}
+        {err && (
+          <div className="mt-6 rounded-2xl border border-rose/20 bg-rose/5 px-5 py-4 text-[14px] font-medium text-rose">
+            {err === "cancelled" ? "Payment cancelled — no charge was made." : "Online payment didn't go through — try again or reserve and pay at the studio."}
           </div>
         )}
         {ok === "login" && (
@@ -100,7 +107,16 @@ export default async function BuyPackagesPage({ params, searchParams }: {
                     </li>
                   ))}
                 </ul>
-                <form method="post" action="/api/public/packages" className="mt-6">
+                {stripeOn && authed && (
+                  <form method="post" action="/api/public/stripe/checkout" className="mt-6">
+                    <input type="hidden" name="slug" value={slug} />
+                    <input type="hidden" name="packageId" value={p.id} />
+                    <button className="w-full rounded-xl py-3 text-[14px] font-bold text-white transition-opacity hover:opacity-90" style={{ background: brand }}>
+                      Pay online now
+                    </button>
+                  </form>
+                )}
+                <form method="post" action="/api/public/packages" className={stripeOn && authed ? "mt-2" : "mt-6"}>
                   <input type="hidden" name="slug" value={slug} />
                   <input type="hidden" name="packageId" value={p.id} />
                   <button className="w-full rounded-xl py-3 text-[14px] font-bold text-white transition-opacity hover:opacity-90" style={{ background: brand }}>

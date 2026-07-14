@@ -1,6 +1,7 @@
 import { Card, CardHeader } from "@/components/ui/card";
 import { getCurrentTenant } from "@/lib/tenant";
 import { classFormats, difficultyLevels } from "@/lib/class-config";
+import { studioStripeConfig } from "@/lib/stripe";
 
 export const dynamic = "force-dynamic";
 
@@ -262,6 +263,35 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
       </>)}
 
       {tab === "money" && (<>
+      <Card className="mt-5">
+        <CardHeader eyebrow="Online payments" title="Stripe" sub="Let clients pay for packages & memberships by card" />
+        {(() => {
+          const sc = studioStripeConfig(tenant);
+          return (
+            <div className="space-y-4 p-6">
+              {sc.secretKey ? (
+                <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-green/20 bg-green-wash px-4 py-3">
+                  <div className="text-[13.5px] font-bold text-green">✓ Connected{sc.accountLabel ? ` — ${sc.accountLabel}` : ""}</div>
+                  <form method="post" action="/api/settings">
+                    <input type="hidden" name="section" value="stripe" />
+                    <input type="hidden" name="action" value="disconnect" />
+                    <button className="rounded-lg bg-line-2 px-3 py-1.5 text-[11.5px] font-bold text-ink-2 hover:bg-rose/10 hover:text-rose">Disconnect</button>
+                  </form>
+                </div>
+              ) : (
+                <p className="text-[13px] text-muted">Paste your Stripe <b>secret key</b> (Dashboard → Developers → API keys). Your booking site gets a &ldquo;Pay online&rdquo; option instantly; money goes straight to your Stripe account.</p>
+              )}
+              <form method="post" action="/api/settings" className="flex gap-2">
+                <input type="hidden" name="section" value="stripe" />
+                <input name="secretKey" type="password" required placeholder="sk_live_… or sk_test_…" className={field} />
+                <button className="shrink-0 rounded-[10px] bg-brand px-5 text-sm font-bold text-white hover:bg-brand-ink">{sc.secretKey ? "Replace key" : "Connect"}</button>
+              </form>
+              {error === "stripekey" && <p className="text-[12.5px] font-medium text-rose">Stripe rejected that key — copy the secret key exactly.</p>}
+            </div>
+          );
+        })()}
+      </Card>
+
       <Card className="mt-5">
         <CardHeader eyebrow="Money" title="Expense categories" sub="The choices in your expense form — make them match how you think" />
         <form method="post" action="/api/settings" className="space-y-4 p-6">
