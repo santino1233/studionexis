@@ -172,3 +172,29 @@ https://new.nexis.revsports.ca → commit → log → next.
       deposit + pay-in-full stubs that activate with Stripe.
 - [x] X9 Settings: studio-configurable class formats + difficulty labels
       (used by blueprint editor).
+
+## Wave 11 — Website builder + staff/roles/commissions (owner brief 2026-07-14)
+- [ ] Y1 Rich site content: expand SiteData + tenant.website (philosophy,
+      why-us bullets, testimonials, FAQs, socials) and auto-pull classes
+      showcase (from blueprints w/ format/difficulty/hero) and team
+      (instructors w/ bio/photo). All 5 templates render the full section
+      set by default (soulpilates.com.vn + pilatesbyrecharged.com style):
+      hero, about/philosophy, classes, schedule, team, pricing,
+      testimonials, gallery, FAQ, contact/map, book CTA.
+- [ ] Y2 Mini website builder ("Customize my template"): admin Website
+      page — per-section on/off toggles + inline content editors
+      (texts, why-us list, testimonial quotes, FAQ pairs, socials,
+      instructor bios/photos), live preview links; sections respect the
+      enabled map on all templates.
+- [ ] Y3 Staff settings: /team/[id] profile page — contact info (phone),
+      role, pay (monthly base salary + hourly rate), commission settings,
+      active toggle, password reset; team list links in.
+- [ ] Y4 Commission engines per instructor: percent (existing), tiered %
+      by monthly class count (e.g. 50→25%, 100→30%) with retroactive
+      on/off, fixed $ per class, per-head $ table (1→$20, 2→$30…).
+      Earnings engine + calendar rail use the mode; payroll month report
+      (per staff: classes, hours, base, commission — retro vs non-retro).
+- [ ] Y5 Roles & module access: MANAGER + RECEPTION roles (portals:
+      reception = schedule/clients/POS/products; manager = all but
+      billing+HQ; instructor = own schedule + My Earnings; owner = all).
+      Middleware guards, role-filtered nav, role-based landing page.
