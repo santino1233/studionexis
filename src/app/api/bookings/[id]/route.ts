@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { externalUrl } from "@/lib/request-url";
+import { promoteWaitlist } from "@/lib/bookings";
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const auth = await getSession();
@@ -27,29 +28,12 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     await db.$transaction(async (tx) => {
       const wasActive = booking.status === "BOOKED" || booking.status === "CHECKED_IN";
       await tx.booking.update({ where: { id }, data: { status: "CANCELLED" } });
-      // Simple policy for now: cancelling restores the credit. Per-method
-      // late-cancel windows (forfeit) arrive with the policies iteration.
+      // Simple policy for now: cancelling restores the credits (all seats).
       if (wasActive && booking.clientPackageId) {
-        await tx.clientPackage.update({ where: { id: booking.clientPackageId }, data: { creditsLeft: { increment: 1 } } });
+        await tx.clientPackage.update({ where: { id: booking.clientPackageId }, data: { creditsLeft: { increment: booking.qty } } });
       }
-      // Promote the oldest waitlisted client into the freed spot.
-      if (wasActive) {
-        const next = await tx.booking.findFirst({
-          where: { sessionId: booking.sessionId, status: "WAITLIST" },
-          orderBy: { createdAt: "asc" },
-        });
-        if (next) {
-          const pkg = await tx.clientPackage.findFirst({
-            where: { tenantId: auth.tenantId, clientId: next.clientId, creditsLeft: { gt: 0 }, frozen: false, expiresAt: { gt: new Date() } },
-            orderBy: { expiresAt: "asc" },
-          });
-          if (pkg) await tx.clientPackage.update({ where: { id: pkg.id }, data: { creditsLeft: { decrement: 1 } } });
-          await tx.booking.update({
-            where: { id: next.id },
-            data: { status: "BOOKED", paymentMethod: pkg ? "package_credit" : "at_studio", clientPackageId: pkg?.id ?? null },
-          });
-        }
-      }
+      // Every freed seat can promote one waitlisted client.
+      if (wasActive) await promoteWaitlist(tx, auth.tenantId, booking.sessionId, booking.qty);
     });
   }
   return NextResponse.redirect(externalUrl(req, back), 303);

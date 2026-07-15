@@ -8,6 +8,7 @@ import { externalUrl } from "@/lib/request-url";
 import { sendEmail } from "@/lib/mailer";
 import { sendSms } from "@/lib/sms";
 import { timeInTz } from "@/lib/tz";
+import { studioStripe, toStripeAmount } from "@/lib/stripe";
 
 export async function POST(req: Request) {
   if (!rateLimit(req, "pubbook", 15, 60)) {
@@ -35,7 +36,41 @@ export async function POST(req: Request) {
 
   const isMember = customer && customer.tenantId === tenant.id;
   if (!isMember && (!name || (!phone && !email))) return fail("missing");
-  if (pay === "deposit" || pay === "online") return fail("online"); // stubs — activate with Stripe
+  if (pay === "deposit") return fail("online"); // stub — activates later
+  if (pay === "online") {
+    // Pay the drop-in online through the studio's Stripe (members only —
+    // the booking is created when the payment confirms).
+    const stripe = studioStripe(tenant);
+    if (!stripe) return fail("online");
+    if (!isMember) return fail("online-login");
+    const session = await db.classSession.findFirst({
+      where: { id: sessionId, tenantId: tenant.id, status: "SCHEDULED", isPublic: true, startsAt: { gt: new Date() } },
+      include: { classType: true, bookings: { where: { status: { in: ["BOOKED", "CHECKED_IN"] } }, select: { qty: true } } },
+    });
+    if (!session) return fail("failed");
+    const spotsLeft = session.capacity - session.bookings.reduce((n, b) => n + b.qty, 0);
+    if (qty > spotsLeft) return fail("spots");
+    try {
+      const origin = externalUrl(req, "").toString().replace(/\/$/, "");
+      const co = await stripe.checkout.sessions.create({
+        mode: "payment",
+        line_items: [{
+          quantity: qty,
+          price_data: {
+            currency: tenant.currency.toLowerCase(),
+            unit_amount: toStripeAmount(Number(session.classType.price), tenant.currency),
+            product_data: { name: `${session.classType.name} — ${tenant.name}` },
+          },
+        }],
+        metadata: { kind: "class", tenantId: tenant.id, sessionId, clientId: customer!.clientId, qty: String(qty) },
+        success_url: `${origin}/api/public/stripe/class-confirm?slug=${encodeURIComponent(slug)}&sid={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${origin}/book/${slug}/class/${sessionId}?err=cancelled`,
+      });
+      return NextResponse.redirect(co.url!, 303);
+    } catch {
+      return fail("failed");
+    }
+  }
   if (pay === "credit" && !isMember) return fail("credits");
   if (pay === "at_studio" && !payAtStudioOk) return fail("pay");
 

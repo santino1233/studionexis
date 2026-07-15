@@ -24,10 +24,10 @@ const statusLabel: Record<string, string> = {
 
 export default async function MyBookingsPage({ params, searchParams }: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ t?: string }>;
+  searchParams: Promise<{ t?: string; ok?: string }>;
 }) {
   const { slug } = await params;
-  const { t } = await searchParams;
+  const { t, ok } = await searchParams;
   const tenant = await tenantBySlugOrDomain(slug);
   if (!tenant || tenant.status === "SUSPENDED") notFound();
   const brand = tenant.brandColor || "#F97316";
@@ -37,6 +37,11 @@ export default async function MyBookingsPage({ params, searchParams }: {
       <div className="min-h-screen bg-canvas">
         <CustomerNav slug={slug} active="bookings" brand={brand} />
         <main className="mx-auto max-w-[760px] px-4 py-16 text-center">
+        {ok === "paid" && (
+          <div className="mb-5 rounded-2xl border border-green/20 bg-green-wash px-5 py-4 text-[14px] font-bold text-green">
+            🎉 Paid & booked — see you in class!
+          </div>
+        )}
           <h1 className="font-display text-[24px] font-extrabold text-ink">Sign in to see your bookings</h1>
           <Link href={`/book/${slug}/account`} className="mt-4 inline-block rounded-xl px-5 py-2.5 text-sm font-bold text-white" style={{ background: brand }}>Sign in</Link>
         </main>

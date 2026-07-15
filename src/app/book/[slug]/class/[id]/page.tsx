@@ -9,6 +9,7 @@ import { moneyFormatter } from "@/lib/tenant";
 import { CustomerNav } from "@/components/customer/nav";
 import { difficultyLabel } from "@/lib/class-config";
 import MuscleMap from "@/components/muscle-map/MuscleMap";
+import { studioStripeEnabled } from "@/lib/stripe";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +23,8 @@ const ERRORS: Record<string, string> = {
   credits: "You don't have enough class credits for that — grab a package first.",
   pay: "This studio doesn't take pay-at-studio bookings — use your class credits.",
   online: "Online payment is coming soon — pick another option for now.",
+  "online-login": "Sign in to pay online — or pick another option.",
+  cancelled: "Payment cancelled — no charge was made, and your spot wasn't booked.",
   already: "You're already on this class.",
   missing: "Please give your name and a phone or email.",
   failed: "That didn't work — try again.",
@@ -38,6 +41,7 @@ export default async function ClassDetailPage({ params, searchParams }: {
   const brand = tenant.brandColor || "#F97316";
   const fmt = moneyFormatter(tenant.currency);
   const payAtStudioOk = ((tenant.policies ?? {}) as { payAtStudio?: boolean }).payAtStudio !== false;
+  const stripeOn = studioStripeEnabled(tenant);
 
   const session = await db.classSession.findFirst({
     where: { id, tenantId: tenant.id, isPublic: true, status: "SCHEDULED" },
@@ -193,10 +197,17 @@ export default async function ClassDetailPage({ params, searchParams }: {
                         <span>Pay at the studio</span>
                       </label>
                     )}
-                    <label className="flex cursor-not-allowed items-center gap-3 rounded-xl border border-dashed border-line-2 bg-raised px-4 py-3 text-[13.5px] font-semibold text-muted">
-                      <input type="radio" name="pay" value="online" disabled />
-                      <span>Pay online in full <span className="font-normal">· coming soon</span></span>
-                    </label>
+                    {stripeOn && authed ? (
+                      <label className={radio} style={{ "--tw-ring-color": brand } as React.CSSProperties}>
+                        <input type="radio" name="pay" value="online" className="accent-current" style={{ accentColor: brand }} />
+                        <span>Pay online in full <span className="font-normal text-muted">· card via Stripe</span></span>
+                      </label>
+                    ) : (
+                      <label className="flex cursor-not-allowed items-center gap-3 rounded-xl border border-dashed border-line-2 bg-raised px-4 py-3 text-[13.5px] font-semibold text-muted">
+                        <input type="radio" name="pay" value="online" disabled />
+                        <span>Pay online in full <span className="font-normal">{stripeOn ? "· sign in to pay online" : "· coming soon"}</span></span>
+                      </label>
+                    )}
                     <label className="flex cursor-not-allowed items-center gap-3 rounded-xl border border-dashed border-line-2 bg-raised px-4 py-3 text-[13.5px] font-semibold text-muted">
                       <input type="radio" name="pay" value="deposit" disabled />
                       <span>Reserve with a deposit <span className="font-normal">· coming soon</span></span>

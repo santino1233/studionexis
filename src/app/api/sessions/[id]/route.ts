@@ -50,7 +50,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       for (const b of bookings) {
         await tx.booking.update({ where: { id: b.id }, data: { status: "CANCELLED" } });
         if ((b.status === "BOOKED" || b.status === "CHECKED_IN") && b.clientPackageId) {
-          await tx.clientPackage.update({ where: { id: b.clientPackageId }, data: { creditsLeft: { increment: 1 } } });
+          await tx.clientPackage.update({ where: { id: b.clientPackageId }, data: { creditsLeft: { increment: b.qty } } });
         }
       }
       await tx.classSession.update({ where: { id }, data: { status: "CANCELLED" } });

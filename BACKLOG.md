@@ -231,10 +231,10 @@ https://new.nexis.revsports.ca → commit → log → next.
       MRR), subscription management, drill-down per tenant.
 
 ## Wave 13 — Self-directed QA, fixes & polish (agent-seeded 2026-07-14)
-- [ ] P1 Audit qty-awareness end to end: waitlist auto-promotion, booking
+- [x] P1 Audit qty-awareness end to end: waitlist auto-promotion, booking
       cancel/refund, client portal + admin lists showing seat counts —
       fix any spots still counting rows instead of seats.
-- [ ] P2 Class detail: "Pay online in full" activates when the studio has
+- [x] P2 Class detail: "Pay online in full" activates when the studio has
       Stripe connected (Checkout for price × qty, books on payment);
       deposit stays a stub.
 - [ ] P3 SEO & sharing: per-studio metadata (title/description/OG image,

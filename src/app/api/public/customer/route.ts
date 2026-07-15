@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { tenantBySlugOrDomain } from "@/lib/public-tenant";
 import { createCustomerSession, destroyCustomerSession, getCustomerSession } from "@/lib/customer-auth";
 import { externalUrl } from "@/lib/request-url";
+import { promoteWaitlist } from "@/lib/bookings";
 
 // One endpoint, three modes: login, register (set password), logout, cancel.
 export async function POST(req: Request) {
@@ -39,19 +40,9 @@ export async function POST(req: Request) {
 
       await tx.booking.update({ where: { id: booking.id }, data: { status: "CANCELLED" } });
       if (booking.status === "BOOKED" && booking.clientPackageId) {
-        await tx.clientPackage.update({ where: { id: booking.clientPackageId }, data: { creditsLeft: { increment: 1 } } });
+        await tx.clientPackage.update({ where: { id: booking.clientPackageId }, data: { creditsLeft: { increment: booking.qty } } });
       }
-      if (booking.status === "BOOKED") {
-        const next = await tx.booking.findFirst({ where: { sessionId: booking.sessionId, status: "WAITLIST" }, orderBy: { createdAt: "asc" } });
-        if (next) {
-          const pkg = await tx.clientPackage.findFirst({
-            where: { tenantId: booking.tenantId, clientId: next.clientId, creditsLeft: { gt: 0 }, frozen: false, expiresAt: { gt: new Date() } },
-            orderBy: { expiresAt: "asc" },
-          });
-          if (pkg) await tx.clientPackage.update({ where: { id: pkg.id }, data: { creditsLeft: { decrement: 1 } } });
-          await tx.booking.update({ where: { id: next.id }, data: { status: "BOOKED", paymentMethod: pkg ? "package_credit" : "at_studio", clientPackageId: pkg?.id ?? null } });
-        }
-      }
+      if (booking.status === "BOOKED") await promoteWaitlist(tx, booking.tenantId, booking.sessionId, booking.qty);
     });
     return NextResponse.redirect(externalUrl(req, me), 303);
   }
