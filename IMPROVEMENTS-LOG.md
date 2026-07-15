@@ -644,3 +644,6 @@
 - Dashboard gains a "Live on your site" KPI (unique visitors, last 5 min — links to Analytics); HQ adds "Signups this month".
 - Membership visibility: client portal package cards show a brand "Renews monthly/yearly" chip; admin client profiles tag membership packs; the admin Bookings list shows ×N seat chips on group bookings.
 - Verified live: dashboard + HQ tiles render; Ava's portal shows "Renews monthly"; her admin profile shows the chip; bookings list shows 16 ×2 and 1 ×3 chips.
+
+## 2026-07-15 — Z1: GitHub connected (Wave 12 fully complete)
+- Repo github.com/santino1233/studionexis (private, deploy key w/ write access). Full 111-commit history pushed after a secrets audit: no env/secret files ever tracked; the one leak (.hq-path secret segment) neutralized by rotating HQ_PATH and untracking the file (HQ subdomain unaffected). post-commit hook auto-pushes every future commit.

@@ -200,7 +200,7 @@ https://new.nexis.revsports.ca → commit → log → next.
       Middleware guards, role-filtered nav, role-based landing page.
 
 ## Wave 12 — Owner brief 2026-07-14 (calendar UX, products, memberships, Stripe, analytics, HQ portal)
-- [ ] Z1 OWNER-GATED — GitHub: owner must create a repo and add the server deploy key (or provide a token); then push + auto-push every commit.
+- [x] Z1 GitHub connected: repo santino1233/studionexis, full history pushed, auto-push on every commit (post-commit hook).
 - [x] Z2 Calendar UX cluster: (a) checkout as popup on the schedule page,
       not a separate page; (b) checked-in attendees can still be checked
       out (take payment) if unpaid; (c) click an empty calendar slot →
