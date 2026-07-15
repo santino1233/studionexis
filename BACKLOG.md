@@ -229,3 +229,17 @@ https://new.nexis.revsports.ca → commit → log → next.
 - [x] Z9 Super-admin portal on its own subdomain (hq.nexis.revsports.ca):
       tenant directory w/ per-studio stats (bookings, revenue, clients,
       MRR), subscription management, drill-down per tenant.
+
+## Wave 13 — Self-directed QA, fixes & polish (agent-seeded 2026-07-14)
+- [ ] P1 Audit qty-awareness end to end: waitlist auto-promotion, booking
+      cancel/refund, client portal + admin lists showing seat counts —
+      fix any spots still counting rows instead of seats.
+- [ ] P2 Class detail: "Pay online in full" activates when the studio has
+      Stripe connected (Checkout for price × qty, books on payment);
+      deposit stays a stub.
+- [ ] P3 SEO & sharing: per-studio metadata (title/description/OG image,
+      brand favicon) on the public website and booking pages.
+- [ ] P4 Dashboard "Live on your site" tile (links to analytics); HQ adds
+      signups-this-month KPI.
+- [ ] P5 Polish sweep: membership chips on client profile/portal package
+      cards, qty shown in admin bookings list + client history, misc.
