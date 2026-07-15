@@ -639,3 +639,8 @@
 ## 2026-07-14 — P1+P2: qty-refund bugfixes + pay-online for classes (Wave 13)
 - P1 BUGFIX (money-losing): all three cancel paths (admin booking cancel, client portal cancel, whole-class cancel) refunded exactly 1 credit even when the booking held multiple seats — clients with a ×2 booking lost a credit on cancel. Now refunds booking.qty everywhere; waitlist promotion promotes one waitlisted client per freed SEAT (shared lib/bookings.ts promoteWaitlist). Verified live: cancelling a ×2 credit booking restored 2 credits.
 - P2: "Pay online in full" on the class page is real — when the studio has Stripe connected, signed-in members get the option; payment creates a Stripe Checkout (price × people), and the booking + PAID order (dropin line, method=stripe, idempotent stripeSessionId) are created only when the payment confirms; "Paid & booked" banner on My Bookings; cancelled checkouts book nothing. Guests see "sign in to pay online"; studios without Stripe keep the "coming soon" stub. Deposit remains a stub. Verified all reachable states live (full payment run needs a real key).
+
+## 2026-07-14 — P4+P5: dashboard/HQ tiles + membership & seat chips (Wave 13 complete)
+- Dashboard gains a "Live on your site" KPI (unique visitors, last 5 min — links to Analytics); HQ adds "Signups this month".
+- Membership visibility: client portal package cards show a brand "Renews monthly/yearly" chip; admin client profiles tag membership packs; the admin Bookings list shows ×N seat chips on group bookings.
+- Verified live: dashboard + HQ tiles render; Ava's portal shows "Renews monthly"; her admin profile shows the chip; bookings list shows 16 ×2 and 1 ×3 chips.

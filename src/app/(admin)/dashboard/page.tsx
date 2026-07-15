@@ -1,4 +1,5 @@
 import { Card, CardHeader } from "@/components/ui/card";
+import { Globe } from "lucide-react";
 import { Kpi } from "@/components/ui/kpi";
 import {
   DollarSign, CalendarCheck, Gauge, Users, CheckCircle2, Circle,
@@ -30,6 +31,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
   const period = p === "week" || p === "month" ? p : "today";
   const tenant = await getCurrentTenant();
   const fmt = moneyFormatter(tenant.currency);
+  const liveVisitors = (await db.pageView.groupBy({ by: ["visitorId"], where: { tenantId: tenant.id, createdAt: { gt: new Date(Date.now() - 5 * 60_000) } } })).length;
 
   const todayKey = dayKeyInTz(new Date(), tenant.timezone);
   const monthKey = todayKey.slice(0, 7);
@@ -155,11 +157,12 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
       </div>
 
       {/* KPI row */}
-      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <Kpi icon={DollarSign} tone="o" label="Monthly revenue" value={fmt.format(monthRevenue)} />
         <Kpi icon={CalendarCheck} tone="p" label="Bookings this week" value={String(weekBookings)} />
         <Kpi icon={Gauge} tone="g" label="Occupancy this week" value={`${occupancy}%`} />
         <Kpi icon={Users} tone="b" label="Active clients (30d)" value={String(activeClients)} />
+        <Link href="/analytics" className="block"><Kpi icon={Globe} tone="g" label="Live on your site" value={String(liveVisitors)} /></Link>
       </div>
 
       {/* Two-column widgets */}

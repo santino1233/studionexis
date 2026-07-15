@@ -108,7 +108,7 @@ export default async function ClientProfilePage({ params }: { params: Promise<{ 
                 {activePkgs.map((p) => (
                   <li key={p.id} className="flex items-center justify-between rounded-xl border border-line-2 bg-raised px-4 py-3">
                     <div>
-                      <div className="text-[14px] font-semibold text-ink">{p.package.name}</div>
+                      <div className="text-[14px] font-semibold text-ink">{p.package.name}{p.package.interval !== "none" && <span className="ml-2 rounded-full bg-purple-wash px-2 py-0.5 text-[10px] font-bold uppercase text-purple">{p.package.interval}ly</span>}</div>
                       <div className="text-[12px] text-muted">Expires {p.expiresAt.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</div>
                     </div>
                     <div className="font-display text-lg font-extrabold text-brand">{p.creditsLeft}<span className="ml-1 text-[11px] font-bold text-muted">credits</span></div>

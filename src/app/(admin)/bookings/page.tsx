@@ -42,7 +42,7 @@ export default async function BookingsPage() {
             {bookings.map((b) => (
               <tr key={b.id} className="border-b border-line-2 last:border-0 hover:bg-raised">
                 <td className="px-[18px] py-[14px]">
-                  <Link href={`/clients/${b.clientId}`} className="text-[14px] font-semibold text-ink hover:text-brand">{b.client.name}</Link>
+                  <Link href={`/clients/${b.clientId}`} className="text-[14px] font-semibold text-ink hover:text-brand">{b.client.name}{b.qty > 1 && <span className="ml-1.5 rounded-full bg-line-2 px-1.5 py-0.5 text-[10px] font-bold text-ink-2">×{b.qty}</span>}</Link>
                 </td>
                 <td className="px-[18px] py-[14px]">
                   <Link href={`/schedule/${b.sessionId}`} className="inline-flex items-center gap-2 text-[13.5px] text-ink-2 hover:text-brand">

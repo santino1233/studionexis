@@ -92,6 +92,7 @@ export default async function MyPackagesPage({ params, searchParams }: {
                   <div className="flex items-center justify-between border-b border-white/10 px-5 py-3">
                     <div className="flex items-center gap-3">
                       <span className="rounded-full bg-white/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider">{p.package.kind === "PRIVATE" ? "Private" : "Group"}</span>
+                      {p.package.interval !== "none" && <span className="rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider" style={{ background: `${brand}33`, color: brand }}>Renews {p.package.interval}ly</span>}
                       <span className="text-[13.5px] font-bold">{p.creditsLeft} / {total} Credits Remaining</span>
                     </div>
                     <span className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider ${active ? "bg-green/15 text-green" : p.frozen ? "bg-blue/15 text-blue" : "bg-white/10 text-white/50"}`}>

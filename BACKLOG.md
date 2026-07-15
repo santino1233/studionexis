@@ -239,7 +239,7 @@ https://new.nexis.revsports.ca → commit → log → next.
       deposit stays a stub.
 - [x] P3 SEO & sharing: per-studio metadata (title/description/OG image,
       brand favicon) on the public website and booking pages.
-- [ ] P4 Dashboard "Live on your site" tile (links to analytics); HQ adds
+- [x] P4 Dashboard "Live on your site" tile (links to analytics); HQ adds
       signups-this-month KPI.
-- [ ] P5 Polish sweep: membership chips on client profile/portal package
+- [x] P5 Polish sweep: membership chips on client profile/portal package
       cards, qty shown in admin bookings list + client history, misc.

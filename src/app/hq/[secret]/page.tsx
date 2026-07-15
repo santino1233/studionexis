@@ -37,6 +37,8 @@ export default async function HqPage({ params }: { params: Promise<{ secret: str
   ]);
   const fmt = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
   const trials = tenants.filter((t) => t.status === "TRIAL").length;
+  const monthStart = new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), 1));
+  const signups = tenants.filter((t) => t.createdAt >= monthStart).length;
   const mrr = tenants.filter((t) => t.status === "ACTIVE").reduce((n, t) => {
     const plan = PLANS.find((p) => p.id === t.plan);
     const cycle = ((t.policies ?? {}) as { billingCycle?: string }).billingCycle;
@@ -55,6 +57,7 @@ export default async function HqPage({ params }: { params: Promise<{ secret: str
         <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Kpi icon={Building2} tone="o" label="Studios" value={String(tenants.length)} />
           <Kpi icon={Timer} tone="p" label="On trial" value={String(trials)} />
+          <Kpi icon={Building2} tone="o" label="Signups this month" value={String(signups)} />
           <Kpi icon={DollarSign} tone="g" label="GMV (all studios)" value={fmt.format(Number(revenueAgg._sum.total ?? 0))} />
           <Kpi icon={Users} tone="b" label="End clients" value={String(clientTotal)} />
           <Kpi icon={DollarSign} tone="g" label="MRR (active studios)" value={fmt.format(mrr)} />
