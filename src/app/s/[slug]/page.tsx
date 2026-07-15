@@ -14,6 +14,26 @@ import { Bold } from "@/components/site/templates/bold";
 
 export const dynamic = "force-dynamic";
 
+// Per-studio SEO + social sharing card (Wave 13 P3).
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const tenant = await tenantBySlugOrDomain(slug);
+  if (!tenant) return { title: "Studio" };
+  const w = (tenant.website ?? {}) as { tagline?: string; about?: string; philosophy?: string; heroImage?: string };
+  const description = (w.about || w.philosophy || w.tagline || `${tenant.name} — Pilates classes, memberships and easy online booking.`).slice(0, 160);
+  return {
+    title: w.tagline ? `${tenant.name} — ${w.tagline}` : tenant.name,
+    description,
+    openGraph: {
+      title: tenant.name,
+      description,
+      type: "website",
+      siteName: tenant.name,
+      ...(w.heroImage ? { images: [{ url: w.heroImage }] } : {}),
+    },
+  };
+}
+
 const TEMPLATES: Record<TemplateId, (d: SiteData) => React.ReactNode> = {
   boutique: Boutique,
   luxury: Luxury,

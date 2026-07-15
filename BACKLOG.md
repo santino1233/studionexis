@@ -237,7 +237,7 @@ https://new.nexis.revsports.ca → commit → log → next.
 - [x] P2 Class detail: "Pay online in full" activates when the studio has
       Stripe connected (Checkout for price × qty, books on payment);
       deposit stays a stub.
-- [ ] P3 SEO & sharing: per-studio metadata (title/description/OG image,
+- [x] P3 SEO & sharing: per-studio metadata (title/description/OG image,
       brand favicon) on the public website and booking pages.
 - [ ] P4 Dashboard "Live on your site" tile (links to analytics); HQ adds
       signups-this-month KPI.
