@@ -130,7 +130,7 @@ export async function POST(req: Request) {
         }
       }
 
-      await tx.booking.create({
+      const created = await tx.booking.create({
         data: {
           tenantId: tenant.id,
           sessionId,
@@ -141,7 +141,7 @@ export async function POST(req: Request) {
           clientPackageId: usePkgId,
         },
       });
-      return { outcome: full ? "waitlist" : "booked", client, session };
+      return { outcome: full ? "waitlist" : "booked", client, session, bookingId: created.id };
     });
 
     if (!result.client.email && result.client.phone) {
@@ -163,7 +163,9 @@ export async function POST(req: Request) {
         body: `Hi ${result.client.name},\n\n${result.outcome === "booked" ? "You're booked for" : "You're waitlisted for"} ${cls?.name ?? "class"} on ${s.startsAt.toLocaleDateString("en-US", { timeZone: tenant.timezone, weekday: "long", month: "long", day: "numeric" })} at ${timeInTz(s.startsAt, tenant.timezone)}.\n\nManage your bookings: https://new.nexis.revsports.ca/book/${tenant.slug}/me\n\n${tenant.name}`,
       });
     }
-    return NextResponse.redirect(externalUrl(req, `${back}?ok=${result.outcome}`), 303);
+    const d = new Date();
+    const ref = `NX-${String(d.getUTCFullYear()).slice(2)}${String(d.getUTCMonth() + 1).padStart(2, "0")}${String(d.getUTCDate()).padStart(2, "0")}-${result.bookingId.slice(-4).toUpperCase()}`;
+    return NextResponse.redirect(externalUrl(req, `${back}?ok=${result.outcome}&ref=${ref}&cls=${encodeURIComponent(result.session.id)}`), 303);
   } catch (e) {
     const known = ["spots", "credits", "pay"].find((k) => e instanceof Error && e.message === k);
     const dup = e instanceof Error && e.message.includes("Unique constraint");

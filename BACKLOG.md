@@ -255,7 +255,7 @@ https://new.nexis.revsports.ca → commit → log → next.
 - [x] V3 Product variants: per-product option sets (size/colour) with
       per-variant stock; POS + checkout merch pickers become
       variant-aware; archive button polish.
-- [ ] V4 Public booking page: timezone banner ("All class times are
+- [x] V4 Public booking page: timezone banner ("All class times are
       shown in <tz>"), Group/Private credit tabs, class-details SIDEBAR
       on the same page (slide-over w/ muscle map + booking form; page
       stays for deep links), fix guest "Book now" dead-end, proper

@@ -667,3 +667,9 @@
 - New ProductVariant model (label, optional price override, own stock). Products page: per-product "Variants" expander — add/edit/remove sizes/colours/packs inline; product stock chip sums variant stock and shows the variant count.
 - Checkout mini-POS merch is variant-aware: each in-stock variant is its own line ("Grip Socks — 3-Pack · $30"); charging decrements the variant's stock and the order line carries the full variant label.
 - Verified live: 3 variants on Grip Socks (S/M inherit $13.50, 3-Pack $30), popup listed all rows, sale decremented 3-Pack 5→4 with correct order line.
+
+## 2026-07-17 — V4: Booking page overhaul (Wave 14)
+- Old-system parity on /book: "All class times are shown in <city> time (GMT+X)" banner from studio settings; Group Classes / Private Sessions tabs with per-kind credit balance; class list filtered by kind.
+- Class details now open as a SLIDE-OVER on the same page (hero/color header, chips, description, benefits, read-only muscle map, qty + payment radios incl. pay-online when Stripe on, guest contact fields) — no page hop; full page still available ("Open full page ↗"). Guest "Book now" dead-end fixed (opens the sidebar).
+- Proper confirmation: "You're All Set!" card with booking reference (NX-yymmdd-XXXX), View My Bookings + Book another class CTAs.
+- Verified live: banner GMT+7, tabs render, sidebar shows muscle map/qty/payment/guest fields, guest booking through the sidebar returned ref NX-260717-OZBJ and the confirmation screen rendered it.
