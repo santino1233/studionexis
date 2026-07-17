@@ -139,10 +139,11 @@ export async function POST(req: Request) {
     if (form.has("discordUrl")) set("discordUrl", String(form.get("discordUrl")).trim());
     if (form.has("telegramToken")) { set("telegramToken", String(form.get("telegramToken")).trim()); set("telegramChatId", String(form.get("telegramChatId")).trim()); }
     if (form.has("ga4") || form.has("meta") || form.has("tiktok")) {
+      // Merge — each pixel is now its own app, so only touch the fields present.
       apps.pixels = {
-        ga4: String(form.get("ga4") ?? "").trim() || undefined,
-        meta: String(form.get("meta") ?? "").trim() || undefined,
-        tiktok: String(form.get("tiktok") ?? "").trim() || undefined,
+        ga4: form.has("ga4") ? (String(form.get("ga4")).trim() || undefined) : apps.pixels?.ga4,
+        meta: form.has("meta") ? (String(form.get("meta")).trim() || undefined) : apps.pixels?.meta,
+        tiktok: form.has("tiktok") ? (String(form.get("tiktok")).trim() || undefined) : apps.pixels?.tiktok,
       };
     }
     if (String(form.get("regenIcal")) === "1") apps.icalToken = randomBytes(12).toString("hex");
@@ -172,9 +173,13 @@ export async function POST(req: Request) {
     } else {
       set.delete(id);
       // Removing an app also clears its live configuration so it truly goes away.
-      if (id === "alerts") { apps.slackUrl = undefined; apps.discordUrl = undefined; apps.telegramToken = undefined; apps.telegramChatId = undefined; }
+      if (id === "slack") apps.slackUrl = undefined;
+      if (id === "discord") apps.discordUrl = undefined;
+      if (id === "telegram") { apps.telegramToken = undefined; apps.telegramChatId = undefined; }
       if (id === "calendar") apps.icalToken = undefined;
-      if (id === "pixels") apps.pixels = undefined;
+      if (id === "ga4" && apps.pixels) apps.pixels = { ...apps.pixels, ga4: undefined };
+      if (id === "meta" && apps.pixels) apps.pixels = { ...apps.pixels, meta: undefined };
+      if (id === "tiktok" && apps.pixels) apps.pixels = { ...apps.pixels, tiktok: undefined };
       if (id === "livechat") apps.chatDisabled = true;
       if (id === "automation") prev.webhooks = [];
     }

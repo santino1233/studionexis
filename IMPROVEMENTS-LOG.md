@@ -770,3 +770,7 @@
 - Replaced emoji app icons with self-contained inline-SVG brand logos (Zapier, Slack, Google Calendar, Meta, Stripe, Twilio, and our own Live Chat) in components/apps/app-logos.tsx — CSP-safe, no external requests.
 - Reworked /apps to flow like Pipedrive: a "＋ Browse the marketplace" popup (components/apps/store-browser.tsx) with live search over the catalog, logos, one-click Add, and a "Request an app" form. "Your apps" now shows each added app in a clean logo + name/category panel.
 - Request an app → lands in the HQ Feature Requests queue (/api/apps/request appends "App request: <name>" to policies.featureRequests). Verified live: logos render with brand colours, marketplace search/add works, and an app request reached HQ.
+
+## 2026-07-17 — App Store: split bundled apps into individual apps with logos
+- Broke the grouped "Slack · Discord · Telegram" alerts app into individual Slack, Discord and Telegram apps, and the grouped "Ad pixels" app into individual Google Analytics, Meta Pixel and TikTok Pixel apps — each its own catalog entry, own inline-SVG brand logo, own add/config/remove panel. Added Discord (blurple), Telegram (paper plane), Google Analytics (amber bars) and TikTok (offset note) logos.
+- Fixed the pixels save handler to MERGE (each pixel is now independent, so saving GA4 no longer wipes Meta/TikTok); per-app uninstall clears only that app's field. Verified live: GA4+Meta save independently and uninstalling GA4 leaves Meta intact.

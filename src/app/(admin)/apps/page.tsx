@@ -89,26 +89,32 @@ export default async function AppsPage({ searchParams }: { searchParams: Promise
         </div>
       </Panel>
     ),
-    alerts: (
-      <Panel key="alerts" app={byId.alerts} remove chip={<Chip on={!!(apps.slackUrl || apps.discordUrl || apps.telegramToken)} />}>
-        <div className="space-y-3">
-          <form method="post" action="/api/settings" className="flex gap-2">
-            <input type="hidden" name="section" value="apps" /><input type="hidden" name="next" value="/apps?saved=1" />
-            <input name="slackUrl" defaultValue={apps.slackUrl ?? ""} placeholder="Slack incoming-webhook URL" className={field} />
-            <button className={save}>Save</button>
-          </form>
-          <form method="post" action="/api/settings" className="flex gap-2">
-            <input type="hidden" name="section" value="apps" /><input type="hidden" name="next" value="/apps?saved=1" />
-            <input name="discordUrl" defaultValue={apps.discordUrl ?? ""} placeholder="Discord webhook URL" className={field} />
-            <button className={save}>Save</button>
-          </form>
-          <form method="post" action="/api/settings" className="flex gap-2">
-            <input type="hidden" name="section" value="apps" /><input type="hidden" name="next" value="/apps?saved=1" />
-            <input name="telegramToken" defaultValue={apps.telegramToken ?? ""} placeholder="Telegram bot token" className={field} />
-            <input name="telegramChatId" defaultValue={apps.telegramChatId ?? ""} placeholder="Chat ID" className={`${field} w-[120px]`} />
-            <button className={save}>Save</button>
-          </form>
-        </div>
+    slack: (
+      <Panel key="slack" app={byId.slack} remove chip={<Chip on={!!apps.slackUrl} />}>
+        <form method="post" action="/api/settings" className="flex gap-2">
+          <input type="hidden" name="section" value="apps" /><input type="hidden" name="next" value="/apps?saved=1" />
+          <input name="slackUrl" defaultValue={apps.slackUrl ?? ""} placeholder="Slack incoming-webhook URL" className={field} />
+          <button className={save}>Save</button>
+        </form>
+      </Panel>
+    ),
+    discord: (
+      <Panel key="discord" app={byId.discord} remove chip={<Chip on={!!apps.discordUrl} />}>
+        <form method="post" action="/api/settings" className="flex gap-2">
+          <input type="hidden" name="section" value="apps" /><input type="hidden" name="next" value="/apps?saved=1" />
+          <input name="discordUrl" defaultValue={apps.discordUrl ?? ""} placeholder="Discord webhook URL" className={field} />
+          <button className={save}>Save</button>
+        </form>
+      </Panel>
+    ),
+    telegram: (
+      <Panel key="telegram" app={byId.telegram} remove chip={<Chip on={!!apps.telegramToken} />}>
+        <form method="post" action="/api/settings" className="flex gap-2">
+          <input type="hidden" name="section" value="apps" /><input type="hidden" name="next" value="/apps?saved=1" />
+          <input name="telegramToken" defaultValue={apps.telegramToken ?? ""} placeholder="Telegram bot token" className={field} />
+          <input name="telegramChatId" defaultValue={apps.telegramChatId ?? ""} placeholder="Chat ID" className={`${field} w-[120px]`} />
+          <button className={save}>Save</button>
+        </form>
       </Panel>
     ),
     calendar: (
@@ -123,15 +129,30 @@ export default async function AppsPage({ searchParams }: { searchParams: Promise
         </div>
       </Panel>
     ),
-    pixels: (
-      <Panel key="pixels" app={byId.pixels} remove chip={<Chip on={!!(apps.pixels?.ga4 || apps.pixels?.meta || apps.pixels?.tiktok)} />}>
-        <form method="post" action="/api/settings" className="space-y-2.5">
+    ga4: (
+      <Panel key="ga4" app={byId.ga4} remove chip={<Chip on={!!apps.pixels?.ga4} />}>
+        <form method="post" action="/api/settings" className="flex gap-2">
           <input type="hidden" name="section" value="apps" /><input type="hidden" name="next" value="/apps?saved=1" />
-          <input name="ga4" defaultValue={apps.pixels?.ga4 ?? ""} placeholder="Google Analytics 4 ID (G-XXXXXXX)" className={field} />
+          <input name="ga4" defaultValue={apps.pixels?.ga4 ?? ""} placeholder="Measurement ID (G-XXXXXXX)" className={field} />
+          <button className={save}>Save</button>
+        </form>
+      </Panel>
+    ),
+    meta: (
+      <Panel key="meta" app={byId.meta} remove chip={<Chip on={!!apps.pixels?.meta} />}>
+        <form method="post" action="/api/settings" className="flex gap-2">
+          <input type="hidden" name="section" value="apps" /><input type="hidden" name="next" value="/apps?saved=1" />
           <input name="meta" defaultValue={apps.pixels?.meta ?? ""} placeholder="Meta Pixel ID" className={field} />
+          <button className={save}>Save</button>
+        </form>
+      </Panel>
+    ),
+    tiktok: (
+      <Panel key="tiktok" app={byId.tiktok} remove chip={<Chip on={!!apps.pixels?.tiktok} />}>
+        <form method="post" action="/api/settings" className="flex gap-2">
+          <input type="hidden" name="section" value="apps" /><input type="hidden" name="next" value="/apps?saved=1" />
           <input name="tiktok" defaultValue={apps.pixels?.tiktok ?? ""} placeholder="TikTok Pixel ID" className={field} />
-          <button className={save}>Save pixels</button>
-          <p className="text-[11.5px] text-muted">Injected on your public website and booking pages — retarget visitors and measure ad conversions.</p>
+          <button className={save}>Save</button>
         </form>
       </Panel>
     ),
