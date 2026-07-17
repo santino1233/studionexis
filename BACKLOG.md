@@ -267,7 +267,7 @@ https://new.nexis.revsports.ca → commit → log → next.
       for group vs private, hide when client has active package; upsell
       step in the public booking flow; deposit/pay-in-full options shown
       (Stripe-gated).
-- [ ] V7 Website: per-instructor show/hide on the site; unlimited
+- [x] V7 Website: per-instructor show/hide on the site; unlimited
       testimonials + FAQs in the builder.
 - [ ] V8 Website revamp: neutral default images (not the owner's studio
       photos), section add/remove/REORDER, "Create my website" setup

@@ -36,7 +36,7 @@ export default async function WebsiteBuilderPage({ searchParams }: { searchParam
     testimonials?: SiteQuote[];
     faqs?: SiteFaq[];
     sections?: Partial<Record<SectionId, boolean>>;
-    teamBios?: Record<string, { bio?: string; photo?: string }>;
+    teamBios?: Record<string, { bio?: string; photo?: string; hidden?: boolean }>;
     template?: string;
   };
   const on = (id: SectionId) => w.sections?.[id] ?? true;
@@ -84,12 +84,12 @@ export default async function WebsiteBuilderPage({ searchParams }: { searchParam
           </Card>
 
           <Card>
-            <div className="flex items-center justify-between pr-5"><CardHeader title={SECTION_LABELS.testimonials} sub="Up to three quotes from happy clients" /><Toggle id="testimonials" on={on("testimonials")} /></div>
+            <div className="flex items-center justify-between pr-5"><CardHeader title={SECTION_LABELS.testimonials} sub="Quotes from happy clients — add as many as you like" /><Toggle id="testimonials" on={on("testimonials")} /></div>
             <form method="post" action="/api/website" className="space-y-4 p-5 pt-0">
               <input type="hidden" name="section" value="testimonials" />
-              {[0, 1, 2].map((i) => (
+              {Array.from({ length: testimonials.length + 2 }, (_, i) => (
                 <div key={i} className="grid grid-cols-[1fr_150px] gap-2">
-                  <input name={`quote${i}`} defaultValue={testimonials[i]?.quote ?? ""} placeholder={`Quote ${i + 1}`} className={field} />
+                  <input name={`quote${i}`} defaultValue={testimonials[i]?.quote ?? ""} placeholder={i < testimonials.length ? `Quote ${i + 1}` : "Add another quote…"} className={field} />
                   <input name={`name${i}`} defaultValue={testimonials[i]?.name ?? ""} placeholder="Name" className={field} />
                 </div>
               ))}
@@ -98,12 +98,12 @@ export default async function WebsiteBuilderPage({ searchParams }: { searchParam
           </Card>
 
           <Card>
-            <div className="flex items-center justify-between pr-5"><CardHeader title={SECTION_LABELS.faq} sub="Answer the questions every new client asks" /><Toggle id="faq" on={on("faq")} /></div>
+            <div className="flex items-center justify-between pr-5"><CardHeader title={SECTION_LABELS.faq} sub="Answer the questions every new client asks — unlimited" /><Toggle id="faq" on={on("faq")} /></div>
             <form method="post" action="/api/website" className="space-y-4 p-5 pt-0">
               <input type="hidden" name="section" value="faqs" />
-              {[0, 1, 2, 3, 4, 5].map((i) => (
+              {Array.from({ length: faqs.length + 2 }, (_, i) => (
                 <div key={i} className="space-y-1.5">
-                  <input name={`q${i}`} defaultValue={faqs[i]?.q ?? ""} placeholder={i === 0 ? "Question — e.g. What should I bring?" : `Question ${i + 1}`} className={field} />
+                  <input name={`q${i}`} defaultValue={faqs[i]?.q ?? ""} placeholder={i < faqs.length ? `Question ${i + 1}` : "Add another question…"} className={field} />
                   <textarea name={`a${i}`} rows={2} defaultValue={faqs[i]?.a ?? ""} placeholder="Answer" className={area} />
                 </div>
               ))}
@@ -130,7 +130,14 @@ export default async function WebsiteBuilderPage({ searchParams }: { searchParam
                         <div className="grid size-12 place-items-center rounded-full bg-brand text-[16px] font-bold text-white">{u.name.split(" ").map((p) => p[0]).slice(0, 2).join("")}</div>
                       )}
                       <div className="min-w-0 flex-1">
-                        <div className="text-[14px] font-bold text-ink">{u.name}</div>
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="text-[14px] font-bold text-ink">{u.name}</div>
+                          <form method="post" action="/api/website">
+                            <input type="hidden" name="section" value="team-toggle" />
+                            <input type="hidden" name="userId" value={u.id} />
+                            <button className={`rounded-full px-2.5 py-1 text-[10.5px] font-bold ${b?.hidden ? "bg-line-2 text-muted" : "bg-green-wash text-green"}`}>{b?.hidden ? "Hidden" : "On site"}</button>
+                          </form>
+                        </div>
                         <form method="post" action="/api/media/upload" encType="multipart/form-data" className="mt-1 flex items-center gap-2">
                           <input type="hidden" name="kind" value="teamphoto" />
                           <input type="hidden" name="userId" value={u.id} />

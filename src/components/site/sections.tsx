@@ -116,7 +116,7 @@ export function Testimonials({ d, s }: { d: SiteData; s: SiteSkin }) {
       <div className="mx-auto max-w-[1080px] px-6 py-16 sm:py-20">
         <SectionHeading d={d} s={s} kicker="Kind words" title="What our clients say" />
         <div className="mt-10 grid gap-5 md:grid-cols-3">
-          {d.testimonials.slice(0, 3).map((t) => (
+          {d.testimonials.map((t) => (
             <figure key={t.name} className="p-7" style={{ background: s.cardBg, borderRadius: s.radius, border: `1px solid ${s.line}` }}>
               <div className="text-[20px] tracking-[0.15em]" style={{ color: d.brand }}>★★★★★</div>
               <blockquote className={`mt-4 text-[15px] leading-relaxed ${s.serif ? "font-serif italic" : ""}`}>&ldquo;{t.quote}&rdquo;</blockquote>

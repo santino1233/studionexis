@@ -57,7 +57,7 @@ export default async function StudioSite({ params, searchParams }: {
     testimonials?: SiteQuote[];
     faqs?: SiteFaq[];
     sections?: Partial<Record<SectionId, boolean>>;
-    teamBios?: Record<string, { bio?: string; photo?: string }>;
+    teamBios?: Record<string, { bio?: string; photo?: string; hidden?: boolean }>;
   };
   const fmt = moneyFormatter(tenant.currency);
 
@@ -113,7 +113,7 @@ export default async function StudioSite({ params, searchParams }: {
       benefits: c.benefits,
       price: fmt.format(Number(c.price)),
     })),
-    team: instructors.map((u) => ({
+    team: instructors.filter((u) => !w.teamBios?.[u.id]?.hidden).map((u) => ({
       name: u.name,
       role: "Instructor",
       bio: w.teamBios?.[u.id]?.bio ?? "",

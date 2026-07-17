@@ -683,3 +683,8 @@
 - Settings → Money → "Booking upsell": pick the package to offer for group vs private bookings, plus "hide when the client already has an active package" (default on).
 - The booking slide-over shows a brand-tinted card — package name, price (membership-aware), per-class math vs the drop-in price, "Get the package →". Guests always see it; members only when they lack an active package of that kind (per the toggle).
 - Verified live: config saved; guest sidebar showed "10-Class Pack — $220 for 10 classes ≈ $22/class"; Ava (active pack) saw nothing; settings card renders.
+
+## 2026-07-17 — V7: Website content freedom (Wave 14)
+- Per-instructor "On site / Hidden" toggle in the builder's team card (website.teamBios[id].hidden) — the public site filters accordingly.
+- Testimonials and FAQs are now unlimited: the builder always shows two blank "add another…" rows beyond what exists (parses up to 50), and the site renders all quotes instead of capping at three.
+- Verified live: hiding Mia removed her from the site (restore worked), 5 testimonials saved & the 5th rendered publicly, builder shows toggles + expanding rows.

@@ -30,7 +30,7 @@ export async function POST(req: Request) {
       why: pick("why").split("\n").map((s) => s.trim()).filter(Boolean).slice(0, 6),
     };
   } else if (section === "team") {
-    const bios = { ...((prev.teamBios as Record<string, { bio?: string; photo?: string }>) ?? {}) };
+    const bios = { ...((prev.teamBios as Record<string, { bio?: string; photo?: string; hidden?: boolean }>) ?? {}) };
     for (const [key, val] of form.entries()) {
       if (!key.startsWith("bio_")) continue;
       const userId = key.slice(4);
@@ -39,9 +39,17 @@ export async function POST(req: Request) {
       bios[userId] = { ...bios[userId], bio: String(val).trim() };
     }
     patch = { teamBios: bios };
+  } else if (section === "team-toggle") {
+    const userId = pick("userId");
+    const user = await db.user.findFirst({ where: { id: userId, tenantId: auth.tenantId } });
+    if (user) {
+      const bios = { ...((prev.teamBios as Record<string, { bio?: string; photo?: string; hidden?: boolean }>) ?? {}) };
+      bios[userId] = { ...bios[userId], hidden: !(bios[userId]?.hidden ?? false) };
+      patch = { teamBios: bios };
+    }
   } else if (section === "testimonials") {
     const rows = [];
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < 50; i++) {
       const quote = pick(`quote${i}`);
       const name = pick(`name${i}`);
       if (quote && name) rows.push({ quote, name });
@@ -49,7 +57,7 @@ export async function POST(req: Request) {
     patch = { testimonials: rows };
   } else if (section === "faqs") {
     const rows = [];
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < 50; i++) {
       const q = pick(`q${i}`);
       const a = pick(`a${i}`);
       if (q && a) rows.push({ q, a });
