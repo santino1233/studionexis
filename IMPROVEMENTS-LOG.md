@@ -662,3 +662,8 @@
 - REST API v1 (Bearer auth, 120 req/min/key, uniform error shape): GET /me · GET+POST /clients · GET /clients/:id (profile + active packages) · GET /classes (+/:id, live spotsLeft) · GET+POST /bookings (find-or-create client by contact, credits auto-spent, waitlist when full) · POST /bookings/:id/cancel (qty-aware refund + waitlist promotion) · GET /packages · GET /orders.
 - PUBLIC /developers documentation: sticky section sidebar (Introduction / Authentication / Errors & limits / per-resource sections / Make.com & Zapier guide), every endpoint with params table, example response, and a LIVE "Try it" console (key stored in localStorage, real requests, status + timing + pretty JSON). Data-driven endpoint catalogue so docs grow with the API.
 - Verified live end-to-end with a generated key: 401 without key, /me, client search, create client (201), list classes, create booking (auto-matched existing client by phone), duplicate → 409, cancel → refund/promotion path, packages incl. membership billing labels, orders; docs page 200 with 12 Try-it consoles.
+
+## 2026-07-17 — V3: Product variants with per-variant stock (Wave 14)
+- New ProductVariant model (label, optional price override, own stock). Products page: per-product "Variants" expander — add/edit/remove sizes/colours/packs inline; product stock chip sums variant stock and shows the variant count.
+- Checkout mini-POS merch is variant-aware: each in-stock variant is its own line ("Grip Socks — 3-Pack · $30"); charging decrements the variant's stock and the order line carries the full variant label.
+- Verified live: 3 variants on Grip Socks (S/M inherit $13.50, 3-Pack $30), popup listed all rows, sale decremented 3-Pack 5→4 with correct order line.

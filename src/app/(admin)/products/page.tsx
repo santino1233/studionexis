@@ -1,3 +1,4 @@
+import React from "react";
 import { Card, CardHeader } from "@/components/ui/card";
 import { db } from "@/lib/db";
 import { getCurrentTenant, moneyFormatter } from "@/lib/tenant";
@@ -14,7 +15,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
   const fmt = moneyFormatter(tenant.currency);
   const [packages, products, vouchers, archivedCount] = await Promise.all([
     db.package.findMany({ where: { tenantId: tenant.id, active: true }, orderBy: { price: "asc" }, include: { _count: { select: { purchases: true } } } }),
-    db.product.findMany({ where: { tenantId: tenant.id, active: !showArchived }, orderBy: { name: "asc" } }),
+    db.product.findMany({ where: { tenantId: tenant.id, active: !showArchived }, orderBy: { name: "asc" }, include: { variants: { orderBy: { label: "asc" } } } }),
     db.voucher.findMany({ where: { tenantId: tenant.id, active: true }, orderBy: { createdAt: "desc" }, take: 20 }),
     db.product.count({ where: { tenantId: tenant.id, active: false } }),
   ]);
@@ -102,7 +103,8 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
             </thead>
             <tbody>
               {products.map((p) => (
-                <tr key={p.id} className="border-b border-line-2 last:border-0 hover:bg-raised">
+                <React.Fragment key={p.id}>
+                <tr className="border-b border-line-2 hover:bg-raised">
                   <td className="px-[14px] py-[10px]" colSpan={2}>
                     <form method="post" action={`/api/products/${p.id}`} className="flex items-center gap-2">
                       <input type="hidden" name="action" value="update" />
@@ -113,9 +115,14 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
                     </form>
                   </td>
                   <td className="px-[14px] py-[10px]">
-                    <span className={`whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-bold ${p.stock > 5 ? "bg-green-wash text-green" : p.stock > 0 ? "bg-brand-wash text-brand" : "bg-rose/10 text-rose"}`}>
-                      {p.stock > 5 ? `${p.stock} left` : p.stock > 0 ? `Low · ${p.stock} left` : "Out of stock"}
-                    </span>
+                    {(() => {
+                      const st = p.variants.length > 0 ? p.variants.reduce((n, v) => n + v.stock, 0) : p.stock;
+                      return (
+                        <span className={`whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-bold ${st > 5 ? "bg-green-wash text-green" : st > 0 ? "bg-brand-wash text-brand" : "bg-rose/10 text-rose"}`}>
+                          {st > 5 ? `${st} left` : st > 0 ? `Low · ${st} left` : "Out of stock"}{p.variants.length > 0 ? ` · ${p.variants.length} variants` : ""}
+                        </span>
+                      );
+                    })()}
                   </td>
                   <td className="px-[14px] py-[10px]">
                     <form method="post" action={`/api/products/${p.id}`} className="flex items-center gap-1.5">
@@ -133,6 +140,36 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
                     </form>
                   </td>
                 </tr>
+                <tr className="border-b border-line-2 last:border-0">
+                  <td colSpan={5} className="px-[14px] pb-3 pt-0">
+                    <details className="rounded-xl bg-raised px-4 py-2">
+                      <summary className="cursor-pointer py-1 text-[12px] font-bold text-ink-2">
+                        Variants ({p.variants.length}) — sizes, colours, packs with their own stock
+                      </summary>
+                      <div className="space-y-2 pb-3 pt-2">
+                        {p.variants.map((v) => (
+                          <form key={v.id} method="post" action={`/api/products/${p.id}`} className="flex flex-wrap items-center gap-2">
+                            <input type="hidden" name="action" value="variant-update" />
+                            <input type="hidden" name="vid" value={v.id} />
+                            <input name="label" defaultValue={v.label} className="h-8 w-[160px] rounded-lg border border-line bg-surface px-2 text-[12px] outline-none focus:border-brand" />
+                            <input name="vprice" type="number" step="0.01" min={0} defaultValue={v.price ? Number(v.price) : ""} placeholder={`${Number(p.price)}`} title="Price (blank = product price)" className="h-8 w-[80px] rounded-lg border border-line bg-surface px-2 text-right text-[12px] outline-none focus:border-brand" />
+                            <input name="vstock" type="number" min={0} defaultValue={v.stock} title="Stock" className="h-8 w-[64px] rounded-lg border border-line bg-surface px-2 text-center text-[12px] outline-none focus:border-brand" />
+                            <button className="rounded-lg bg-line-2 px-2.5 py-1 text-[11px] font-bold text-ink-2 hover:text-ink">Save</button>
+                            <button name="_remove" value="1" className="rounded-lg bg-line-2 px-2 py-1 text-[11px] font-bold text-ink-2 hover:bg-rose/10 hover:text-rose">✕</button>
+                          </form>
+                        ))}
+                        <form method="post" action={`/api/products/${p.id}`} className="flex flex-wrap items-center gap-2 border-t border-line-2 pt-2">
+                          <input type="hidden" name="action" value="variant-add" />
+                          <input name="label" required placeholder="e.g. Black · M or 3-Pack" className="h-8 w-[160px] rounded-lg border border-line bg-surface px-2 text-[12px] outline-none focus:border-brand" />
+                          <input name="vprice" type="number" step="0.01" min={0} placeholder="Price (opt.)" className="h-8 w-[90px] rounded-lg border border-line bg-surface px-2 text-right text-[12px] outline-none focus:border-brand" />
+                          <input name="vstock" type="number" min={0} placeholder="Stock" className="h-8 w-[64px] rounded-lg border border-line bg-surface px-2 text-center text-[12px] outline-none focus:border-brand" />
+                          <button className="rounded-lg bg-brand px-3 py-1 text-[11px] font-bold text-white hover:bg-brand-ink">Add variant</button>
+                        </form>
+                      </div>
+                    </details>
+                  </td>
+                </tr>
+                </React.Fragment>
               ))}
               {products.length === 0 && <tr><td colSpan={5} className="px-[18px] py-10 text-center text-sm text-muted">{showArchived ? "Nothing archived." : "No products yet."}</td></tr>}
             </tbody>

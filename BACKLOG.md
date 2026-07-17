@@ -252,7 +252,7 @@ https://new.nexis.revsports.ca → commit → log → next.
 - [x] V2 Checkout: sell-a-package-in-checkout — buy a chosen package on
       the spot, auto-spend 1 credit for this class, single "Buy & check
       in" action (order = package sale, booking = package_credit).
-- [ ] V3 Product variants: per-product option sets (size/colour) with
+- [x] V3 Product variants: per-product option sets (size/colour) with
       per-variant stock; POS + checkout merch pickers become
       variant-aware; archive button polish.
 - [ ] V4 Public booking page: timezone banner ("All class times are

@@ -253,13 +253,26 @@ model Product {
   tenant   Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   name     String
   price    Decimal @db.Decimal(12, 2)
-  stock    Int     @default(0)
+  stock    Int     @default(0) // ignored when variants exist (their stock rules)
   imageUrl String?
   active   Boolean @default(true)
 
   orderItems OrderItem[]
+  variants   ProductVariant[]
 
   @@index([tenantId])
+}
+
+// Size/colour/pack options with their own stock (Wave 14 V3).
+model ProductVariant {
+  id        String  @id @default(cuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  label     String // "Black · M", "3-Pack"…
+  price     Decimal? @db.Decimal(12, 2) // null = product price
+  stock     Int     @default(0)
+
+  @@index([productId])
 }
 
 enum OrderStatus {

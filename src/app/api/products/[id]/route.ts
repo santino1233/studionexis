@@ -30,6 +30,36 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     if (Number.isFinite(qty) && qty > 0) {
       await db.product.update({ where: { id }, data: { stock: { increment: qty } } });
     }
+  } else if (action === "variant-add") {
+    const label = String(form.get("label") ?? "").trim().slice(0, 60);
+    const price = Number(form.get("vprice"));
+    const stock = Math.max(0, Math.floor(Number(form.get("vstock")) || 0));
+    if (label) {
+      await db.productVariant.create({
+        data: { productId: id, label, price: Number.isFinite(price) && price > 0 ? price.toFixed(2) : null, stock },
+      });
+    }
+  } else if (action === "variant-update") {
+    const vid = String(form.get("vid") ?? "");
+    if (form.get("_remove")) {
+      await db.productVariant.deleteMany({ where: { id: vid, productId: id } });
+      return NextResponse.redirect(externalUrl(req, "/products?saved=1"), 303);
+    }
+    const v = await db.productVariant.findFirst({ where: { id: vid, productId: id } });
+    if (v) {
+      const price = Number(form.get("vprice"));
+      const stock = Number(form.get("vstock"));
+      await db.productVariant.update({
+        where: { id: vid },
+        data: {
+          label: String(form.get("label") ?? "").trim().slice(0, 60) || v.label,
+          price: Number.isFinite(price) && price > 0 ? price.toFixed(2) : null,
+          stock: Number.isFinite(stock) && stock >= 0 ? Math.floor(stock) : v.stock,
+        },
+      });
+    }
+  } else if (action === "variant-remove") {
+    await db.productVariant.deleteMany({ where: { id: String(form.get("vid") ?? ""), productId: id } });
   } else if (action === "archive") {
     await db.product.update({ where: { id }, data: { active: false } });
   } else if (action === "restore") {

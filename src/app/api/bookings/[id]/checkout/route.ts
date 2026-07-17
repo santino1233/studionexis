@@ -73,16 +73,24 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         let total = dropinPrice * booking.qty;
         lines.push({ kind: "dropin", refId: booking.sessionId, productId: null, label: `${booking.session.classType.name} (drop-in)`, qty: booking.qty, unitPrice: dropinPrice });
 
-        // Optional merch lines: fields named product_<id> hold quantities.
+        // Optional merch lines: product_<id> (no variants) or variant_<id>.
         for (const [key, val] of form.entries()) {
-          if (!key.startsWith("product_")) continue;
           const qty = Number(val);
           if (!Number.isFinite(qty) || qty < 1) continue;
-          const prod = await tx.product.findFirst({ where: { id: key.slice(8), tenantId: auth.tenantId, active: true } });
-          if (!prod || prod.stock < qty) throw new Error("stock");
-          lines.push({ kind: "product", refId: prod.id, productId: prod.id, label: prod.name, qty, unitPrice: Number(prod.price) });
-          total += Number(prod.price) * qty;
-          await tx.product.update({ where: { id: prod.id }, data: { stock: { decrement: qty } } });
+          if (key.startsWith("product_")) {
+            const prod = await tx.product.findFirst({ where: { id: key.slice(8), tenantId: auth.tenantId, active: true } });
+            if (!prod || prod.stock < qty) throw new Error("stock");
+            lines.push({ kind: "product", refId: prod.id, productId: prod.id, label: prod.name, qty, unitPrice: Number(prod.price) });
+            total += Number(prod.price) * qty;
+            await tx.product.update({ where: { id: prod.id }, data: { stock: { decrement: qty } } });
+          } else if (key.startsWith("variant_")) {
+            const v = await tx.productVariant.findFirst({ where: { id: key.slice(8), product: { tenantId: auth.tenantId, active: true } }, include: { product: true } });
+            if (!v || v.stock < qty) throw new Error("stock");
+            const unit = Number(v.price ?? v.product.price);
+            lines.push({ kind: "product", refId: v.id, productId: v.productId, label: `${v.product.name} — ${v.label}`, qty, unitPrice: unit });
+            total += unit * qty;
+            await tx.productVariant.update({ where: { id: v.id }, data: { stock: { decrement: qty } } });
+          }
         }
 
         // Voucher (same rules as the main POS)

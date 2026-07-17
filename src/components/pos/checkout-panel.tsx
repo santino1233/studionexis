@@ -26,7 +26,13 @@ export async function CheckoutPanel({ bookingId, tenantId, currency, timezone, b
   });
   if (!booking) return <p className="p-6 text-sm text-muted">That booking is gone.</p>;
 
-  const products = await db.product.findMany({ where: { tenantId, active: true, stock: { gt: 0 } }, orderBy: { name: "asc" }, take: 8 });
+  const productsRaw = await db.product.findMany({ where: { tenantId, active: true }, orderBy: { name: "asc" }, take: 12, include: { variants: { where: { stock: { gt: 0 } }, orderBy: { label: "asc" } } } });
+  // Flatten: variant products become one row per in-stock variant.
+  const products = productsRaw.flatMap((p) =>
+    p.variants.length > 0
+      ? p.variants.map((v) => ({ field: `variant_${v.id}`, name: `${p.name} — ${v.label}`, price: Number(v.price ?? p.price), stock: v.stock }))
+      : p.stock > 0 ? [{ field: `product_${p.id}`, name: p.name, price: Number(p.price), stock: p.stock }] : [],
+  ).slice(0, 10);
   const packs = await db.package.findMany({
     where: { tenantId, active: true, kind: booking.session.classType.kind },
     orderBy: { price: "asc" },
@@ -122,9 +128,9 @@ export async function CheckoutPanel({ bookingId, tenantId, currency, timezone, b
                 <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-muted">Add merch (optional)</label>
                 <div className="space-y-1.5">
                   {products.map((p) => (
-                    <div key={p.id} className="flex items-center justify-between gap-2 rounded-xl bg-raised px-3 py-2">
-                      <span className="text-[13px] font-semibold text-ink">{p.name} <span className="text-muted">· {fmt.format(Number(p.price))}</span></span>
-                      <input name={`product_${p.id}`} type="number" min={0} max={p.stock} placeholder="0" className="h-8 w-16 rounded-lg border border-line bg-surface px-2 text-center text-sm outline-none focus:border-brand" />
+                    <div key={p.field} className="flex items-center justify-between gap-2 rounded-xl bg-raised px-3 py-2">
+                      <span className="text-[13px] font-semibold text-ink">{p.name} <span className="text-muted">· {fmt.format(p.price)}</span></span>
+                      <input name={p.field} type="number" min={0} max={p.stock} placeholder="0" className="h-8 w-16 rounded-lg border border-line bg-surface px-2 text-center text-sm outline-none focus:border-brand" />
                     </div>
                   ))}
                 </div>
