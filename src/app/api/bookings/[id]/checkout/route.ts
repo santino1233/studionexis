@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { externalUrl } from "@/lib/request-url";
+import { initialExpiry } from "@/lib/memberships";
 
 // The calendar's mini-POS: settle an attendee's payment and check them in.
 // mode=credit  → consume a package credit
@@ -39,6 +40,31 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         await tx.booking.update({
           where: { id },
           data: { status: "CHECKED_IN", paymentMethod: "package_credit", clientPackageId: booking.clientPackageId ?? pkg.id },
+        });
+      } else if (mode === "sellpack") {
+        // Sell a package on the spot and pay for this class with its first
+        // credit(s) — one action (video spec 2, V2).
+        const packageId = String(form.get("packageId") ?? "");
+        const method = ["cash", "transfer", "card"].includes(String(form.get("method"))) ? String(form.get("method")) : "cash";
+        const pack = await tx.package.findFirst({ where: { id: packageId, tenantId: auth.tenantId, active: true } });
+        if (!pack || pack.credits < booking.qty) throw new Error("no-credits");
+        const last = await tx.order.findFirst({ where: { tenantId: auth.tenantId }, orderBy: { number: "desc" }, select: { number: true } });
+        const order = await tx.order.create({
+          data: {
+            tenantId: auth.tenantId, clientId: booking.clientId, number: (last?.number ?? 0) + 1,
+            total: pack.price, method, status: "PAID",
+            items: { create: [{ kind: "package", refId: pack.id, label: pack.name, qty: 1, unitPrice: pack.price }] },
+          },
+        });
+        const cp = await tx.clientPackage.create({
+          data: {
+            tenantId: auth.tenantId, clientId: booking.clientId, packageId: pack.id,
+            creditsLeft: pack.credits - booking.qty, expiresAt: initialExpiry(pack), pricePaid: pack.price,
+          },
+        });
+        await tx.booking.update({
+          where: { id },
+          data: { status: "CHECKED_IN", paymentMethod: "package_credit", clientPackageId: cp.id, orderId: order.id },
         });
       } else {
         const method = ["cash", "transfer", "card"].includes(String(form.get("method"))) ? String(form.get("method")) : "cash";

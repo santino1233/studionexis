@@ -27,6 +27,11 @@ export async function CheckoutPanel({ bookingId, tenantId, currency, timezone, b
   if (!booking) return <p className="p-6 text-sm text-muted">That booking is gone.</p>;
 
   const products = await db.product.findMany({ where: { tenantId, active: true, stock: { gt: 0 } }, orderBy: { name: "asc" }, take: 8 });
+  const packs = await db.package.findMany({
+    where: { tenantId, active: true, kind: booking.session.classType.kind },
+    orderBy: { price: "asc" },
+    take: 6,
+  });
   const credits = booking.client.packages.reduce((s, p) => s + p.creditsLeft, 0);
   const dropIn = Number(booking.session.classType.price);
   const qty = booking.qty;
@@ -46,6 +51,37 @@ export async function CheckoutPanel({ bookingId, tenantId, currency, timezone, b
       )}
 
       <div className="mt-4 grid gap-4 md:grid-cols-2">
+        {credits < qty && packs.length > 0 && (
+          <Card className="md:col-span-2 border-brand/30">
+            <CardHeader eyebrow="Upsell" title="Sell a package & use it now" sub="They buy the pack, this class takes the first credit — one step" />
+            <form method="post" action={`/api/bookings/${booking.id}/checkout`} className="flex flex-wrap items-end gap-3 p-5">
+              <input type="hidden" name="mode" value="sellpack" />
+              <input type="hidden" name="back" value={back} />
+              <div className="min-w-[220px] flex-1">
+                <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-muted">Package</label>
+                <select name="packageId" className={field}>
+                  {packs.map((p) => (
+                    <option key={p.id} value={p.id}>{p.name} — {fmt.format(Number(p.price))}{p.interval === "month" ? "/mo" : p.interval === "year" ? "/yr" : ""} · {p.credits} credits</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-muted">Paid by</label>
+                <div className="flex gap-1.5">
+                  {(["cash", "transfer", "card"] as const).map((m, i) => (
+                    <label key={m} className="cursor-pointer">
+                      <input type="radio" name="method" value={m} defaultChecked={i === 0} className="peer sr-only" />
+                      <span className="block rounded-[10px] border border-line bg-surface px-3 py-2 text-center text-[12.5px] font-bold capitalize text-ink-2 peer-checked:border-brand peer-checked:bg-brand-wash peer-checked:text-brand">{m}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <button className="h-10 rounded-xl bg-brand px-5 text-[13.5px] font-bold text-white hover:bg-brand-ink">
+                Sell, use {qty} credit{qty === 1 ? "" : "s"} &amp; check in
+              </button>
+            </form>
+          </Card>
+        )}
         <Card className={credits < qty ? "opacity-55" : ""}>
           <CardHeader eyebrow="Fastest" title="Use package credit" sub={credits > 0 ? `${credits} credit${credits === 1 ? "" : "s"} available` : "No active credits"} />
           <div className="p-5">

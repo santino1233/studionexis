@@ -652,3 +652,7 @@
 - The receptionist TODO signal from the old system: any PAST class still SCHEDULED with active attendees pulses (amber ring animation, ⚠ prefix) in week/day/month views, with a legend entry; selecting it shows an amber banner — "check everyone in, take payment, then Mark class completed so the instructor gets paid."
 - Denser, bigger grid: hour rows 64→84px, week min-width 840→1060px, attendee names in week blocks (3), counts show at smaller block heights.
 - Verified live: 5 real unsettled sessions this week render 18 pulse markers; rail banner present; wider grid served.
+
+## 2026-07-17 — V2: Sell a package inside checkout (Wave 14)
+- When the client at checkout has no usable credits, the popup leads with a full-width "Sell a package & use it now" card: pick a package (filtered to the class kind, membership pricing shown), pick cash/transfer/card, one button — creates the PAID package order, grants the ClientPackage (membership-aware expiry), spends qty credits on this class and checks them in atomically.
+- Verified live: no-credit client sold "Intro — 3 Classes" $45 cash → CHECKED_IN via package_credit, 2 of 3 credits remaining, order + line attached to the booking; upsell card renders in the calendar popup only when credits are insufficient.

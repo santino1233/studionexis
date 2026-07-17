@@ -249,7 +249,7 @@ https://new.nexis.revsports.ca → commit → log → next.
       attendee count + names), and the "needs completion" pulse — past
       sessions with attendees that aren't completed/settled glow+pulse
       as the receptionist's TODO; legend entry.
-- [ ] V2 Checkout: sell-a-package-in-checkout — buy a chosen package on
+- [x] V2 Checkout: sell-a-package-in-checkout — buy a chosen package on
       the spot, auto-spend 1 credit for this class, single "Buy & check
       in" action (order = package sale, booking = package_credit).
 - [ ] V3 Product variants: per-product option sets (size/colour) with
