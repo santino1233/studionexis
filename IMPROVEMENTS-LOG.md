@@ -777,3 +777,6 @@
 
 ## 2026-07-17 — Overnight loop: cross-location credit/membership visibility (Phase 3 groundwork)
 - Closed a gap where the org-sync UI promised "Credits usable at any location → makes them visible so staff can honour them" but nothing surfaced them. The client profile now shows a read-only "Credits at other locations" card: this same person's active packages at the account's OTHER locations (matched by phone/email within the org), each tagged with the location + expiry + credits. Gated by sync.sharedCredits/memberships; view-only (no money moves) — the safe first half of LOCATIONS-SPEC.md Phase 3. Verified live: card shows a Westside 10-Pack on a Main client with the flag on, and disappears with it off.
+
+## 2026-07-17 — Overnight loop: new locations inherit parent branding
+- Gap: a newly created location had an empty website ({}), so a franchise's second location launched on the default template with neutral placeholder copy instead of matching the parent's brand. Fixed /api/location/create to carry the parent's BRAND-level website fields (template, tagline, about, philosophy, why, testimonials, faqs) to the new location, while leaving location-specific fields (address, phone, hours, hero/gallery photos, maps, socials, custom page) blank for the owner. Verified live: a new location inherited the "serene" template + tagline but no address.

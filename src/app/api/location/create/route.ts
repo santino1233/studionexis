@@ -34,6 +34,14 @@ export async function POST(req: Request) {
     let slug = base;
     for (let i = 2; await tx.tenant.findUnique({ where: { slug } }); i++) slug = `${base}-${i}`;
 
+    // Carry the parent's BRAND-level website over so the new location launches
+    // on-brand — but leave location-specific details (address, phone, hours,
+    // photos, maps, socials, custom page) blank for the owner to fill in.
+    const src = (current.website ?? {}) as Record<string, unknown>;
+    const BRAND_KEYS = ["template", "tagline", "about", "philosophy", "why", "testimonials", "faqs"];
+    const website: Record<string, unknown> = {};
+    for (const k of BRAND_KEYS) if (src[k] !== undefined) website[k] = src[k];
+
     const t = await tx.tenant.create({
       data: {
         slug,
@@ -47,6 +55,7 @@ export async function POST(req: Request) {
         logoUrl: current.logoUrl,
         plan: current.plan,
         status: "ACTIVE",
+        website: website as never,
       },
     });
     // Same owner (same login) at the new location.
