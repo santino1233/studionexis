@@ -765,3 +765,8 @@
 - Shared class catalog: "Copy catalog to other locations" clones missing class types to every sibling (never overwrites/deletes). Verified: pushed 6 types dev-studio → Westside.
 - Shared client directory: /clients gains a "This location / All locations" toggle for owners when sync.clients is on — a read-only cross-location directory with a Location column (other-location clients aren't linkable since detail pages are tenant-scoped).
 - Credits/memberships sharing: flags persist and power cross-location VISIBILITY now; automatic redemption is staged for the agent (money-sensitive, needs shared client identity + audit). See LOCATIONS-SPEC.md Phase 3.
+
+## 2026-07-17 — App Store: real brand logos + Pipedrive-style marketplace
+- Replaced emoji app icons with self-contained inline-SVG brand logos (Zapier, Slack, Google Calendar, Meta, Stripe, Twilio, and our own Live Chat) in components/apps/app-logos.tsx — CSP-safe, no external requests.
+- Reworked /apps to flow like Pipedrive: a "＋ Browse the marketplace" popup (components/apps/store-browser.tsx) with live search over the catalog, logos, one-click Add, and a "Request an app" form. "Your apps" now shows each added app in a clean logo + name/category panel.
+- Request an app → lands in the HQ Feature Requests queue (/api/apps/request appends "App request: <name>" to policies.featureRequests). Verified live: logos render with brand colours, marketplace search/add works, and an app request reached HQ.
