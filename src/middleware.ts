@@ -30,6 +30,17 @@ export async function middleware(req: NextRequest) {
     if (pathname === "/login" || pathname.startsWith("/api/") || pathname.startsWith(`/${process.env.HQ_PATH ?? "hq"}`)) {
       return NextResponse.next();
     }
+    // Not signed in yet → the login page (the HQ page itself 404s without a
+    // SUPERADMIN session, which reads as a broken site).
+    const hqToken = req.cookies.get("nx_session")?.value;
+    let ok = false;
+    if (hqToken) {
+      try {
+        const { payload } = await jwtVerify(hqToken, new TextEncoder().encode(process.env.AUTH_SECRET!));
+        ok = payload.role === "SUPERADMIN";
+      } catch {}
+    }
+    if (!ok) return NextResponse.redirect(new URL("/login", req.url));
     const url = new URL(`/${process.env.HQ_PATH ?? "hq"}${pathname === "/" ? "" : pathname}`, req.url);
     url.search = req.nextUrl.search;
     return NextResponse.rewrite(url);
