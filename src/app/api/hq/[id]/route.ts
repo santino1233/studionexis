@@ -4,6 +4,9 @@ import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { externalUrl } from "@/lib/request-url";
 import { customFeatures, featureRequests, slugifyFeature, type FeatureRequest } from "@/lib/features";
+import { audit } from "@/lib/hq";
+import { SignJWT } from "jose";
+import bcrypt from "bcryptjs";
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const auth = await getSession();
@@ -49,6 +52,32 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       ? features.filter((f) => f.id !== fid)
       : features.map((f) => (f.id === fid ? { ...f, active: !f.active } : f));
     await db.tenant.update({ where: { id }, data: { policies: { ...prev, customFeatures: features } as Prisma.InputJsonValue } });
+  } else if (action === "hqtags") {
+    await db.tenant.update({
+      where: { id },
+      data: { policies: { ...prev, hq: {
+        notes: String(form.get("notes") ?? "").slice(0, 2000),
+        tags: String(form.get("tags") ?? "").split(",").map((t) => t.trim()).filter(Boolean).slice(0, 10),
+        comp: form.get("comp") === "on",
+      } } as Prisma.InputJsonValue },
+    });
+  } else if (action === "staffpw") {
+    const userId = String(form.get("userId") ?? "");
+    const pw = String(form.get("password") ?? "");
+    const u = await db.user.findFirst({ where: { id: userId, tenantId: id } });
+    if (u && pw.length >= 8) {
+      await db.user.update({ where: { id: userId }, data: { passwordHash: await bcrypt.hash(pw, 10) } });
+      audit({ tenantId: id, actor: auth.name, action: "staff-password-reset", detail: u.email });
+    }
+  } else if (action === "impersonate") {
+    const owner = await db.user.findFirst({ where: { tenantId: id, role: "OWNER", active: true } });
+    if (owner) {
+      const token = await new SignJWT({ userId: owner.id })
+        .setProtectedHeader({ alg: "HS256" }).setExpirationTime("60s").setIssuedAt()
+        .sign(new TextEncoder().encode(process.env.AUTH_SECRET!));
+      audit({ tenantId: id, actor: auth.name, action: "impersonate", detail: owner.email });
+      return NextResponse.redirect(`https://app.nexis.revsports.ca/api/hq-impersonate?token=${encodeURIComponent(token)}`, 303);
+    }
   } else if (action === "request-status") {
     const idx = Number(form.get("idx"));
     const status = String(form.get("status")) as FeatureRequest["status"];
@@ -57,6 +86,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       requests[idx] = { ...requests[idx], status };
       await db.tenant.update({ where: { id }, data: { policies: { ...prev, featureRequests: requests } as Prisma.InputJsonValue } });
     }
+  }
+  if (["extend", "activate", "suspend", "reactivate", "plan", "feature-add", "feature-toggle", "feature-remove"].includes(action)) {
+    audit({ tenantId: id, actor: auth.name, action: `hq-${action}`, detail: String(form.get("plan") ?? form.get("label") ?? form.get("fid") ?? "") });
   }
   return NextResponse.redirect(externalUrl(req, back), 303);
 }

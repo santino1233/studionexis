@@ -22,6 +22,7 @@ export async function POST(req: Request) {
     return NextResponse.redirect(externalUrl(req, "/login?error=1"), 303);
   }
 
+  await db.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } }).catch(() => {});
   if (user.role === "SUPERADMIN") {
     await createSession({ userId: user.id, tenantId: "", role: user.role, name: user.name });
     return NextResponse.redirect(externalUrl(req, `/${process.env.HQ_PATH ?? "hq"}`), 303);
