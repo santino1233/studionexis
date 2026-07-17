@@ -12,13 +12,13 @@ export async function GET(req: Request) {
   const url = new URL(req.url);
   const cid = url.searchParams.get("c");
   if (cid) {
-    const c = await db.chatConversation.findFirst({ where: { id: cid, tenantId: auth.tenantId } });
+    const c = await db.chatConversation.findFirst({ where: { id: cid, tenantId: auth.tenantId, channel: "visitor" } });
     if (!c) return NextResponse.json({ error: "gone" }, { status: 404 });
     if (c.unreadStudio > 0) await db.chatConversation.update({ where: { id: c.id }, data: { unreadStudio: 0 } });
     return NextResponse.json({ id: c.id, name: c.name, contact: c.contact, clientId: c.clientId, status: c.status, messages: c.messages as Msg[] });
   }
   const list = await db.chatConversation.findMany({
-    where: { tenantId: auth.tenantId, ...(url.searchParams.get("all") ? {} : { status: "OPEN" }) },
+    where: { tenantId: auth.tenantId, channel: "visitor", ...(url.searchParams.get("all") ? {} : { status: "OPEN" }) },
     orderBy: { lastMessageAt: "desc" }, take: 50,
   });
   return NextResponse.json({
@@ -34,7 +34,7 @@ export async function POST(req: Request) {
   if (!auth || !auth.tenantId || auth.role === "INSTRUCTOR") return NextResponse.json({ error: "auth" }, { status: 401 });
   let body: { id?: string; text?: string; close?: boolean };
   try { body = await req.json(); } catch { return NextResponse.json({ error: "bad_json" }, { status: 400 }); }
-  const c = await db.chatConversation.findFirst({ where: { id: String(body.id), tenantId: auth.tenantId } });
+  const c = await db.chatConversation.findFirst({ where: { id: String(body.id), tenantId: auth.tenantId, channel: "visitor" } });
   if (!c) return NextResponse.json({ error: "gone" }, { status: 404 });
   if (body.close !== undefined) {
     await db.chatConversation.update({ where: { id: c.id }, data: { status: body.close ? "CLOSED" : "OPEN" } });

@@ -8,7 +8,8 @@ export const dynamic = "force-dynamic";
 const NAV: [string, string, string][] = [
   ["/", "Dashboard", "◧"],
   ["/studios", "Studios", "🏢"],
-  ["/support", "Support", "💬"],
+  ["/support", "Support", "🎫"],
+  ["/chats", "Live Chat", "💬"],
   ["/requests", "Feature Requests", "🗳"],
   ["/billing", "Billing", "💳"],
   ["/analytics", "Analytics", "📈"],

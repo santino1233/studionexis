@@ -732,3 +732,6 @@
 - **🧪 Beta / report-a-bug card** in every studio sidebar → /support (feeds HQ Support Center); beta feedback note on the support page.
 - **Custom domain paywall**: Settings → Domain now shows a $12/mo unlock card until purchased (customFeatures `custom-domain`, counts into MRR, audited); website wizard's done step upsells "Get your own domain".
 - **Advanced editor (GrapesJS)**: /website/editor — open-source drag-and-drop builder with starter blocks; Save & publish stores sanitized HTML/CSS (scripts + on* handlers stripped) in website.custom and replaces the template on the public site; one click switches back to templates. Verified live round-trip on dev-studio.
+
+## 2026-07-17 — Studio ↔ Nexis HQ live chat
+- New live chat channel between studio owners and Studio Nexis support: studios chat from Help & Support (💬 Live chat with Nexis Support panel); HQ replies from the new **Live Chat** section in the HQ portal. Separate `channel` on ChatConversation keeps these threads out of the studio's own customer inbox. Verified full round-trip live (studio → HQ → studio, unread counts both ways).
