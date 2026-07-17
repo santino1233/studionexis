@@ -31,6 +31,7 @@ model Tenant {
   policies     Json         @default("{}")
   website      Json         @default("{}")
   smsBalance   Decimal      @default(0) @db.Decimal(12, 4)
+  apiKey       String?      @unique // nx_live_… — public REST API (Wave 15)
   createdAt    DateTime     @default(now())
 
   users          User[]

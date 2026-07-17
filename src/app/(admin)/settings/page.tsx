@@ -21,7 +21,12 @@ const TABS = [
   ["website", "Website"],
   ["domain", "Domain"],
   ["money", "Money"],
+  ["api", "API"],
 ] as const;
+
+function mask(key: string) {
+  return `${key.slice(0, 11)}…${key.slice(-4)}`;
+}
 
 export default async function SettingsPage({ searchParams }: { searchParams: Promise<{ saved?: string; error?: string; tab?: string }> }) {
   const { saved, error, tab: tabRaw } = await searchParams;
@@ -307,6 +312,44 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
             <button className="rounded-[10px] bg-brand px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-brand-ink">Save categories</button>
           </div>
         </form>
+      </Card>
+      </>)}
+
+      {tab === "api" && (<>
+      <Card className="mt-6">
+        <CardHeader eyebrow="Developers" title="API access" sub="Connect Make.com, Zapier, or your own tools to this studio" />
+        <div className="space-y-4 p-6">
+          {tenant.apiKey ? (
+            <>
+              <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-green/20 bg-green-wash px-4 py-3">
+                <div>
+                  <div className="text-[11px] font-bold uppercase tracking-wider text-green">Active key</div>
+                  <code className="font-mono text-[13.5px] font-bold text-ink">{mask(tenant.apiKey)}</code>
+                </div>
+                <form method="post" action="/api/settings">
+                  <input type="hidden" name="section" value="apikey" />
+                  <input type="hidden" name="action" value="revoke" />
+                  <button className="rounded-lg bg-line-2 px-3 py-1.5 text-[11.5px] font-bold text-ink-2 hover:bg-rose/10 hover:text-rose">Revoke</button>
+                </form>
+              </div>
+              <details className="rounded-xl border border-line-2 px-4 py-3">
+                <summary className="cursor-pointer text-[12.5px] font-bold text-ink-2">Reveal full key (treat it like a password)</summary>
+                <code className="mt-2 block break-all rounded-lg bg-raised p-3 font-mono text-[12.5px] text-ink">{tenant.apiKey}</code>
+              </details>
+            </>
+          ) : (
+            <p className="text-[13.5px] text-muted">No API key yet. Generate one to use the REST API — it can read and manage this studio&apos;s clients, classes and bookings, so keep it secret.</p>
+          )}
+          <div className="flex flex-wrap items-center gap-3">
+            <form method="post" action="/api/settings">
+              <input type="hidden" name="section" value="apikey" />
+              <input type="hidden" name="action" value="generate" />
+              <button className="rounded-[10px] bg-brand px-5 py-2.5 text-sm font-bold text-white hover:bg-brand-ink">{tenant.apiKey ? "Regenerate key" : "Generate API key"}</button>
+            </form>
+            <a href="/developers" target="_blank" className="text-[13px] font-bold text-brand hover:underline">Open API documentation ↗</a>
+          </div>
+          {tenant.apiKey && <p className="text-[12px] text-muted">Regenerating invalidates the old key immediately — update it anywhere it&apos;s used.</p>}
+        </div>
       </Card>
       </>)}
 

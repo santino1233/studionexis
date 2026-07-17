@@ -273,3 +273,16 @@ https://new.nexis.revsports.ca → commit → log → next.
       photos), section add/remove/REORDER, "Create my website" setup
       wizard for new studios; scope GrapesJS-style advanced editor as a
       follow-up spike.
+
+## Wave 15 — Developer platform & integrations (owner brief 2026-07-17)
+- [x] A1 Public REST API v1 (per-studio API keys, Bearer auth, rate-limited:
+      studio info, clients CRUD-lite, classes/schedule, bookings create/
+      cancel, packages, orders) + Settings → API tab (generate/revoke key)
+      + PUBLIC /developers docs page: section sidebar, every endpoint w/
+      params, curl + response examples, and live "Try it" console.
+- [ ] A2 Outgoing webhooks (booking.created, client.created, order.paid,
+      booking.cancelled, membership.renewed) w/ per-studio URLs + secret
+      signing; Make.com/Zapier guides in docs.
+- [ ] A3 App Store page (Pipedrive-style grid): Make/Zapier cards, Slack/
+      Discord/Telegram booking alerts, iCal calendar feeds, GA4/Meta/
+      TikTok pixel injection on public pages, WhatsApp via Twilio.

@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { jwtVerify } from "jose";
 import { canAccess, homeFor } from "@/lib/access";
 
-const PUBLIC = ["/login", "/api/login", "/signup", "/api/signup", "/book", "/s", "/api/public", "/api/cron", "/api/media", "/api/twilio", "/api/stripe"];
+const PUBLIC = ["/login", "/api/login", "/signup", "/api/signup", "/book", "/s", "/api/public", "/api/cron", "/api/media", "/api/twilio", "/api/stripe", "/api/v1", "/developers"];
 
 const BASE = "nexis.revsports.ca";
 // Hosts that serve the (hidden) admin app. Everything else on the base

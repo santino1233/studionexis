@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { externalUrl } from "@/lib/request-url";
 import { verifyStripeKey } from "@/lib/stripe";
+import { randomBytes } from "crypto";
 
 const CURRENCIES = ["USD", "EUR", "GBP", "AUD", "CAD", "SGD", "THB", "VND", "IDR", "PHP", "MYR", "JPY", "KRW", "AED", "INR"];
 
@@ -87,6 +88,12 @@ export async function POST(req: Request) {
           hours: pick("hours"),
         },
       },
+    });
+  } else if (section === "apikey") {
+    const act = String(form.get("action"));
+    await db.tenant.update({
+      where: { id: tenant.id },
+      data: { apiKey: act === "revoke" ? null : `nx_live_${randomBytes(24).toString("hex")}` },
     });
   } else if (section === "stripe") {
     const prev = (tenant.policies ?? {}) as Record<string, unknown>;
