@@ -40,6 +40,11 @@ export default async function HqTenantPage({ params }: { params: Promise<{ secre
   ]);
   if (!tenant) notFound();
 
+  const siblings = tenant.organizationId
+    ? await db.tenant.findMany({ where: { organizationId: tenant.organizationId }, orderBy: { createdAt: "asc" }, select: { id: true, name: true, locationLabel: true, plan: true, status: true } })
+    : [];
+  const orgMrr = siblings.reduce((n, t) => n + (t.status === "ACTIVE" ? (PLANS.find((p) => p.id === t.plan)?.monthly ?? 0) : 0), 0);
+
   const pol = (tenant.policies ?? {}) as { billingCycle?: string };
   const plan = PLANS.find((p) => p.id === tenant.plan);
   const planMrr = plan ? (pol.billingCycle === "annual" ? annualMonthly(plan.monthly) : plan.monthly) : 0;
@@ -82,6 +87,19 @@ export default async function HqTenantPage({ params }: { params: Promise<{ secre
             <button className="rounded-xl bg-ink px-4 py-2 text-[12.5px] font-bold text-canvas hover:opacity-90">🎭 Log in as owner</button>
           </form>
         </div>
+        {siblings.length > 1 && (
+          <div className="mt-3 rounded-xl border border-purple/20 bg-purple-wash/40 px-4 py-2.5">
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[12.5px]">
+              <span className="font-bold text-purple">🏢 Franchise · {siblings.length} locations</span>
+              <span className="text-muted">·</span>
+              <span className="font-bold text-ink">${orgMrr}/mo combined</span>
+              <span className="text-muted">·</span>
+              {siblings.map((s) => (
+                <a key={s.id} href={`/hq/${secret}/t/${s.id}`} className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${s.id === tenant.id ? "bg-purple text-white" : "bg-surface text-ink-2 hover:text-ink"}`}>{s.locationLabel || s.name}</a>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-5">
           {stat("MRR to us", fmt.format(planMrr + featureMrr), featureMrr > 0 ? `plan ${fmt.format(planMrr)} + features ${fmt.format(featureMrr)}` : "subscription")}
