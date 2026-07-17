@@ -14,9 +14,19 @@ export function StoreBrowser({ browse }: { browse: BrowseApp[] }) {
 
   const results = useMemo(() => {
     const s = q.trim().toLowerCase();
-    if (!s) return browse;
-    return browse.filter((a) => `${a.name} ${a.category} ${a.blurb}`.toLowerCase().includes(s));
+    return s ? browse.filter((a) => `${a.name} ${a.category} ${a.blurb}`.toLowerCase().includes(s)) : browse;
   }, [q, browse]);
+
+  // Group results by category, preserving catalog order — Pipedrive-style.
+  const groups = useMemo(() => {
+    const order: string[] = [];
+    const map = new Map<string, BrowseApp[]>();
+    for (const a of results) {
+      if (!map.has(a.category)) { map.set(a.category, []); order.push(a.category); }
+      map.get(a.category)!.push(a);
+    }
+    return order.map((c) => [c, map.get(c)!] as const);
+  }, [results]);
 
   return (
     <>
@@ -42,28 +52,32 @@ export function StoreBrowser({ browse }: { browse: BrowseApp[] }) {
 
             {/* Results */}
             <div className="max-h-[52vh] overflow-y-auto p-3">
-              <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-                {results.map((a) => (
-                  <div key={a.id} className="flex items-start gap-3 rounded-xl border border-line-2 bg-canvas p-3">
-                    <span className="size-10 shrink-0 overflow-hidden rounded-lg"><AppLogo id={a.id} className="block size-10" /></span>
-                    <div className="min-w-0 flex-1">
-                      <div className="text-[13px] font-bold text-ink">{a.name}</div>
-                      <div className="text-[10.5px] font-bold uppercase tracking-wider text-muted">{a.category}</div>
-                      <p className="mt-1 line-clamp-2 text-[11.5px] leading-snug text-ink-2">{a.blurb}</p>
-                      {a.kind === "config" ? (
-                        <form method="post" action="/api/settings" className="mt-2">
-                          <input type="hidden" name="section" value="app-install" />
-                          <input type="hidden" name="appId" value={a.id} />
-                          <input type="hidden" name="next" value="/apps?saved=1" />
-                          <button className="rounded-lg bg-brand px-3 py-1.5 text-[11.5px] font-bold text-white hover:bg-brand-ink">＋ Add</button>
-                        </form>
-                      ) : (
-                        <a href={a.id === "stripe" ? "/settings?tab=money" : "/billing"} className="mt-2 inline-block rounded-lg border border-line-2 px-3 py-1.5 text-[11.5px] font-bold text-ink-2 hover:text-ink">Set up →</a>
-                      )}
-                    </div>
+              {groups.map(([category, apps]) => (
+                <div key={category} className="mb-4 last:mb-0">
+                  <div className="mb-1.5 px-1 text-[10.5px] font-bold uppercase tracking-[0.09em] text-muted">{category}</div>
+                  <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+                    {apps.map((a) => (
+                      <div key={a.id} className="flex items-start gap-3 rounded-xl border border-line-2 bg-canvas p-3">
+                        <span className="size-10 shrink-0 overflow-hidden rounded-lg"><AppLogo id={a.id} className="block size-10" /></span>
+                        <div className="min-w-0 flex-1">
+                          <div className="text-[13px] font-bold text-ink">{a.name}</div>
+                          <p className="mt-0.5 line-clamp-2 text-[11.5px] leading-snug text-ink-2">{a.blurb}</p>
+                          {a.kind === "config" ? (
+                            <form method="post" action="/api/settings" className="mt-2">
+                              <input type="hidden" name="section" value="app-install" />
+                              <input type="hidden" name="appId" value={a.id} />
+                              <input type="hidden" name="next" value="/apps?saved=1" />
+                              <button className="rounded-lg bg-brand px-3 py-1.5 text-[11.5px] font-bold text-white hover:bg-brand-ink">＋ Add</button>
+                            </form>
+                          ) : (
+                            <a href={a.id === "stripe" ? "/settings?tab=money" : "/billing"} className="mt-2 inline-block rounded-lg border border-line-2 px-3 py-1.5 text-[11.5px] font-bold text-ink-2 hover:text-ink">Set up →</a>
+                          )}
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
               {results.length === 0 && (
                 <div className="px-4 py-8 text-center text-[13px] text-muted">No apps match &ldquo;{q}&rdquo;. Request it below and we&apos;ll look into adding it.</div>
               )}

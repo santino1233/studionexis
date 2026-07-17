@@ -780,3 +780,6 @@
 
 ## 2026-07-17 — Overnight loop: new locations inherit parent branding
 - Gap: a newly created location had an empty website ({}), so a franchise's second location launched on the default template with neutral placeholder copy instead of matching the parent's brand. Fixed /api/location/create to carry the parent's BRAND-level website fields (template, tagline, about, philosophy, why, testimonials, faqs) to the new location, while leaving location-specific fields (address, phone, hours, hero/gallery photos, maps, socials, custom page) blank for the owner. Verified live: a new location inherited the "serene" template + tagline but no address.
+
+## 2026-07-17 — Overnight loop: App Store marketplace grouped by category
+- Now that apps are split into many individual entries, the "Browse the marketplace" popup groups results by category (Automation, Team alerts, Calendar, Marketing, Support, Payments, Messaging) with headers, preserving catalog order — matching the Pipedrive-style flow. Search still filters across all, then regroups. Also verified during this pass that uninstalling the Automation app correctly clears saved webhooks. Build clean, /apps 200.
