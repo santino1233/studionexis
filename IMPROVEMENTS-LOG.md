@@ -715,3 +715,8 @@
 - /signup is now a client-side wizard matching the generated screens: intro splash ("Let's build your studio 🎉", benefit bullets, illustration blob) → 4-step progress rail (Studio Info → Your Details → Studio Setup → You're All Set): studio name/type/country/city → contact + password (show/hide) + Terms checkbox → describe-your-studio chips (Reformer/Mat/Yoga/Barre/Mixed), instructor-count bands, biggest-goal select → one POST creates the studio.
 - Signup API stores the answers (policies.onboarding) and lands on the new /getting-started page: 🎉 "You're all set, <name>!" with studio summary card (name/type/location/instructors/booking URL), green checklist, "Go to Dashboard →" + "✨ Create my website", next-step links.
 - Per-step validation with friendly errors; decorative brand-blob illustration panels; back navigation. Verified live: full wizard signup created "Wizard Flow Studio" and the summary rendered every answer.
+
+## 2026-07-17 — Fix: new studio subdomains get SSL automatically
+- ROOT CAUSE: the wildcard *.nexis vhost carried a single-host certificate (studio-test) so every new subdomain showed a cert mismatch, and it routed to the old stack; new v2 slugs were never added to the exact carve-out list.
+- FIX: wildcard fallback now uses the real *.nexis.revsports.ca certificate, and /opt/nexis/scripts/subdomain-sync.sh (cron every 5 min) syncs every v2 tenant slug into the v2 nginx carve-out, reloading nginx only on change (log: /var/log/nexis-subdomains.log).
+- Verified: wizard-flow-studio.nexis.revsports.ca serves its v2 booking page over a valid wildcard cert; unknown subdomains present a valid cert; dev-studio and app unaffected.
