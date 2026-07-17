@@ -49,27 +49,49 @@ export default async function AccountPage({ params, searchParams }: {
         )}
 
         {!client ? (
-          <div className="mt-6 grid gap-5 sm:grid-cols-2">
-            <div className="rounded-2xl border border-line-2 bg-surface p-6 shadow-[var(--shadow-card)]">
-              <h2 className="font-display text-[17px] font-extrabold text-ink">Sign in</h2>
-              <form method="post" action="/api/public/customer" className="mt-4 space-y-3">
+          <div className="mt-6 overflow-hidden rounded-3xl border border-line-2 shadow-[var(--shadow-card)] lg:grid lg:min-h-[540px] lg:grid-cols-[1.05fr_1fr]">
+            {/* Brand panel — the old-system split look */}
+            <div className="relative hidden flex-col justify-center p-12 text-white lg:flex" style={{ background: "linear-gradient(150deg, #221c15, #16130f 55%, #2a2118)" }}>
+              {(() => {
+                const w = (tenant.website ?? {}) as { heroImage?: string; tagline?: string };
+                return (
+                  <>
+                    {w.heroImage && (
+                      <>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={w.heroImage} alt="" className="absolute inset-0 h-full w-full object-cover opacity-35" />
+                        <div className="absolute inset-0 bg-black/45" />
+                      </>
+                    )}
+                    <div className="relative">
+                      <div className="grid size-12 place-items-center rounded-full text-[18px] font-extrabold" style={{ background: brand }}>{tenant.name[0]}</div>
+                      <h2 className="mt-8 font-serif text-[44px] font-medium leading-[1.12]">Move better.<br />Feel stronger.<br />Live brighter.</h2>
+                      <p className="mt-5 max-w-[300px] text-[14px] leading-relaxed text-white/70">{w.tagline || `Welcome back. Your next session at ${tenant.name} awaits.`}</p>
+                    </div>
+                  </>
+                );
+              })()}
+            </div>
+            {/* Forms */}
+            <div className="bg-surface p-8 sm:p-10">
+              <h2 className="font-display text-[24px] font-extrabold tracking-tight text-ink">Welcome back</h2>
+              <p className="mt-1 text-[13px] text-muted">Log in to continue your practice.</p>
+              <form method="post" action="/api/public/customer" className="mt-5 space-y-3">
                 <input type="hidden" name="mode" value="login" />
                 <input type="hidden" name="slug" value={slug} />
-                <input name="contact" required placeholder="Email or phone" className={input} />
-                <input name="password" type="password" required placeholder="Password" className={input} />
-                <button className="h-11 w-full rounded-[10px] text-sm font-bold text-white" style={{ background: brand }}>Sign in</button>
+                <div><label className={microLabel}>Email or phone</label><input name="contact" required placeholder="you@example.com" className={input} /></div>
+                <div><label className={microLabel}>Password</label><input name="password" type="password" required placeholder="••••••••" className={input} /></div>
+                <button className="h-12 w-full rounded-xl text-[14.5px] font-bold text-white" style={{ background: "#17181C" }}>Log In</button>
               </form>
-            </div>
-            <div className="rounded-2xl border border-line-2 bg-surface p-6 shadow-[var(--shadow-card)]">
-              <h2 className="font-display text-[17px] font-extrabold text-ink">First time here?</h2>
-              <p className="mt-1 text-[12.5px] text-muted">Use the email or phone you book with — your history links up automatically.</p>
-              <form method="post" action="/api/public/customer" className="mt-4 space-y-3">
+              <div className="my-7 flex items-center gap-3 text-[11px] font-bold uppercase tracking-wider text-muted"><span className="h-px flex-1 bg-line-2" /> New here? <span className="h-px flex-1 bg-line-2" /></div>
+              <form method="post" action="/api/public/customer" className="space-y-3">
                 <input type="hidden" name="mode" value="register" />
                 <input type="hidden" name="slug" value={slug} />
-                <input name="name" placeholder="Your name" className={input} />
+                <input name="name" required placeholder="Your name" className={input} />
                 <input name="contact" required placeholder="Email or phone" className={input} />
                 <input name="password" type="password" required minLength={6} placeholder="Choose a password (6+)" className={input} />
-                <button className="h-11 w-full rounded-[10px] border text-sm font-bold" style={{ borderColor: brand, color: brand }}>Create account</button>
+                <button className="h-12 w-full rounded-xl text-[14.5px] font-bold text-white" style={{ background: brand }}>Sign Up</button>
+                <p className="text-center text-[11.5px] text-muted">We&apos;ll link your booking history automatically.</p>
               </form>
             </div>
           </div>

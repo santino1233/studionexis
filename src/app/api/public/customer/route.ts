@@ -73,6 +73,28 @@ export async function POST(req: Request) {
     return NextResponse.redirect(externalUrl(req, `${me}?ok=pw`), 303);
   }
 
+  if (mode === "onboard") {
+    // Post-signup wizard steps (Wave 14 V5) — each optional.
+    const t = await tenantBySlugOrDomain(slug);
+    const session = await getCustomerSession();
+    if (!t || !session || session.tenantId !== t.id) return NextResponse.redirect(externalUrl(req, me), 303);
+    const step = String(form.get("step") ?? "");
+    const next = String(form.get("next") ?? `/book/${slug}`);
+    const safeNext = next.startsWith(`/book/${slug}`) ? next : `/book/${slug}`;
+    const dob = String(form.get("dob") ?? "");
+    const medical = String(form.get("medical") ?? "").trim().slice(0, 500);
+    const heard = String(form.get("heard") ?? "").trim().slice(0, 30);
+    await db.client.update({
+      where: { id: session.clientId },
+      data: {
+        ...(step === "dob" && /^\d{4}-\d{2}-\d{2}$/.test(dob) ? { birthday: new Date(`${dob}T00:00:00Z`) } : {}),
+        ...(step === "medical" && medical ? { medicalNotes: medical } : {}),
+        ...(step === "heard" && heard ? { channel: heard.toLowerCase() } : {}),
+      },
+    });
+    return NextResponse.redirect(externalUrl(req, safeNext), 303);
+  }
+
   // login / register
   const tenant = await tenantBySlugOrDomain(slug);
   if (!tenant || tenant.status === "SUSPENDED") return NextResponse.redirect(externalUrl(req, "/login"), 303);
@@ -100,7 +122,7 @@ export async function POST(req: Request) {
           },
         });
     await createCustomerSession({ clientId: target.id, tenantId: tenant.id, slug });
-    return NextResponse.redirect(externalUrl(req, me), 303);
+    return NextResponse.redirect(externalUrl(req, `/book/${slug}/welcome`), 303);
   }
 
   // login

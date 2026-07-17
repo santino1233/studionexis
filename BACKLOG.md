@@ -260,7 +260,7 @@ https://new.nexis.revsports.ca → commit → log → next.
       on the same page (slide-over w/ muscle map + booking form; page
       stays for deep links), fix guest "Book now" dead-end, proper
       "You're All Set!" confirmation with booking reference NX-….
-- [ ] V5 Client onboarding: multi-step post-signup wizard (DOB skippable,
+- [x] V5 Client onboarding: multi-step post-signup wizard (DOB skippable,
       medical notes skippable, "how did you hear about us" → channel) +
       redesigned login/signup (split layout, serif tagline, studio hero).
 - [ ] V6 Booking upsell: Settings → Payments card — pick upsell package

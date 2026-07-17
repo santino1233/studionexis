@@ -673,3 +673,8 @@
 - Class details now open as a SLIDE-OVER on the same page (hero/color header, chips, description, benefits, read-only muscle map, qty + payment radios incl. pay-online when Stripe on, guest contact fields) — no page hop; full page still available ("Open full page ↗"). Guest "Book now" dead-end fixed (opens the sidebar).
 - Proper confirmation: "You're All Set!" card with booking reference (NX-yymmdd-XXXX), View My Bookings + Book another class CTAs.
 - Verified live: banner GMT+7, tabs render, sidebar shows muscle map/qty/payment/guest fields, guest booking through the sidebar returned ref NX-260717-OZBJ and the confirmation screen rendered it.
+
+## 2026-07-17 — V5: Client onboarding wizard + auth redesign (Wave 14)
+- Old-system client onboarding: after Sign Up, clients land on /welcome — progress bar, "Skip for now", steps: welcome greeting → date of birth (🎂) → medical conditions (🩺, staff-visible) → "How did you hear about us?" chips (→ client.channel) → booking page. Every step optional; data saves via mode=onboard (fixed: branch had to run before the auth-field guard).
+- Signed-out Account page redesigned to the old split look: dark serif brand panel ("Move better. Feel stronger. Live brighter.", studio hero when set) beside Log In + Sign Up forms.
+- Verified live: new signup redirected to the wizard, greeting personalized, DOB 1995-04-12 + medical note + Instagram channel all persisted to the client profile.
