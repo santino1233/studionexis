@@ -6,7 +6,7 @@ import { cn } from "@/lib/cn";
 import { ThemeToggle } from "@/components/shell/theme-toggle";
 import {
   LayoutGrid, Calendar, Star, ClipboardList, BookOpen, Users, CreditCard,
-  Hexagon, FileText, UserCog, LineChart, Settings, Wallet, LogOut, Globe, Coins,
+  Hexagon, FileText, UserCog, LineChart, Settings, Wallet, LogOut, Globe, Coins, MapPin,
 } from "lucide-react";
 import { canAccess } from "@/lib/access";
 
@@ -39,13 +39,15 @@ const groups: Group[] = [
   { label: "Workspace", items: [
     { href: "/website", label: "Website", icon: Globe },
     { href: "/apps", label: "App Store", icon: Hexagon },
+    { href: "/locations", label: "Locations", icon: MapPin },
     { href: "/support", label: "Support", icon: FileText },
     { href: "/settings", label: "Settings", icon: Settings },
     { href: "/billing", label: "Plan & Billing", icon: Wallet },
   ]},
 ];
 
-export function Sidebar({ mobile = false, slug = "", role = "OWNER", chatUnread = 0, supportUnread = 0, siteUrl = "" }: { mobile?: boolean; slug?: string; role?: string; chatUnread?: number; supportUnread?: number; siteUrl?: string }) {
+type Loc = { id: string; label: string; current: boolean };
+export function Sidebar({ mobile = false, slug = "", role = "OWNER", chatUnread = 0, supportUnread = 0, siteUrl = "", locations = [] }: { mobile?: boolean; slug?: string; role?: string; chatUnread?: number; supportUnread?: number; siteUrl?: string; locations?: Loc[] }) {
   const pathname = usePathname();
   const visible = groups
     .map((g) => ({
@@ -64,6 +66,24 @@ export function Sidebar({ mobile = false, slug = "", role = "OWNER", chatUnread 
         </div>
         <div className="text-[9.5px] font-bold uppercase tracking-[0.2em] text-muted">Studio Management</div>
       </Link>
+
+      {locations.length > 1 && (
+        <details className="mx-2 mt-1">
+          <summary className="flex cursor-pointer list-none items-center justify-between rounded-[10px] border border-line-2 bg-raised px-3 py-2 text-[12.5px] font-bold text-ink">
+            <span className="flex min-w-0 items-center gap-2"><MapPin className="size-4 shrink-0 text-brand" /> <span className="truncate">{locations.find((l) => l.current)?.label ?? "Location"}</span></span>
+            <span className="text-[10px] text-muted">▾</span>
+          </summary>
+          <div className="mt-1 space-y-0.5 rounded-[10px] border border-line-2 bg-surface p-1 shadow-[var(--shadow-card)]">
+            {locations.filter((l) => !l.current).map((l) => (
+              <form key={l.id} method="post" action="/api/location/switch">
+                <input type="hidden" name="to" value={l.id} />
+                <button className="w-full truncate rounded-md px-2.5 py-1.5 text-left text-[12.5px] font-medium text-ink-2 hover:bg-line-2 hover:text-ink">{l.label}</button>
+              </form>
+            ))}
+            <Link href="/locations" className="block rounded-md px-2.5 py-1.5 text-[12px] font-bold text-brand hover:bg-brand-wash">Manage locations →</Link>
+          </div>
+        </details>
+      )}
 
       <nav className="flex-1 overflow-y-auto px-2 py-1">
         {visible.map((g) => (

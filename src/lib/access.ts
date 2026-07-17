@@ -16,9 +16,9 @@ export const ROLE_LABELS: Record<string, string> = {
 
 const DENY: Record<string, string[]> = {
   OWNER: [],
-  MANAGER: ["/billing", "/team", "/payroll"],
-  STAFF: ["/billing", "/team", "/payroll", "/analytics", "/expenses", "/settings", "/website", "/class-types", "/my-earnings"],
-  INSTRUCTOR: ["/billing", "/team", "/payroll", "/analytics", "/expenses", "/settings", "/website", "/class-types", "/pos", "/products", "/invoices", "/clients", "/bookings", "/welcome", "/inbox"],
+  MANAGER: ["/billing", "/team", "/payroll", "/locations"],
+  STAFF: ["/billing", "/team", "/payroll", "/analytics", "/expenses", "/settings", "/website", "/class-types", "/my-earnings", "/locations"],
+  INSTRUCTOR: ["/billing", "/team", "/payroll", "/analytics", "/expenses", "/settings", "/website", "/class-types", "/pos", "/products", "/invoices", "/clients", "/bookings", "/welcome", "/inbox", "/locations"],
 };
 
 export function deniedPaths(role: string): string[] {

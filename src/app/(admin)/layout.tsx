@@ -41,9 +41,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const maint = ((gset?.value ?? {}) as { maintenanceBanner?: string }).maintenanceBanner;
   const chatUnread = await db.chatConversation.aggregate({ where: { tenantId: tenant.id, channel: "visitor", status: "OPEN" }, _sum: { unreadStudio: true } }).then((r) => r._sum.unreadStudio ?? 0);
   const supportUnread = await db.chatConversation.aggregate({ where: { tenantId: tenant.id, channel: "hq" }, _sum: { unreadVisitor: true } }).then((r) => r._sum.unreadVisitor ?? 0);
+  const locations = role === "OWNER" && tenant.organizationId
+    ? (await db.tenant.findMany({ where: { organizationId: tenant.organizationId }, orderBy: { createdAt: "asc" }, select: { id: true, name: true, locationLabel: true } }))
+        .map((l) => ({ id: l.id, label: l.locationLabel || l.name, current: l.id === tenant.id }))
+    : [];
   return (
     <div className="nx-admin flex h-screen overflow-hidden bg-canvas text-ink">
-      <Sidebar slug={tenant.slug} role={role} chatUnread={chatUnread} supportUnread={supportUnread} siteUrl={publicSiteUrl(tenant)} />
+      <Sidebar slug={tenant.slug} role={role} chatUnread={chatUnread} supportUnread={supportUnread} siteUrl={publicSiteUrl(tenant)} locations={locations} />
       <MobileNav slug={tenant.slug} role={role} />
       <div className="flex min-w-0 flex-1 flex-col">
         {maint && <div className="border-b border-rose/20 bg-rose/5 px-6 py-2 text-center text-[12.5px] font-bold text-rose">🔧 {maint}</div>}
