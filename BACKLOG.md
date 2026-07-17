@@ -243,3 +243,33 @@ https://new.nexis.revsports.ca → commit → log → next.
       signups-this-month KPI.
 - [x] P5 Polish sweep: membership chips on client profile/portal package
       cards, qty shown in admin bookings list + client history, misc.
+
+## Wave 14 — Video spec 2 (nexis updates v1.mp4, 2026-07-17) — see VIDEO-SPEC-2.md
+- [ ] V1 Calendar depth: larger/denser week grid (more info per block:
+      attendee count + names), and the "needs completion" pulse — past
+      sessions with attendees that aren't completed/settled glow+pulse
+      as the receptionist's TODO; legend entry.
+- [ ] V2 Checkout: sell-a-package-in-checkout — buy a chosen package on
+      the spot, auto-spend 1 credit for this class, single "Buy & check
+      in" action (order = package sale, booking = package_credit).
+- [ ] V3 Product variants: per-product option sets (size/colour) with
+      per-variant stock; POS + checkout merch pickers become
+      variant-aware; archive button polish.
+- [ ] V4 Public booking page: timezone banner ("All class times are
+      shown in <tz>"), Group/Private credit tabs, class-details SIDEBAR
+      on the same page (slide-over w/ muscle map + booking form; page
+      stays for deep links), fix guest "Book now" dead-end, proper
+      "You're All Set!" confirmation with booking reference NX-….
+- [ ] V5 Client onboarding: multi-step post-signup wizard (DOB skippable,
+      medical notes skippable, "how did you hear about us" → channel) +
+      redesigned login/signup (split layout, serif tagline, studio hero).
+- [ ] V6 Booking upsell: Settings → Payments card — pick upsell package
+      for group vs private, hide when client has active package; upsell
+      step in the public booking flow; deposit/pay-in-full options shown
+      (Stripe-gated).
+- [ ] V7 Website: per-instructor show/hide on the site; unlimited
+      testimonials + FAQs in the builder.
+- [ ] V8 Website revamp: neutral default images (not the owner's studio
+      photos), section add/remove/REORDER, "Create my website" setup
+      wizard for new studios; scope GrapesJS-style advanced editor as a
+      follow-up spike.
