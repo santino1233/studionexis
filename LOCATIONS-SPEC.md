@@ -71,3 +71,16 @@ shows the current location and the others.
 - **Phase 2:** shared client directory + shared class catalog (low-risk syncs).
 - **Phase 3:** shared credits/memberships (money-sensitive), per-package opt-out,
   full audit. Only after the owner confirms the exact rules.
+
+## Status (2026-07-17)
+- Phase 0 ✅ dormant schema (Organization + fields)
+- Phase 1 ✅ create locations + sidebar switcher + isolation
+- Phase 2 ✅ billing (each location its own subscription; combined total on /billing & /locations),
+  org sync settings UI (clients/classTypes/memberships/sharedCredits flags on Organization.policies),
+  shared class catalog copy (/api/location/sync-catalog), shared client directory (read-only
+  "All locations" scope on /clients, gated by sync.clients).
+- Phase 3 ⏳ AUTOMATIC cross-location credit/membership redemption. Deliberately staged: the flags
+  (sharedCredits, memberships) persist and drive VISIBILITY today (front desk can see/honour credits
+  from other locations), but auto-moving a package credit across tenants touches refunds, waitlist
+  promotion and reporting in ~8 booking paths and requires a canonical cross-tenant client identity.
+  Handed to the improvement agent to build with a shared client-link + full audit + per-package opt-out.

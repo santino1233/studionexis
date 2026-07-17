@@ -7,6 +7,8 @@ import { PLANS, ADDONS, ANNUAL_DISCOUNT, annualMonthly, getLimits, planUsage, ge
 import { customFeatures, featureRequests } from "@/lib/features";
 import { db } from "@/lib/db";
 import { estMessages } from "@/lib/sms";
+import { mrrOf } from "@/lib/hq";
+import { combinedMrr } from "@/lib/org";
 
 export const dynamic = "force-dynamic";
 
@@ -36,6 +38,10 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
   const cycle = cycleParam === "annual" || (!cycleParam && pol.billingCycle === "annual") ? "annual" : "monthly";
   const limits = getLimits(tenant);
   const usage = await planUsage(tenant);
+  const locations = tenant.organizationId
+    ? await db.tenant.findMany({ where: { organizationId: tenant.organizationId }, orderBy: { createdAt: "asc" } })
+    : [tenant];
+  const combinedTotal = combinedMrr(locations);
   const trialDays = tenant.trialEndsAt ? Math.max(0, Math.ceil((tenant.trialEndsAt.getTime() - Date.now()) / 86400_000)) : null;
 
   const monthStart = new Date(); monthStart.setUTCDate(1); monthStart.setUTCHours(0, 0, 0, 0);
@@ -58,6 +64,27 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
       <p className="mt-1 text-sm text-muted">StudioNexis Beta pricing · {statusLine}</p>
 
       {saved && <div className="mt-4 rounded-xl border border-green/20 bg-green-wash px-3.5 py-2.5 text-[13px] font-bold text-green">Plan saved. Online card billing launches soon — until then your plan is activated by our team.</div>}
+
+      {locations.length > 1 && (
+        <Card className="mt-6">
+          <CardHeader eyebrow="Your account" title="Locations" sub={`${locations.length} locations · each billed as its own subscription`} />
+          <div className="p-6 pt-0">
+            <div className="divide-y divide-line-2">
+              {locations.map((l) => (
+                <div key={l.id} className="flex items-center justify-between py-2.5">
+                  <div className="text-[13.5px] font-semibold text-ink">{l.locationLabel || l.name}{l.id === tenant.id && <span className="ml-2 rounded-full bg-brand-wash px-2 py-0.5 text-[10px] font-bold text-brand">current</span>}</div>
+                  <div className="text-[13px] text-muted">{getPlan(l.plan).name} · <b className="text-ink">${mrrOf(l)}/mo</b></div>
+                </div>
+              ))}
+            </div>
+            <div className="mt-3 flex items-center justify-between border-t border-line-2 pt-3">
+              <div className="text-[13.5px] font-extrabold text-ink">Combined total</div>
+              <div className="text-[15px] font-extrabold text-ink">${combinedTotal}/mo</div>
+            </div>
+            <a href="/locations" className="mt-3 inline-block text-[12.5px] font-bold text-brand hover:underline">Manage locations →</a>
+          </div>
+        </Card>
+      )}
 
       {/* Usage */}
       <Card className="mt-6">

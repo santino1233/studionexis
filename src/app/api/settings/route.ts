@@ -148,6 +148,20 @@ export async function POST(req: Request) {
     if (String(form.get("regenIcal")) === "1") apps.icalToken = randomBytes(12).toString("hex");
     if (form.has("chatToggle")) apps.chatDisabled = String(form.get("chatToggle")) === "off" ? true : undefined;
     await db.tenant.update({ where: { id: tenant.id }, data: { policies: { ...prev, apps } } });
+  } else if (section === "org-sync") {
+    if (auth.role !== "OWNER" || !tenant.organizationId) return NextResponse.redirect(externalUrl(req, "/locations"), 303);
+    const org = await db.organization.findUnique({ where: { id: tenant.organizationId } });
+    const prevPol = (org?.policies ?? {}) as Record<string, unknown>;
+    const sync = {
+      clients: form.get("clients") === "on",
+      classTypes: form.get("classTypes") === "on",
+      sharedCredits: form.get("sharedCredits") === "on",
+      memberships: form.get("memberships") === "on",
+    };
+    await db.organization.update({ where: { id: tenant.organizationId }, data: { policies: { ...prevPol, sync } } });
+    const { audit } = await import("@/lib/hq");
+    audit({ tenantId: tenant.id, actor: auth.name, role: auth.role, action: "org-sync-updated", detail: JSON.stringify(sync) });
+    return NextResponse.redirect(externalUrl(req, "/locations?saved=1"), 303);
   } else if (section === "app-install" || section === "app-uninstall") {
     const prev = (tenant.policies ?? {}) as Record<string, unknown>;
     const apps = { ...appsOf(tenant.policies) };
