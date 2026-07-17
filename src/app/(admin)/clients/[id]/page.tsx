@@ -4,6 +4,7 @@ import { ArrowLeft, Mail, MessageCircle, Phone, Plus, Pencil, Cake } from "lucid
 import { Card, CardHeader } from "@/components/ui/card";
 import { db } from "@/lib/db";
 import { getCurrentTenant, moneyFormatter } from "@/lib/tenant";
+import { orgSync } from "@/lib/org";
 
 export const dynamic = "force-dynamic";
 
@@ -28,6 +29,26 @@ export default async function ClientProfilePage({ params }: { params: Promise<{ 
   const ltv = client.orders.filter((o) => o.status === "PAID").reduce((s, o) => s + Number(o.total), 0);
   const activePkgs = client.packages.filter((p) => p.creditsLeft > 0 && p.expiresAt > new Date() && !p.frozen);
   const creditsLeft = activePkgs.reduce((s, p) => s + p.creditsLeft, 0);
+
+  // Cross-location credit/membership visibility (opt-in). Read-only: shows this
+  // person's active packages at the account's OTHER locations so the front desk
+  // can honour them. Matched by phone/email within the org — no money moves.
+  const org = tenant.organizationId ? await db.organization.findUnique({ where: { id: tenant.organizationId } }) : null;
+  const sync = orgSync(org?.policies);
+  const idKeys = [client.phone?.trim(), client.email?.trim().toLowerCase()].filter(Boolean) as string[];
+  const otherCredits = (sync.sharedCredits || sync.memberships) && tenant.organizationId && idKeys.length
+    ? await db.clientPackage.findMany({
+        where: {
+          tenantId: { not: tenant.id },
+          creditsLeft: { gt: 0 }, frozen: false, expiresAt: { gt: new Date() },
+          tenant: { organizationId: tenant.organizationId },
+          client: { OR: [...(client.phone ? [{ phone: client.phone }] : []), ...(client.email ? [{ email: client.email }] : [])] },
+        },
+        include: { package: { select: { name: true, interval: true } }, tenant: { select: { name: true, locationLabel: true } } },
+        orderBy: { expiresAt: "asc" },
+        take: 20,
+      })
+    : [];
 
   const stats: Array<[string, string]> = [
     ["Member since", client.memberSince.toLocaleDateString("en-US", { month: "short", year: "numeric" })],
@@ -119,6 +140,28 @@ export default async function ClientProfilePage({ params }: { params: Promise<{ 
           </div>
         </Card>
       </div>
+
+      {otherCredits.length > 0 && (
+        <Card>
+          <CardHeader title="Credits at other locations" sub="Same client across your account — view-only, honour at the front desk" />
+          <div className="p-5">
+            <ul className="space-y-3">
+              {otherCredits.map((p) => (
+                <li key={p.id} className="flex items-center justify-between rounded-xl border border-line-2 bg-raised px-4 py-3">
+                  <div>
+                    <div className="text-[14px] font-semibold text-ink">{p.package.name}
+                      <span className="ml-2 rounded-full bg-purple-wash px-2 py-0.5 text-[10px] font-bold uppercase text-purple">{p.tenant.locationLabel || p.tenant.name}</span>
+                      {p.package.interval !== "none" && <span className="ml-1.5 rounded-full bg-line-2 px-2 py-0.5 text-[10px] font-bold uppercase text-ink-2">{p.package.interval}ly</span>}
+                    </div>
+                    <div className="text-[12px] text-muted">Expires {p.expiresAt.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</div>
+                  </div>
+                  <div className="font-display text-lg font-extrabold text-ink-2">{p.creditsLeft}<span className="ml-1 text-[11px] font-bold text-muted">credits</span></div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </Card>
+      )}
 
       {/* Session history */}
       <Card>
