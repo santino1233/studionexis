@@ -32,6 +32,8 @@ model Tenant {
   website      Json         @default("{}")
   smsBalance   Decimal      @default(0) @db.Decimal(12, 4)
   apiKey       String?      @unique // nx_live_… — public REST API (Wave 15)
+  organizationId String?    // set when this studio is one location of a franchise
+  locationLabel  String?    // "Downtown", "Westside" — shown in the location switcher
   createdAt    DateTime     @default(now())
 
   users          User[]
@@ -50,6 +52,17 @@ model Tenant {
   pageViews      PageView[]
   supportTickets SupportTicket[]
   chats          ChatConversation[]
+  organization   Organization?      @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+}
+
+model Organization {
+  id         String   @id @default(cuid())
+  name       String
+  ownerEmail String?  // org owner; may switch between the org's locations
+  policies   Json     @default("{}") // { sync: { clients, classTypes, sharedCredits, memberships, staff } }
+  createdAt  DateTime @default(now())
+
+  tenants Tenant[]
 }
 
 enum UserRole {

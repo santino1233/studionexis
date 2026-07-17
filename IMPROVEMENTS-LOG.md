@@ -749,3 +749,7 @@
 
 ## 2026-07-17 — App Store is now a real install/uninstall store
 - Rebuilt /apps from a wall of config cards into a proper store: a compact "Browse the store" catalog of tiles (icon, category, blurb, ＋ Add to studio) and a "Your apps" section that shows full configuration ONLY for apps the studio has added. New lib/appstore.ts catalog + appInstalled()/appConfigured(); policies.apps.installed[] tracks added apps (apps with existing live config auto-appear so nothing is hidden). Removing an app clears its config so it truly goes away. Status apps (Stripe/Twilio) link to their real setup. Verified install→config-appears→uninstall→gone round-trip live.
+
+## 2026-07-17 — Multi-location foundation (design + dormant schema)
+- Designed franchise/multi-location support (LOCATIONS-SPEC.md). Key decision: a location = a Tenant, grouped by a new Organization — isolation is the safe default (every existing tenantId query stays correctly scoped), sync is explicit opt-in per franchise. Rejected the risky "locationId column everywhere / one shared tenant" model that could leak clients/credits across locations.
+- Shipped Phase 0: additive, DORMANT schema — new Organization model + Tenant.organizationId + Tenant.locationLabel + org.policies.sync flags (all default false). Zero behaviour change: all 7 existing studios have organizationId NULL and run exactly as before. Location switcher + opt-in syncs (clients, class catalog, then money-sensitive shared credits) are the phased follow-ups pending owner sign-off on defaults.
