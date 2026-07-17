@@ -35,6 +35,7 @@ const groups: Group[] = [
   ]},
   { label: "Workspace", items: [
     { href: "/website", label: "Website", icon: Globe },
+    { href: "/apps", label: "App Store", icon: Hexagon },
     { href: "/settings", label: "Settings", icon: Settings },
     { href: "/billing", label: "Plan & Billing", icon: Wallet },
   ]},

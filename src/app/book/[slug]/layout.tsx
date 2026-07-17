@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { tenantBySlugOrDomain } from "@/lib/public-tenant";
+import { Pixels } from "@/components/pixels";
 
 // Per-studio SEO for every booking/portal page (Wave 13 P3).
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
@@ -21,6 +22,13 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   };
 }
 
-export default function BookLayout({ children }: { children: React.ReactNode }) {
-  return children;
+export default async function BookLayout({ children, params }: { children: React.ReactNode; params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const tenant = await tenantBySlugOrDomain(slug);
+  return (
+    <>
+      {tenant && <Pixels policies={tenant.policies} />}
+      {children}
+    </>
+  );
 }

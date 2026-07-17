@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { emitEvent } from "@/lib/webhooks";
 import { apiTenant, apiError, pageParams } from "@/lib/api-auth";
 import { checkBookingLimit, checkClientLimit } from "@/lib/plans";
 
@@ -84,6 +85,7 @@ export async function POST(req: Request) {
       });
       return { booking, client, waitlisted: full };
     });
+    emitEvent(a.tenant.id, "booking.created", { bookingId: result.booking.id, clientName: result.client.name, className: "class", startsAt: "", seats: result.booking.qty, status: result.booking.status, source: "api" });
     return NextResponse.json({
       id: result.booking.id, status: result.booking.status, seats: result.booking.qty,
       paymentMethod: result.booking.paymentMethod, client: { id: result.client.id, name: result.client.name },

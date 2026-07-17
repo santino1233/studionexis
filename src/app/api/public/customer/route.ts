@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { rateLimit } from "@/lib/rate-limit";
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
+import { emitEvent } from "@/lib/webhooks";
 import { tenantBySlugOrDomain } from "@/lib/public-tenant";
 import { createCustomerSession, destroyCustomerSession, getCustomerSession } from "@/lib/customer-auth";
 import { externalUrl } from "@/lib/request-url";
@@ -43,6 +44,7 @@ export async function POST(req: Request) {
         await tx.clientPackage.update({ where: { id: booking.clientPackageId }, data: { creditsLeft: { increment: booking.qty } } });
       }
       if (booking.status === "BOOKED") await promoteWaitlist(tx, booking.tenantId, booking.sessionId, booking.qty);
+      emitEvent(booking.tenantId, "booking.cancelled", { bookingId: booking.id, clientName: "", className: booking.session.classType.name });
     });
     return NextResponse.redirect(externalUrl(req, me), 303);
   }

@@ -695,3 +695,7 @@
 - "Create my website" wizard at /website/setup: template pick → tagline/about → hero+gallery uploads → contact/socials → done ("Open my website"); reuses the real settings/media APIs via a safe `next` redirect param. Button in the builder header.
 - Verified live: all 5 templates 200 post-refactor with zero regressions, neutral hero on a photo-less studio, all wizard steps render.
 - GrapesJS-style drag-drop advanced editor noted as a future spike (guardrails required).
+
+## 2026-07-17 — A2+A3: Outgoing webhooks + App Store (Wave 15 COMPLETE)
+- A2 WEBHOOKS: per-studio outgoing webhooks (up to 5; url + auto-generated whsec_ secret + event picks). Events fire instantly and non-blocking from every relevant path: booking.created (public + API), booking.cancelled (admin/portal/API), client.created, order.paid (mini-POS + Stripe confirms). Payload JSON with X-Nexis-Event + X-Nexis-Signature (HMAC-SHA256) headers; docs "Make.com & Zapier" section updated with verification details. Verified live: a real guest booking delivered a signed payload to a listener within seconds.
+- A3 APP STORE (/apps, in the sidebar): Pipedrive-style grid — Make/Zapier webhook manager; Slack/Discord/Telegram booking-and-sale alerts (human-readable lines to their webhook/bot); Google/Apple/Outlook calendar feed (tokened iCal of upcoming public classes, regenerable; bad token 404s); GA4/Meta/TikTok ad pixels injected on the public site + booking pages; Stripe & Twilio status cards linking to their setup. Verified live: GA4 tag appeared on /book after saving; valid VCALENDAR served.

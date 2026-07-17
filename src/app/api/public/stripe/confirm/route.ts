@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { emitEvent } from "@/lib/webhooks";
 import { tenantBySlugOrDomain } from "@/lib/public-tenant";
 import { studioStripe } from "@/lib/stripe";
 import { initialExpiry } from "@/lib/memberships";
@@ -40,6 +41,7 @@ export async function GET(req: Request) {
         });
       });
     }
+    emitEvent(tenant.id, "order.paid", { total: "", currency: tenant.currency, label: "package (paid online)" });
     return NextResponse.redirect(externalUrl(req, `${back}?ok=paid`), 303);
   } catch {
     return NextResponse.redirect(externalUrl(req, `/book/${slug}/packages?err=stripe`), 303);

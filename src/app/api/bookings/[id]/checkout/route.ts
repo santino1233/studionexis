@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { emitEvent } from "@/lib/webhooks";
 import { getSession } from "@/lib/auth";
 import { externalUrl } from "@/lib/request-url";
 import { initialExpiry } from "@/lib/memberships";
@@ -130,5 +131,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     const msg = e instanceof Error ? e.message : "failed";
     return fail(["no-credits", "stock", "voucher"].includes(msg) ? msg : "failed");
   }
+  const t = await db.tenant.findUnique({ where: { id: auth.tenantId }, select: { currency: true } });
+  emitEvent(auth.tenantId, "order.paid", { total: "", currency: t?.currency ?? "", label: `checkout — ${booking.session.classType.name}` });
   return NextResponse.redirect(externalUrl(req, `${back}${back.includes("?") ? "&" : "?"}checkout=done`), 303);
 }

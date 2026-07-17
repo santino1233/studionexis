@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { rateLimit } from "@/lib/rate-limit";
 import { db } from "@/lib/db";
+import { emitEvent } from "@/lib/webhooks";
 import { tenantBySlugOrDomain } from "@/lib/public-tenant";
 import { getCustomerSession } from "@/lib/customer-auth";
 import { checkBookingLimit, checkClientLimit } from "@/lib/plans";
@@ -99,6 +100,7 @@ export async function POST(req: Request) {
         client = await tx.client.create({
           data: { tenantId: tenant.id, name, phone: phone || null, email: email || null, channel: "website" },
         });
+        emitEvent(tenant.id, "client.created", { id: client.id, name: client.name, source: "website" });
       }
 
       const taken = session.bookings.reduce((n, b) => n + b.qty, 0);
@@ -163,6 +165,10 @@ export async function POST(req: Request) {
         body: `Hi ${result.client.name},\n\n${result.outcome === "booked" ? "You're booked for" : "You're waitlisted for"} ${cls?.name ?? "class"} on ${s.startsAt.toLocaleDateString("en-US", { timeZone: tenant.timezone, weekday: "long", month: "long", day: "numeric" })} at ${timeInTz(s.startsAt, tenant.timezone)}.\n\nManage your bookings: https://new.nexis.revsports.ca/book/${tenant.slug}/me\n\n${tenant.name}`,
       });
     }
+    emitEvent(tenant.id, "booking.created", {
+      bookingId: result.bookingId, clientName: result.client.name, className: (await db.classType.findUnique({ where: { id: result.session.classTypeId } }))?.name ?? "class",
+      startsAt: result.session.startsAt.toISOString(), seats: qty, status: result.outcome,
+    });
     const d = new Date();
     const ref = `NX-${String(d.getUTCFullYear()).slice(2)}${String(d.getUTCMonth() + 1).padStart(2, "0")}${String(d.getUTCDate()).padStart(2, "0")}-${result.bookingId.slice(-4).toUpperCase()}`;
     return NextResponse.redirect(externalUrl(req, `${back}?ok=${result.outcome}&ref=${ref}&cls=${encodeURIComponent(result.session.id)}`), 303);

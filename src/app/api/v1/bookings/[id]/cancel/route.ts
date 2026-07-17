@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { emitEvent } from "@/lib/webhooks";
 import { apiTenant, apiError } from "@/lib/api-auth";
 import { promoteWaitlist } from "@/lib/bookings";
 
@@ -20,5 +21,6 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     }
     if (wasActive) await promoteWaitlist(tx, a.tenant.id, booking.sessionId, booking.qty);
   });
+  emitEvent(a.tenant.id, "booking.cancelled", { bookingId: id, clientName: "", className: "", source: "api" });
   return NextResponse.json({ id, status: "CANCELLED", creditsRefunded: booking.clientPackageId ? booking.qty : 0 });
 }

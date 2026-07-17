@@ -4,6 +4,7 @@ import { getSession } from "@/lib/auth";
 import { externalUrl } from "@/lib/request-url";
 import { verifyStripeKey } from "@/lib/stripe";
 import { randomBytes } from "crypto";
+import { WEBHOOK_EVENTS, webhooksOf, appsOf } from "@/lib/webhooks";
 
 const CURRENCIES = ["USD", "EUR", "GBP", "AUD", "CAD", "SGD", "THB", "VND", "IDR", "PHP", "MYR", "JPY", "KRW", "AED", "INR"];
 
@@ -104,6 +105,38 @@ export async function POST(req: Request) {
         },
       },
     });
+  } else if (section === "webhook-add") {
+    const prev = (tenant.policies ?? {}) as Record<string, unknown>;
+    const url = String(form.get("url") ?? "").trim();
+    const events = WEBHOOK_EVENTS.filter((e) => form.getAll("events").includes(e));
+    if (/^https:\/\//.test(url) && events.length > 0) {
+      const hooks = webhooksOf(tenant.policies);
+      if (hooks.length < 5) {
+        hooks.push({ url, secret: `whsec_${randomBytes(16).toString("hex")}`, events });
+        await db.tenant.update({ where: { id: tenant.id }, data: { policies: { ...prev, webhooks: hooks } } });
+      }
+    }
+  } else if (section === "webhook-remove") {
+    const prev = (tenant.policies ?? {}) as Record<string, unknown>;
+    const idx = Number(form.get("idx"));
+    const hooks = webhooksOf(tenant.policies).filter((_, i) => i !== idx);
+    await db.tenant.update({ where: { id: tenant.id }, data: { policies: { ...prev, webhooks: hooks } } });
+  } else if (section === "apps") {
+    const prev = (tenant.policies ?? {}) as Record<string, unknown>;
+    const apps = { ...appsOf(tenant.policies) };
+    const set = (k: keyof typeof apps, v: string) => { (apps as Record<string, unknown>)[k] = v || undefined; };
+    if (form.has("slackUrl")) set("slackUrl", String(form.get("slackUrl")).trim());
+    if (form.has("discordUrl")) set("discordUrl", String(form.get("discordUrl")).trim());
+    if (form.has("telegramToken")) { set("telegramToken", String(form.get("telegramToken")).trim()); set("telegramChatId", String(form.get("telegramChatId")).trim()); }
+    if (form.has("ga4") || form.has("meta") || form.has("tiktok")) {
+      apps.pixels = {
+        ga4: String(form.get("ga4") ?? "").trim() || undefined,
+        meta: String(form.get("meta") ?? "").trim() || undefined,
+        tiktok: String(form.get("tiktok") ?? "").trim() || undefined,
+      };
+    }
+    if (String(form.get("regenIcal")) === "1") apps.icalToken = randomBytes(12).toString("hex");
+    await db.tenant.update({ where: { id: tenant.id }, data: { policies: { ...prev, apps } } });
   } else if (section === "apikey") {
     const act = String(form.get("action"));
     await db.tenant.update({

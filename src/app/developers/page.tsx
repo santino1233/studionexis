@@ -329,7 +329,7 @@ export default function DevelopersPage() {
               <p>Both platforms can call this API directly — no special app needed:</p>
               <p><b>Make.com</b>: add an <i>HTTP → Make a request</i> module. Set the URL to any endpoint above, method GET/POST, and add a header <code className="rounded bg-line-2 px-1.5 py-0.5 font-mono text-[12px]">Authorization: Bearer nx_live_…</code>. Parse response = yes. From there, map the JSON into Sheets, WhatsApp, email — anything.</p>
               <p><b>Zapier</b>: use <i>Webhooks by Zapier → Custom Request</i> with the same URL + header.</p>
-              <p className="rounded-xl border border-line-2 bg-raised px-4 py-3 text-[13px]"><b>Coming soon:</b> outgoing webhooks — we push events (new booking, new client, sale) to your Make/Zapier scenario the moment they happen, so you won&apos;t need to poll.</p>
+              <p><b>Outgoing webhooks (live):</b> in your dashboard → App Store, add your Make/Zapier webhook URL and pick events (<code className="rounded bg-line-2 px-1.5 py-0.5 font-mono text-[12px]">booking.created</code>, <code className="rounded bg-line-2 px-1.5 py-0.5 font-mono text-[12px]">booking.cancelled</code>, <code className="rounded bg-line-2 px-1.5 py-0.5 font-mono text-[12px]">client.created</code>, <code className="rounded bg-line-2 px-1.5 py-0.5 font-mono text-[12px]">order.paid</code>). We POST JSON instantly with an <code className="rounded bg-line-2 px-1.5 py-0.5 font-mono text-[12px]">X-Nexis-Signature</code> header — HMAC-SHA256 of the raw body using your webhook secret, so you can verify it&apos;s really us.</p>
             </div>
           </section>
 

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { emitEvent } from "@/lib/webhooks";
 import { getSession } from "@/lib/auth";
 import { externalUrl } from "@/lib/request-url";
 import { promoteWaitlist } from "@/lib/bookings";
@@ -35,6 +36,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       // Every freed seat can promote one waitlisted client.
       if (wasActive) await promoteWaitlist(tx, auth.tenantId, booking.sessionId, booking.qty);
     });
+    emitEvent(auth.tenantId, "booking.cancelled", { bookingId: id, clientName: "", className: "" });
   }
   return NextResponse.redirect(externalUrl(req, back), 303);
 }
