@@ -21,7 +21,10 @@ const groups: Group[] = [
     { href: "/bookings", label: "Bookings", icon: ClipboardList },
     { href: "/class-types", label: "Class Types", icon: BookOpen },
   ]},
-  { label: "Clients", items: [{ href: "/clients", label: "Clients", icon: Users }] },
+  { label: "Clients", items: [
+    { href: "/inbox", label: "Inbox", icon: FileText },
+    { href: "/clients", label: "Clients", icon: Users },
+  ]},
   { label: "Sales", items: [
     { href: "/pos", label: "Point of Sale", icon: CreditCard },
     { href: "/products", label: "Products & Packages", icon: Hexagon },
