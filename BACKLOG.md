@@ -263,7 +263,7 @@ https://new.nexis.revsports.ca → commit → log → next.
 - [x] V5 Client onboarding: multi-step post-signup wizard (DOB skippable,
       medical notes skippable, "how did you hear about us" → channel) +
       redesigned login/signup (split layout, serif tagline, studio hero).
-- [ ] V6 Booking upsell: Settings → Payments card — pick upsell package
+- [x] V6 Booking upsell: Settings → Payments card — pick upsell package
       for group vs private, hide when client has active package; upsell
       step in the public booking flow; deposit/pay-in-full options shown
       (Stripe-gated).

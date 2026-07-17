@@ -678,3 +678,8 @@
 - Old-system client onboarding: after Sign Up, clients land on /welcome — progress bar, "Skip for now", steps: welcome greeting → date of birth (🎂) → medical conditions (🩺, staff-visible) → "How did you hear about us?" chips (→ client.channel) → booking page. Every step optional; data saves via mode=onboard (fixed: branch had to run before the auth-field guard).
 - Signed-out Account page redesigned to the old split look: dark serif brand panel ("Move better. Feel stronger. Live brighter.", studio hero when set) beside Log In + Sign Up forms.
 - Verified live: new signup redirected to the wizard, greeting personalized, DOB 1995-04-12 + medical note + Instagram channel all persisted to the client profile.
+
+## 2026-07-17 — V6: Booking upsell (Wave 14)
+- Settings → Money → "Booking upsell": pick the package to offer for group vs private bookings, plus "hide when the client already has an active package" (default on).
+- The booking slide-over shows a brand-tinted card — package name, price (membership-aware), per-class math vs the drop-in price, "Get the package →". Guests always see it; members only when they lack an active package of that kind (per the toggle).
+- Verified live: config saved; guest sidebar showed "10-Class Pack — $220 for 10 classes ≈ $22/class"; Ava (active pack) saw nothing; settings card renders.

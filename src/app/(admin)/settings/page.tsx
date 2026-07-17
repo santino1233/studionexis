@@ -1,5 +1,6 @@
 import { Card, CardHeader } from "@/components/ui/card";
 import { getCurrentTenant } from "@/lib/tenant";
+import { db } from "@/lib/db";
 import { classFormats, difficultyLevels } from "@/lib/class-config";
 import { studioStripeConfig } from "@/lib/stripe";
 
@@ -32,7 +33,8 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
   const { saved, error, tab: tabRaw } = await searchParams;
   const tab = TABS.some(([id]) => id === tabRaw) ? tabRaw! : "general";
   const tenant = await getCurrentTenant();
-  const pol = (tenant.policies ?? {}) as { cancelWindowGroupHours?: number; cancelWindowPrivateHours?: number; waitlistEnabled?: boolean; payAtStudio?: boolean };
+  const pol = (tenant.policies ?? {}) as { cancelWindowGroupHours?: number; cancelWindowPrivateHours?: number; waitlistEnabled?: boolean; payAtStudio?: boolean; upsell?: { groupPackageId?: string | null; privatePackageId?: string | null; hideIfActive?: boolean } };
+  const allPackages = tab === "money" ? await db.package.findMany({ where: { tenantId: tenant.id, active: true }, orderBy: [{ kind: "asc" }, { price: "asc" }] }) : [];
 
   return (
     <div className="mx-auto max-w-[760px]">
@@ -295,6 +297,36 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
             </div>
           );
         })()}
+      </Card>
+
+      <Card className="mt-5">
+        <CardHeader eyebrow="Selling" title="Booking upsell" sub="Offer a package while clients book — shown when it helps, hidden when it nags" />
+        <form method="post" action="/api/settings" className="space-y-4 p-6">
+          <input type="hidden" name="section" value="upsell" />
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+              <label className={label}>Upsell for group classes</label>
+              <select name="groupPackageId" defaultValue={pol.upsell?.groupPackageId ?? ""} className={field}>
+                <option value="">— Don&apos;t upsell —</option>
+                {allPackages.filter((p) => p.kind === "GROUP").map((p) => <option key={p.id} value={p.id}>{p.name} — ${Number(p.price)}{p.interval === "month" ? "/mo" : p.interval === "year" ? "/yr" : ""}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className={label}>Upsell for private sessions</label>
+              <select name="privatePackageId" defaultValue={pol.upsell?.privatePackageId ?? ""} className={field}>
+                <option value="">— Don&apos;t upsell —</option>
+                {allPackages.filter((p) => p.kind === "PRIVATE").map((p) => <option key={p.id} value={p.id}>{p.name} — ${Number(p.price)}{p.interval === "month" ? "/mo" : p.interval === "year" ? "/yr" : ""}</option>)}
+              </select>
+            </div>
+          </div>
+          <label className="flex items-center gap-2.5 text-[13.5px] font-medium text-ink">
+            <input name="hideIfActive" type="checkbox" defaultChecked={pol.upsell?.hideIfActive ?? true} className="size-4 accent-[#F97316]" />
+            Hide the upsell when the client already has an active package
+          </label>
+          <div className="flex justify-end">
+            <button className="rounded-[10px] bg-brand px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-brand-ink">Save upsell</button>
+          </div>
+        </form>
       </Card>
 
       <Card className="mt-5">

@@ -62,9 +62,16 @@ export default async function BookPage({ params, searchParams }: {
   const creditSum = creditRows.filter((p) => p.package.kind === kind).reduce((n, p) => n + p.creditsLeft, 0);
   const stripeOn = studioStripeEnabled(tenant);
   const payAtStudioOk = ((tenant.policies ?? {}) as { payAtStudio?: boolean }).payAtStudio !== false;
+  // Upsell package for the sidebar (Wave 14 V6)
+  const upsellCfg = ((tenant.policies ?? {}) as { upsell?: { groupPackageId?: string | null; privatePackageId?: string | null; hideIfActive?: boolean } }).upsell;
   // Slide-over class details (old-system View Details, same page)
   const sdSession = sd ? all.find((x) => x.id === sd) ?? null : null;
   const sdSpots = sdSession ? sdSession.capacity - sdSession.bookings.reduce((n, b) => n + b.qty, 0) : 0;
+  const upsellId = sdSession ? (sdSession.classType.kind === "PRIVATE" ? upsellCfg?.privatePackageId : upsellCfg?.groupPackageId) : null;
+  const hasActiveOfKind = sdSession ? creditRows.some((p) => p.package.kind === sdSession.classType.kind) : false;
+  const upsellPkg = upsellId && sdSession && !(upsellCfg?.hideIfActive !== false && authed && hasActiveOfKind)
+    ? await db.package.findFirst({ where: { id: upsellId, tenantId: tenant.id, active: true } })
+    : null;
   const qsHere = (over: Record<string, string | undefined>) => {
     const p = new URLSearchParams();
     const merged: Record<string, string | undefined> = { d, lvl, k: k === "private" ? "private" : undefined, ...over };
@@ -286,6 +293,14 @@ export default async function BookPage({ params, searchParams }: {
                     </div>
                   )}
 
+                  {upsellPkg && (
+                    <div className="rounded-2xl border p-4" style={{ borderColor: `${brand}44`, background: `${brand}0d` }}>
+                      <div className="text-[10.5px] font-bold uppercase tracking-[0.1em]" style={{ color: brand }}>💡 Save with a package</div>
+                      <div className="mt-1 text-[13.5px] font-bold text-ink">{upsellPkg.name} — {fmt.format(Number(upsellPkg.price))}{upsellPkg.interval === "month" ? "/mo" : upsellPkg.interval === "year" ? "/yr" : ""} for {upsellPkg.credits} classes</div>
+                      <div className="text-[11.5px] text-muted">≈ {fmt.format(Number(upsellPkg.price) / Math.max(1, upsellPkg.credits))} per class instead of {fmt.format(Number(ct.price))}</div>
+                      <Link href={`/book/${slug}/packages`} className="mt-2.5 inline-block rounded-lg px-3.5 py-2 text-[12px] font-bold text-white" style={{ background: brand }}>Get the package →</Link>
+                    </div>
+                  )}
                   <form method="post" action="/api/public/book" className="space-y-3.5 border-t border-line-2 pt-5">
                     <input type="hidden" name="slug" value={slug} />
                     <input type="hidden" name="sessionId" value={sdSession.id} />

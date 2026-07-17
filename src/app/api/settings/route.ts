@@ -89,6 +89,21 @@ export async function POST(req: Request) {
         },
       },
     });
+  } else if (section === "upsell") {
+    const prev = (tenant.policies ?? {}) as Record<string, unknown>;
+    await db.tenant.update({
+      where: { id: tenant.id },
+      data: {
+        policies: {
+          ...prev,
+          upsell: {
+            groupPackageId: String(form.get("groupPackageId") ?? "") || null,
+            privatePackageId: String(form.get("privatePackageId") ?? "") || null,
+            hideIfActive: form.get("hideIfActive") === "on",
+          },
+        },
+      },
+    });
   } else if (section === "apikey") {
     const act = String(form.get("action"));
     await db.tenant.update({
