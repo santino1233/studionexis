@@ -6,7 +6,8 @@ import { getCurrentTenant } from "@/lib/tenant";
 
 // Studio side of the live chat with Studio Nexis support (channel "hq").
 // One conversation per studio; "visitor" = studio staff, "studio" = Nexis HQ.
-type Msg = { from: "visitor" | "studio"; name: string; text: string; at: string };
+type Msg = { from: "visitor" | "studio"; name: string; text: string; at: string; image?: string };
+const cleanImage = (v: unknown) => (typeof v === "string" && v.startsWith("/api/media/") ? v.slice(0, 300) : undefined);
 
 export async function GET(req: Request) {
   const auth = await getSession();
@@ -26,12 +27,13 @@ export async function POST(req: Request) {
   const auth = await getSession();
   if (!auth) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   const tenant = await getCurrentTenant();
-  let body: { text?: string };
+  let body: { text?: string; image?: string };
   try { body = await req.json(); } catch { return NextResponse.json({ error: "bad_json" }, { status: 400 }); }
   const text = String(body.text ?? "").trim().slice(0, 2000);
-  if (!text) return NextResponse.json({ error: "empty" }, { status: 422 });
+  const image = cleanImage(body.image);
+  if (!text && !image) return NextResponse.json({ error: "empty" }, { status: 422 });
 
-  const msg: Msg = { from: "visitor", name: auth.name || "Studio", text, at: new Date().toISOString() };
+  const msg: Msg = { from: "visitor", name: auth.name || "Studio", text, at: new Date().toISOString(), ...(image ? { image } : {}) };
   const convo = await db.chatConversation.findFirst({ where: { tenantId: tenant.id, channel: "hq" } });
   if (!convo) {
     await db.chatConversation.create({

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 
-type Msg = { from: "visitor" | "studio"; name: string; text: string; at: string };
+type Msg = { from: "visitor" | "studio"; name: string; text: string; at: string; image?: string };
 
 // Floating Tidio-style chat bubble for studio public pages.
 export function ChatWidget({ slug, brand, studio }: { slug: string; brand: string; studio: string }) {
@@ -12,6 +12,8 @@ export function ChatWidget({ slug, brand, studio }: { slug: string; brand: strin
   const [unread, setUnread] = useState(0);
   const [text, setText] = useState("");
   const [name, setName] = useState("");
+  const [busy, setBusy] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
   const bottom = useRef<HTMLDivElement>(null);
   const openRef = useRef(open);
   openRef.current = open;
@@ -38,16 +40,36 @@ export function ChatWidget({ slug, brand, studio }: { slug: string; brand: strin
 
   if (disabled) return null;
 
+  const post = async (t: string, image?: string) => {
+    setMessages((m) => [...m, { from: "visitor", name: name || "You", text: t, at: new Date().toISOString(), ...(image ? { image } : {}) }]);
+    await fetch("/api/public/chat", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ slug, text: t, name, ...(image ? { image } : {}) }),
+    }).catch(() => {});
+    pull(true);
+  };
+
   const send = async () => {
     const t = text.trim();
     if (!t) return;
     setText("");
-    setMessages((m) => [...m, { from: "visitor", name: name || "You", text: t, at: new Date().toISOString() }]);
-    await fetch("/api/public/chat", {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ slug, text: t, name }),
-    }).catch(() => {});
-    pull(true);
+    post(t);
+  };
+
+  const attach = async (file: File) => {
+    if (!file || busy) return;
+    setBusy(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("slug", slug);
+      const res = await fetch("/api/chat/upload", { method: "POST", body: fd });
+      const d = await res.json();
+      if (res.ok && d.url) await post(text.trim(), d.url), setText("");
+      else alert(d.message || "Couldn't send that image.");
+    } catch { alert("Couldn't send that image."); }
+    setBusy(false);
+    if (fileRef.current) fileRef.current.value = "";
   };
 
   return (
@@ -71,7 +93,8 @@ export function ChatWidget({ slug, brand, studio }: { slug: string; brand: strin
               <div key={i} className={`max-w-[85%] rounded-2xl px-3.5 py-2 text-[13px] shadow-sm ${m.from === "visitor" ? "ml-auto rounded-br-sm text-white" : "rounded-tl-sm bg-white text-[#333]"}`}
                 style={m.from === "visitor" ? { background: brand } : undefined}>
                 {m.from === "studio" && <div className="text-[10px] font-bold opacity-60">{m.name}</div>}
-                <div className="whitespace-pre-wrap">{m.text}</div>
+                {m.image && <a href={m.image} target="_blank" rel="noreferrer"><img src={m.image} alt="attachment" className="mb-1 max-h-44 w-full rounded-lg object-cover" /></a>}
+                {m.text && <div className="whitespace-pre-wrap">{m.text}</div>}
               </div>
             ))}
             <div ref={bottom} />
@@ -81,6 +104,8 @@ export function ChatWidget({ slug, brand, studio }: { slug: string; brand: strin
               className="border-t border-black/5 px-4 py-2 text-[12.5px] outline-none placeholder:text-[#999]" />
           )}
           <div className="flex items-center gap-2 border-t border-black/10 p-2.5">
+            <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={(e) => e.target.files?.[0] && attach(e.target.files[0])} />
+            <button onClick={() => fileRef.current?.click()} disabled={busy} title="Attach a photo" className="grid size-10 shrink-0 place-items-center rounded-xl bg-[#f1f0ee] text-[16px] text-[#666] disabled:opacity-50">{busy ? "…" : "📎"}</button>
             <input value={text} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => e.key === "Enter" && send()}
               placeholder="Type a message…" className="h-10 flex-1 rounded-xl bg-[#f1f0ee] px-3.5 text-[13px] outline-none placeholder:text-[#999]" />
             <button onClick={send} className="grid size-10 place-items-center rounded-xl text-white" style={{ background: brand }}>➤</button>

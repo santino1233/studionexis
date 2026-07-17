@@ -8,7 +8,8 @@ import { getCustomerSession } from "@/lib/customer-auth";
 import { emitEvent, appsOf } from "@/lib/webhooks";
 
 // Visitor side of live chat (Tidio-style widget).
-type Msg = { from: "visitor" | "studio"; name: string; text: string; at: string };
+type Msg = { from: "visitor" | "studio"; name: string; text: string; at: string; image?: string };
+const cleanImage = (v: unknown) => (typeof v === "string" && v.startsWith("/api/media/") ? v.slice(0, 300) : undefined);
 
 function visitorIdFrom(req: Request): { id: string; fresh: boolean } {
   const cookies = Object.fromEntries((req.headers.get("cookie") ?? "").split(";").map((c) => c.trim().split("=").map(decodeURIComponent)).filter((p) => p.length === 2));
@@ -41,13 +42,14 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   if (!rateLimit(req, "chat", 30, 60)) return NextResponse.json({ error: "rate_limited" }, { status: 429 });
-  let body: { slug?: string; text?: string; name?: string; contact?: string };
+  let body: { slug?: string; text?: string; name?: string; contact?: string; image?: string };
   try { body = await req.json(); } catch { return NextResponse.json({ error: "bad_json" }, { status: 400 }); }
   const tenant = await tenantBySlugOrDomain(String(body.slug ?? ""));
   if (!tenant) return NextResponse.json({ error: "not_found" }, { status: 404 });
   if (appsOf(tenant.policies).chatDisabled) return NextResponse.json({ error: "disabled" }, { status: 403 });
   const text = String(body.text ?? "").trim().slice(0, 2000);
-  if (!text) return NextResponse.json({ error: "empty" }, { status: 422 });
+  const image = cleanImage(body.image);
+  if (!text && !image) return NextResponse.json({ error: "empty" }, { status: 422 });
 
   const { id: visitorId, fresh } = visitorIdFrom(req);
   const customer = await getCustomerSession();
@@ -57,7 +59,7 @@ export async function POST(req: Request) {
   const name = client?.name || String(body.name ?? "").trim().slice(0, 60) || "Visitor";
 
   let convo = await db.chatConversation.findFirst({ where: { tenantId: tenant.id, visitorId }, orderBy: { lastMessageAt: "desc" } });
-  const msg: Msg = { from: "visitor", name, text, at: new Date().toISOString() };
+  const msg: Msg = { from: "visitor", name, text, at: new Date().toISOString(), ...(image ? { image } : {}) };
   if (!convo) {
     convo = await db.chatConversation.create({
       data: {
@@ -77,6 +79,6 @@ export async function POST(req: Request) {
       },
     });
   }
-  emitEvent(tenant.id, "chat.message", { clientName: name, className: "", text: text.slice(0, 120) });
+  emitEvent(tenant.id, "chat.message", { clientName: name, className: "", text: text.slice(0, 120) || "📷 Photo" });
   return withCookie(NextResponse.json({ ok: true }), visitorId, fresh);
 }

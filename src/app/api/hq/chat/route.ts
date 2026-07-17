@@ -5,7 +5,9 @@ import { getSession } from "@/lib/auth";
 
 // HQ side of studio<->Nexis support chats (channel "hq"). Superadmin only —
 // must be called on the HQ host (cookies are host-scoped).
-type Msg = { from: "visitor" | "studio"; name: string; text: string; at: string };
+type Msg = { from: "visitor" | "studio"; name: string; text: string; at: string; image?: string };
+const cleanImage = (v: unknown) => (typeof v === "string" && v.startsWith("/api/media/") ? v.slice(0, 300) : undefined);
+const preview = (m?: Msg) => (m ? m.text || (m.image ? "📷 Photo" : "") : "");
 
 async function assertSuper() {
   const auth = await getSession();
@@ -21,7 +23,7 @@ export async function GET(req: Request) {
     if (!convo) return NextResponse.json({ error: "not_found" }, { status: 404 });
     if (convo.unreadStudio > 0) await db.chatConversation.update({ where: { id }, data: { unreadStudio: 0 } });
     return NextResponse.json({
-      id: convo.id, studio: convo.tenant.name, slug: convo.tenant.slug, plan: convo.tenant.plan,
+      id: convo.id, tenantId: convo.tenantId, studio: convo.tenant.name, slug: convo.tenant.slug, plan: convo.tenant.plan,
       contact: convo.contact, status: convo.status, messages: convo.messages as Msg[],
     });
   }
@@ -32,7 +34,7 @@ export async function GET(req: Request) {
   return NextResponse.json({
     conversations: convos.map((c) => {
       const msgs = c.messages as Msg[];
-      return { id: c.id, studio: c.tenant.name, slug: c.tenant.slug, status: c.status, unread: c.unreadStudio, last: msgs[msgs.length - 1]?.text ?? "", lastAt: c.lastMessageAt };
+      return { id: c.id, studio: c.tenant.name, slug: c.tenant.slug, status: c.status, unread: c.unreadStudio, last: preview(msgs[msgs.length - 1]), lastAt: c.lastMessageAt };
     }),
   });
 }
@@ -40,7 +42,7 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   const auth = await assertSuper();
   if (!auth) return NextResponse.json({ error: "forbidden" }, { status: 403 });
-  let body: { id?: string; text?: string; close?: boolean };
+  let body: { id?: string; text?: string; close?: boolean; image?: string };
   try { body = await req.json(); } catch { return NextResponse.json({ error: "bad_json" }, { status: 400 }); }
   const convo = await db.chatConversation.findFirst({ where: { id: String(body.id ?? ""), channel: "hq" } });
   if (!convo) return NextResponse.json({ error: "not_found" }, { status: 404 });
@@ -50,8 +52,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true });
   }
   const text = String(body.text ?? "").trim().slice(0, 2000);
-  if (!text) return NextResponse.json({ error: "empty" }, { status: 422 });
-  const msg: Msg = { from: "studio", name: "Nexis Support", text, at: new Date().toISOString() };
+  const image = cleanImage(body.image);
+  if (!text && !image) return NextResponse.json({ error: "empty" }, { status: 422 });
+  const msg: Msg = { from: "studio", name: "Nexis Support", text, at: new Date().toISOString(), ...(image ? { image } : {}) };
   await db.chatConversation.update({
     where: { id: convo.id },
     data: {
