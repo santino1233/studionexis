@@ -148,6 +148,24 @@ export async function POST(req: Request) {
     if (String(form.get("regenIcal")) === "1") apps.icalToken = randomBytes(12).toString("hex");
     if (form.has("chatToggle")) apps.chatDisabled = String(form.get("chatToggle")) === "off" ? true : undefined;
     await db.tenant.update({ where: { id: tenant.id }, data: { policies: { ...prev, apps } } });
+  } else if (section === "app-install" || section === "app-uninstall") {
+    const prev = (tenant.policies ?? {}) as Record<string, unknown>;
+    const apps = { ...appsOf(tenant.policies) };
+    const id = String(form.get("appId") ?? "").trim();
+    const set = new Set(apps.installed ?? []);
+    if (section === "app-install") {
+      set.add(id);
+    } else {
+      set.delete(id);
+      // Removing an app also clears its live configuration so it truly goes away.
+      if (id === "alerts") { apps.slackUrl = undefined; apps.discordUrl = undefined; apps.telegramToken = undefined; apps.telegramChatId = undefined; }
+      if (id === "calendar") apps.icalToken = undefined;
+      if (id === "pixels") apps.pixels = undefined;
+      if (id === "livechat") apps.chatDisabled = true;
+      if (id === "automation") prev.webhooks = [];
+    }
+    apps.installed = [...set];
+    await db.tenant.update({ where: { id: tenant.id }, data: { policies: { ...prev, apps } } });
   } else if (section === "apikey") {
     const act = String(form.get("action"));
     await db.tenant.update({

@@ -746,3 +746,6 @@
 
 ## 2026-07-17 — Canonical public URLs (studio.nexis.revsports.ca)
 - Fixed inconsistent booking-site URLs: some links pointed at app.nexis.revsports.ca/s/<slug>. New `lib/site-url.ts` publicSiteUrl() returns the canonical public origin (custom domain if set, else <slug>.nexis.revsports.ca); every "view/open my website" link (website builder, settings, setup wizard done step, sidebar card) now routes through it. Verified: 0 /s/ hrefs remain on admin pages, subdomain preview links resolve 200.
+
+## 2026-07-17 — App Store is now a real install/uninstall store
+- Rebuilt /apps from a wall of config cards into a proper store: a compact "Browse the store" catalog of tiles (icon, category, blurb, ＋ Add to studio) and a "Your apps" section that shows full configuration ONLY for apps the studio has added. New lib/appstore.ts catalog + appInstalled()/appConfigured(); policies.apps.installed[] tracks added apps (apps with existing live config auto-appear so nothing is hidden). Removing an app clears its config so it truly goes away. Status apps (Stripe/Twilio) link to their real setup. Verified install→config-appears→uninstall→gone round-trip live.

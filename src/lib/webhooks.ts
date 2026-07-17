@@ -13,6 +13,7 @@ export type AppsConfig = {
   icalToken?: string;
   chatDisabled?: boolean;
   pixels?: { ga4?: string; meta?: string; tiktok?: string };
+  installed?: string[]; // App Store: ids the studio has explicitly added
 };
 
 export const WEBHOOK_EVENTS = ["booking.created", "booking.cancelled", "client.created", "order.paid"] as const;
