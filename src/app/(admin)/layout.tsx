@@ -3,6 +3,7 @@ import { Topbar } from "@/components/shell/topbar";
 import { MobileNav } from "@/components/shell/mobile-nav";
 import { getCurrentTenant } from "@/lib/tenant";
 import { getSession } from "@/lib/auth";
+import { db } from "@/lib/db";
 
 function PlanBanner({ status, trialEndsAt }: { status: string; trialEndsAt: Date | null }) {
   if (status === "TRIAL" && trialEndsAt) {
@@ -27,11 +28,27 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const tenant = await getCurrentTenant();
   const session = await getSession();
   const role = session?.role ?? "OWNER";
+  // Platform broadcasts + maintenance banner (Wave 16 B5)
+  const [annRows, gset] = await Promise.all([
+    db.announcement.findMany({ where: { activeFrom: { lte: new Date() }, OR: [{ activeUntil: null }, { activeUntil: { gt: new Date() } }] }, orderBy: { createdAt: "desc" }, take: 10 }),
+    db.globalSetting.findUnique({ where: { key: "platform" } }),
+  ]);
+  const anns = annRows.filter((a) => {
+    const aud = (a.audience ?? {}) as { all?: boolean; trial?: boolean; plans?: string[]; tenantIds?: string[] };
+    return aud.all || (aud.trial && tenant.status === "TRIAL") || aud.plans?.includes(tenant.plan) || aud.tenantIds?.includes(tenant.id);
+  }).slice(0, 2);
+  const maint = ((gset?.value ?? {}) as { maintenanceBanner?: string }).maintenanceBanner;
   return (
     <div className="nx-admin flex h-screen overflow-hidden bg-canvas text-ink">
       <Sidebar slug={tenant.slug} role={role} />
       <MobileNav slug={tenant.slug} role={role} />
       <div className="flex min-w-0 flex-1 flex-col">
+        {maint && <div className="border-b border-rose/20 bg-rose/5 px-6 py-2 text-center text-[12.5px] font-bold text-rose">🔧 {maint}</div>}
+        {anns.map((a) => (
+          <div key={a.id} className={`border-b px-6 py-2 text-center text-[12.5px] font-bold ${a.kind === "security" ? "border-rose/20 bg-rose/5 text-rose" : a.kind === "maintenance" ? "border-brand/20 bg-brand-wash text-brand-ink" : "border-line-2 bg-raised text-ink-2"}`}>
+            {a.kind === "security" ? "🛡" : a.kind === "release" ? "🚀" : a.kind === "maintenance" ? "🔧" : "📣"} <b>{a.title}</b> — {a.body}
+          </div>
+        ))}
         <PlanBanner status={tenant.status} trialEndsAt={tenant.trialEndsAt} />
         <Topbar />
         <main className="flex-1 overflow-y-auto px-6 py-6 lg:px-10">{children}</main>

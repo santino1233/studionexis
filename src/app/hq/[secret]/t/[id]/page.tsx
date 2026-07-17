@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { PLANS, annualMonthly } from "@/lib/plans";
 import { customFeatures, featureRequests } from "@/lib/features";
+import { hqTagsOf } from "@/lib/hq";
 
 export const dynamic = "force-dynamic";
 
@@ -20,7 +21,7 @@ export default async function HqTenantPage({ params }: { params: Promise<{ secre
   if (!auth || auth.role !== "SUPERADMIN" || secret !== (process.env.HQ_PATH ?? "").replace(/^hq\//, "")) notFound();
 
   const d30 = new Date(Date.now() - 30 * 86400_000);
-  const [tenant, clients, bookings30, revenue30, revenueAll, views7, recentOrders] = await Promise.all([
+  const [tenant, clients, bookings30, revenue30, revenueAll, views7, recentOrders, staff, counts] = await Promise.all([
     db.tenant.findUnique({ where: { id } }),
     db.client.count({ where: { tenantId: id } }),
     db.booking.count({ where: { tenantId: id, createdAt: { gt: d30 } } }),
@@ -28,6 +29,14 @@ export default async function HqTenantPage({ params }: { params: Promise<{ secre
     db.order.aggregate({ where: { tenantId: id, status: "PAID" }, _sum: { total: true } }),
     db.pageView.count({ where: { tenantId: id, createdAt: { gt: new Date(Date.now() - 7 * 86400_000) } } }),
     db.order.findMany({ where: { tenantId: id }, orderBy: { createdAt: "desc" }, take: 8, include: { client: { select: { name: true } } } }),
+    db.user.findMany({ where: { tenantId: id }, orderBy: [{ role: "asc" }, { name: "asc" }] }),
+    Promise.all([
+      db.classType.count({ where: { tenantId: id, active: true } }),
+      db.package.count({ where: { tenantId: id, active: true } }),
+      db.user.count({ where: { tenantId: id, role: { in: ["INSTRUCTOR", "STAFF", "MANAGER"] } } }),
+      db.booking.count({ where: { tenantId: id } }),
+      db.order.count({ where: { tenantId: id, status: "PAID" } }),
+    ]),
   ]);
   if (!tenant) notFound();
 
@@ -37,6 +46,15 @@ export default async function HqTenantPage({ params }: { params: Promise<{ secre
   const features = customFeatures(tenant);
   const featureMrr = features.filter((f) => f.active).reduce((n, f) => n + f.price, 0);
   const requests = featureRequests(tenant);
+  const hqx = hqTagsOf(tenant);
+  const onboarding: [string, boolean][] = [
+    ["Signed up", true],
+    ["Class types created", counts[0] > 0],
+    ["Packages created", counts[1] > 0],
+    ["Team invited", counts[2] > 0],
+    ["First booking", counts[3] > 0],
+    ["First payment", counts[4] > 0],
+  ];
   const fmt = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
   const money = new Intl.NumberFormat("en-US", { style: "currency", currency: tenant.currency });
   const back = `/hq/${secret}/t/${id}`;
@@ -58,6 +76,11 @@ export default async function HqTenantPage({ params }: { params: Promise<{ secre
           <span className={`rounded-full px-2.5 py-1 text-[11px] font-bold capitalize ${statusTone[tenant.status]}`}>{tenant.status.toLowerCase().replace("_", " ")}</span>
           <span className="rounded-full bg-line-2 px-2.5 py-1 text-[11px] font-bold capitalize text-ink-2">{tenant.plan}{pol.billingCycle === "annual" ? " · annual" : ""}</span>
           <a href={`https://${tenant.slug}.nexis.revsports.ca`} target="_blank" className="text-[12.5px] font-bold text-brand hover:underline">{tenant.slug}.nexis.revsports.ca ↗</a>
+          {hqx.tags?.map((tg) => <span key={tg} className="rounded-full bg-purple-wash px-2.5 py-1 text-[10.5px] font-bold text-purple">{tg}</span>)}
+          <form method="post" action={`/api/hq/${tenant.id}`} className="ml-auto">
+            <input type="hidden" name="action" value="impersonate" />
+            <button className="rounded-xl bg-ink px-4 py-2 text-[12.5px] font-bold text-canvas hover:opacity-90">🎭 Log in as owner</button>
+          </form>
         </div>
 
         <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-5">
@@ -92,6 +115,43 @@ export default async function HqTenantPage({ params }: { params: Promise<{ secre
                 </div>
                 {tenant.trialEndsAt && <p className="text-[12px] text-muted">Trial ends {tenant.trialEndsAt.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</p>}
               </div>
+            </Card>
+
+            <Card>
+              <CardHeader title="Onboarding & internal notes" sub="Progress + notes only HQ can see" />
+              <div className="space-y-3 p-5">
+                <div className="grid grid-cols-2 gap-1.5">
+                  {onboarding.map(([label, ok]) => (
+                    <span key={label} className={`rounded-lg px-2.5 py-1.5 text-[11.5px] font-bold ${ok ? "bg-green-wash text-green" : "bg-line-2 text-muted"}`}>{ok ? "✓" : "○"} {label}</span>
+                  ))}
+                </div>
+                <form method="post" action={`/api/hq/${tenant.id}`} className="space-y-2 border-t border-line-2 pt-3">
+                  <input type="hidden" name="action" value="hqtags" />
+                  <input type="hidden" name="back" value={back} />
+                  <input name="tags" defaultValue={hqx.tags?.join(", ") ?? ""} placeholder="Tags: VIP, churn-risk…" className={field} />
+                  <textarea name="notes" rows={3} defaultValue={hqx.notes ?? ""} placeholder="Internal notes…" className="w-full rounded-[10px] border border-line bg-surface px-3 py-2 text-sm outline-none focus:border-brand" />
+                  <label className="flex items-center gap-2 text-[12.5px] font-medium text-ink-2"><input type="checkbox" name="comp" defaultChecked={hqx.comp ?? false} className="size-4 accent-[#F97316]" /> Complimentary account (never bill)</label>
+                  <button className="rounded-[10px] bg-line-2 px-4 py-2 text-[12px] font-bold text-ink-2 hover:text-ink">Save</button>
+                </form>
+              </div>
+            </Card>
+
+            <Card>
+              <CardHeader title="Staff" sub="Reset any password — audit logged" />
+              <ul className="divide-y divide-line-2">
+                {staff.map((u) => (
+                  <li key={u.id} className="flex items-center justify-between gap-2 px-5 py-2.5 text-[12.5px]">
+                    <span className="min-w-0"><b className="text-ink">{u.name}</b> <span className="text-muted">· {u.role.toLowerCase()} · {u.email}</span></span>
+                    <form method="post" action={`/api/hq/${tenant.id}`} className="flex shrink-0 gap-1.5">
+                      <input type="hidden" name="action" value="staffpw" />
+                      <input type="hidden" name="userId" value={u.id} />
+                      <input type="hidden" name="back" value={back} />
+                      <input name="password" placeholder="New pw (8+)" className="h-8 w-[110px] rounded-lg border border-line bg-surface px-2 text-[11.5px] outline-none focus:border-brand" />
+                      <button className="rounded-lg bg-line-2 px-2 py-1 text-[10.5px] font-bold text-ink-2 hover:text-ink">Set</button>
+                    </form>
+                  </li>
+                ))}
+              </ul>
             </Card>
 
             <Card>

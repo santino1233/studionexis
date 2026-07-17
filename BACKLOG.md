@@ -127,7 +127,7 @@ https://new.nexis.revsports.ca → commit → log → next.
       three plan cards w/ current-plan + most-popular states, add-ons,
       owner-only plan switching saved to tenant (Stripe checkout attaches
       here when keys arrive; HQ activates paid status meanwhile).
-- [ ] B4 OWNER-GATED: Stripe keys → real checkout + webhooks; Twilio creds
+- [x] B4 OWNER-GATED: Stripe keys → real checkout + webhooks; Twilio creds
       → SMS notifications + PAYG credits.
 
 ## Wave 9 — website templates (owner spec)
@@ -288,18 +288,18 @@ https://new.nexis.revsports.ca → commit → log → next.
       TikTok pixel injection on public pages, WhatsApp via Twilio.
 
 ## Wave 16 — HQ Super-Admin CRM overhaul (PDF spec 2026-07-17, see HQ-SPEC-3.md)
-- [ ] B1 HQ v2 shell: sidebar nav (Dashboard/Studios/Support/Billing/
+- [x] B1 HQ v2 shell: sidebar nav (Dashboard/Studios/Support/Billing/
       Analytics/Broadcasts/Status/Logs/Flags/Releases/Team/KB/Settings),
       CRM-wide search, schema pack (SupportTicket, Announcement, AuditLog,
       Release, KbArticle, GlobalSetting, User.lastLoginAt).
-- [ ] B2 Studios: searchable/filterable directory w/ health scores; profile
+- [x] B2 Studios: searchable/filterable directory w/ health scores; profile
       adds notes, VIP/churn tags, onboarding progress, staff resets,
       audit-logged impersonation, archive.
-- [ ] B3 Support: studio /support (tickets + bug reports w/ auto-context),
+- [x] B3 Support: studio /support (tickets + bug reports w/ auto-context),
       HQ queue (status/priority/assignee/replies), feature-request board.
-- [ ] B4 Platform analytics + health scoring + billing page + revenue
+- [x] B4 Platform analytics + health scoring + billing page + revenue
       leaderboard (MRR/ARR/churn/ARPA/LTV/DAU-WAU-MAU/usage).
-- [ ] B5 Broadcasts & announcements + studio banner + "What's new"
+- [x] B5 Broadcasts & announcements + studio banner + "What's new"
       releases page.
-- [ ] B6 Activity logs viewer; system status; feature flags; email/SMS
+- [x] B6 Activity logs viewer; system status; feature flags; email/SMS
       logs w/ resend; internal team page; knowledge base.
