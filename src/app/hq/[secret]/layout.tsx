@@ -28,6 +28,9 @@ export default async function HqLayout({ children, params }: { children: React.R
   const { secret } = await params;
   await assertHq(secret);
   const openTickets = await db.supportTicket.count({ where: { status: { in: ["OPEN", "WAITING"] } } });
+  const unreadChats = await db.chatConversation
+    .aggregate({ where: { channel: "hq", status: "OPEN" }, _sum: { unreadStudio: true } })
+    .then((r) => r._sum.unreadStudio ?? 0);
 
   return (
     <div className="nx-admin flex min-h-screen bg-canvas text-ink">
@@ -43,6 +46,7 @@ export default async function HqLayout({ children, params }: { children: React.R
             <Link key={href} href={href} className="mt-0.5 flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-semibold text-ink-2 hover:bg-raised hover:text-ink">
               <span className="w-4 text-center text-[13px]">{icon}</span> {label}
               {href === "/support" && openTickets > 0 && <span className="ml-auto rounded-full bg-brand px-1.5 py-0.5 text-[10px] font-bold text-white">{openTickets}</span>}
+              {href === "/chats" && unreadChats > 0 && <span className="ml-auto rounded-full bg-brand px-1.5 py-0.5 text-[10px] font-bold text-white">{unreadChats}</span>}
             </Link>
           ))}
         </nav>

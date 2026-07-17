@@ -735,3 +735,8 @@
 
 ## 2026-07-17 — Studio ↔ Nexis HQ live chat
 - New live chat channel between studio owners and Studio Nexis support: studios chat from Help & Support (💬 Live chat with Nexis Support panel); HQ replies from the new **Live Chat** section in the HQ portal. Separate `channel` on ChatConversation keeps these threads out of the studio's own customer inbox. Verified full round-trip live (studio → HQ → studio, unread counts both ways).
+
+## 2026-07-17 — Overnight loop #1: security audit + chat unread badges
+- **Security audit (API v1)**: verified cross-tenant isolation holds — recharged's API key gets 404 (not a leak) fetching dev-studio's client id; invalid bearer → 401; `/clients/[id]` is correctly scoped by `tenantId`. The earlier 308 was just a trailing-slash redirect on an empty test id, not an IDOR. No vulnerability found.
+- **HQ Live Chat unread badge**: HQ sidebar now shows a count on Live Chat when studios have unread messages waiting (mirrors the Support ticket badge).
+- **Studio-side "Nexis replied" badge** (gap closed): after filtering the customer-inbox badge to visitor chats only, studios had no signal when Nexis Support answered. The sidebar beta card now flips to "Nexis Support replied — open chat →" with an "N new" badge whenever there are unread HQ replies. Verified live.
