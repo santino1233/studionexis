@@ -30,8 +30,16 @@ export async function POST(req: Request) {
       let slug = base;
       for (let i = 2; await tx.tenant.findUnique({ where: { slug } }); i++) slug = `${base}-${i}`;
 
+      const onboarding = {
+        studioType: String(form.get("studioType") ?? "").slice(0, 40),
+        country: String(form.get("country") ?? "").slice(0, 40),
+        city: String(form.get("city") ?? "").slice(0, 60),
+        sizeBand: String(form.get("sizeBand") ?? "").slice(0, 10),
+        goal: String(form.get("goal") ?? "").slice(0, 60),
+      };
       const tenant = await tx.tenant.create({
         data: {
+          policies: { onboarding },
           slug,
           name: studioName,
           status: "TRIAL",
@@ -51,7 +59,7 @@ export async function POST(req: Request) {
     });
 
     await createSession({ userId: user.id, tenantId: tenant.id, role: user.role, name: user.name });
-    return NextResponse.redirect(externalUrl(req, "/welcome"), 303);
+    return NextResponse.redirect(externalUrl(req, "/getting-started"), 303);
   } catch {
     // Most likely the email is already in use for a tenant.
     return NextResponse.redirect(externalUrl(req, "/signup?error=exists"), 303);
