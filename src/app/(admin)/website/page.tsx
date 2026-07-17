@@ -36,6 +36,7 @@ export default async function WebsiteBuilderPage({ searchParams }: { searchParam
     testimonials?: SiteQuote[];
     faqs?: SiteFaq[];
     sections?: Partial<Record<SectionId, boolean>>;
+    sectionOrder?: SectionId[];
     teamBios?: Record<string, { bio?: string; photo?: string; hidden?: boolean }>;
     template?: string;
   };
@@ -57,6 +58,7 @@ export default async function WebsiteBuilderPage({ searchParams }: { searchParam
         </div>
         <div className="flex items-center gap-2">
           <span className="rounded-full bg-line-2 px-3 py-1.5 text-[11.5px] font-bold text-ink-2">Template: {TEMPLATE_META[template]?.name ?? template}</span>
+          <Link href="/website/setup" className="rounded-[10px] bg-ink px-4 py-2.5 text-[13px] font-bold text-canvas hover:opacity-90">✨ Create my website</Link>
           <a href={`/s/${tenant.slug}`} target="_blank" className="inline-flex items-center gap-1.5 rounded-[10px] bg-brand px-4 py-2.5 text-[13px] font-bold text-white hover:bg-brand-ink">
             <ExternalLink className="size-3.5" /> Open my site
           </a>
@@ -174,6 +176,26 @@ export default async function WebsiteBuilderPage({ searchParams }: { searchParam
               </div>
               <button className={save}>Save contact</button>
             </form>
+          </Card>
+
+          <Card>
+            <CardHeader title="Section order" sub="Arrange your page — top to bottom" />
+            <div className="space-y-1.5 p-5 pt-0">
+              {(() => {
+                const base = ["about", "classes", "schedule", "team", "pricing", "testimonials", "gallery", "faq"] as SectionId[];
+                const saved = (w.sectionOrder ?? []).filter((id) => base.includes(id));
+                const order = [...saved, ...base.filter((id) => !saved.includes(id))];
+                return order.map((id, i) => (
+                  <div key={id} className="flex items-center justify-between rounded-lg border border-line-2 px-3 py-2">
+                    <span className={`text-[13px] font-bold ${on(id) ? "text-ink" : "text-muted line-through"}`}>{i + 1}. {SECTION_LABELS[id]}</span>
+                    <span className="flex gap-1">
+                      <form method="post" action="/api/website"><input type="hidden" name="section" value="reorder" /><input type="hidden" name="id" value={id} /><input type="hidden" name="dir" value="up" /><button disabled={i === 0} className="grid size-7 place-items-center rounded-md bg-line-2 text-[12px] font-bold text-ink-2 hover:text-ink disabled:opacity-30">↑</button></form>
+                      <form method="post" action="/api/website"><input type="hidden" name="section" value="reorder" /><input type="hidden" name="id" value={id} /><input type="hidden" name="dir" value="down" /><button disabled={i === order.length - 1} className="grid size-7 place-items-center rounded-md bg-line-2 text-[12px] font-bold text-ink-2 hover:text-ink disabled:opacity-30">↓</button></form>
+                    </span>
+                  </div>
+                ));
+              })()}
+            </div>
           </Card>
 
           <Card>

@@ -63,6 +63,18 @@ export async function POST(req: Request) {
       if (q && a) rows.push({ q, a });
     }
     patch = { faqs: rows };
+  } else if (section === "reorder") {
+    const base = ["about", "classes", "schedule", "team", "pricing", "testimonials", "gallery", "faq"];
+    const id = pick("id");
+    const dir = pick("dir") === "up" ? -1 : 1;
+    const saved = ((prev.sectionOrder as string[]) ?? []).filter((x) => base.includes(x));
+    const order = [...saved, ...base.filter((x) => !saved.includes(x))];
+    const i = order.indexOf(id);
+    const j = i + dir;
+    if (i >= 0 && j >= 0 && j < order.length) {
+      [order[i], order[j]] = [order[j], order[i]];
+    }
+    patch = { sectionOrder: order };
   } else if (section === "contact") {
     patch = {
       address: pick("address"),
@@ -81,5 +93,7 @@ export async function POST(req: Request) {
     where: { id: tenant.id },
     data: { website: { ...prev, ...patch } as Prisma.InputJsonValue },
   });
-  return NextResponse.redirect(externalUrl(req, "/website?saved=1"), 303);
+  const nextRaw = String(form.get("next") ?? "");
+  const next = nextRaw.startsWith("/") && !nextRaw.startsWith("//") ? nextRaw : "/website?saved=1";
+  return NextResponse.redirect(externalUrl(req, next), 303);
 }

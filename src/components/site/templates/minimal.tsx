@@ -1,3 +1,4 @@
+import React from "react";
 import type { SiteData, SiteSkin } from "@/components/site/types";
 import { AboutSection, ClassesShowcase, TeamSection, Testimonials, FaqSection, CtaBanner, SocialLinks } from "@/components/site/sections";
 
@@ -21,10 +22,11 @@ export function Minimal(d: SiteData) {
         <img src={d.hero} alt={d.name} className="mt-14 aspect-[21/9] w-full object-cover" />
       </header>
 
-      <AboutSection d={d} s={skin} />
-      <ClassesShowcase d={d} s={skin} />
-
-      {/* This week */}
+      {(() => {
+        const blocks: Record<string, React.ReactNode> = {
+          about: <AboutSection d={d} s={skin} />,
+          classes: <ClassesShowcase d={d} s={skin} />,
+          schedule: (<>{/* This week */}
       {d.enabled.schedule && d.sessions.length > 0 && (
         <section className="mx-auto max-w-[1040px] border-t border-black/10 px-6 py-14">
           <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-black/40">This week</div>
@@ -40,11 +42,9 @@ export function Minimal(d: SiteData) {
             ))}
           </div>
         </section>
-      )}
-
-      <TeamSection d={d} s={skin} />
-
-      {/* Packages */}
+      )}</>),
+          team: <TeamSection d={d} s={skin} />,
+          pricing: (<>{/* Packages */}
       {d.enabled.pricing && d.packages.length > 0 && (
         <section className="mx-auto max-w-[1040px] px-6 py-14">
           <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-black/40">Pricing</div>
@@ -58,20 +58,20 @@ export function Minimal(d: SiteData) {
             ))}
           </div>
         </section>
-      )}
-
-      <Testimonials d={d} s={skin} />
-
-      {/* Gallery */}
+      )}</>),
+          testimonials: <Testimonials d={d} s={skin} />,
+          gallery: (<>{/* Gallery */}
       {d.enabled.gallery && (
         <section className="mx-auto grid max-w-[1040px] grid-cols-3 gap-px px-6 pb-14">
           {d.gallery.slice(0, 3).map((g) => (
             <img key={g} src={g} alt="" loading="lazy" className="aspect-square w-full object-cover" />
           ))}
         </section>
-      )}
-
-      <FaqSection d={d} s={skin} />
+      )}</>),
+          faq: <FaqSection d={d} s={skin} />,
+        };
+        return d.order.map((id) => <React.Fragment key={id}>{blocks[id]}</React.Fragment>);
+      })()}
       <CtaBanner d={d} s={skin} />
 
       {/* Contact + map */}

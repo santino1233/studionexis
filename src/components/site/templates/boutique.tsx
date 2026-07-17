@@ -1,3 +1,4 @@
+import React from "react";
 import type { SiteData, SiteSkin } from "@/components/site/types";
 import { AboutSection, ClassesShowcase, TeamSection, Testimonials, FaqSection, CtaBanner, SocialLinks } from "@/components/site/sections";
 
@@ -31,10 +32,11 @@ export function Boutique(d: SiteData) {
         </div>
       </header>
 
-      <AboutSection d={d} s={skin} />
-      <ClassesShowcase d={d} s={skin} />
-
-      {/* This week */}
+      {(() => {
+        const blocks: Record<string, React.ReactNode> = {
+          about: <AboutSection d={d} s={skin} />,
+          classes: <ClassesShowcase d={d} s={skin} />,
+          schedule: (<>{/* This week */}
       {d.enabled.schedule && d.sessions.length > 0 && (
         <section className="border-y" style={{ borderColor: "#2A241D14", background: "#F4EDE2" }}>
           <div className="mx-auto max-w-[1080px] px-6 py-16">
@@ -51,11 +53,9 @@ export function Boutique(d: SiteData) {
             </div>
           </div>
         </section>
-      )}
-
-      <TeamSection d={d} s={skin} />
-
-      {/* Packages */}
+      )}</>),
+          team: <TeamSection d={d} s={skin} />,
+          pricing: (<>{/* Packages */}
       {d.enabled.pricing && d.packages.length > 0 && (
         <section className="mx-auto max-w-[1080px] px-6 py-16">
           <h2 className="text-center font-serif text-[30px] font-medium">Packages</h2>
@@ -70,11 +70,9 @@ export function Boutique(d: SiteData) {
             ))}
           </div>
         </section>
-      )}
-
-      <Testimonials d={d} s={skin} />
-
-      {/* Gallery */}
+      )}</>),
+          testimonials: <Testimonials d={d} s={skin} />,
+          gallery: (<>{/* Gallery */}
       {d.enabled.gallery && (
         <section className="mx-auto max-w-[1080px] px-6 py-16">
           <div className="grid grid-cols-3 gap-3">
@@ -83,9 +81,11 @@ export function Boutique(d: SiteData) {
             ))}
           </div>
         </section>
-      )}
-
-      <FaqSection d={d} s={skin} />
+      )}</>),
+          faq: <FaqSection d={d} s={skin} />,
+        };
+        return d.order.map((id) => <React.Fragment key={id}>{blocks[id]}</React.Fragment>);
+      })()}
       <CtaBanner d={d} s={skin} />
 
       {/* Contact + map */}

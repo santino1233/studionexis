@@ -57,6 +57,7 @@ export default async function StudioSite({ params, searchParams }: {
     testimonials?: SiteQuote[];
     faqs?: SiteFaq[];
     sections?: Partial<Record<SectionId, boolean>>;
+    sectionOrder?: SectionId[];
     teamBios?: Record<string, { bio?: string; photo?: string; hidden?: boolean }>;
   };
   const fmt = moneyFormatter(tenant.currency);
@@ -90,10 +91,10 @@ export default async function StudioSite({ params, searchParams }: {
     facebook: w.facebook ?? "",
     tiktok: w.tiktok ?? "",
     hours: w.hours ?? "",
-    hero: w.heroImage || "/studio/hero.jpg",
+    hero: w.heroImage || "/studio-neutral/hero.svg",
     gallery: w.galleryImages?.length
       ? w.galleryImages
-      : ["gallery1", "gallery2", "gallery3", "gallery4"].map((g) => `/studio/${g}.jpg`),
+      : ["gallery1", "gallery2", "gallery3", "gallery4"].map((g) => `/studio-neutral/${g}.svg`),
     mapSrc: mapEmbedSrc(w.mapUrl, w.address, tenant.name),
     packages: packages.map((p) => ({ name: p.name, price: fmt.format(Number(p.price)), credits: p.credits, validityDays: p.validityDays })),
     sessions: sessions.map((s) => {
@@ -127,6 +128,11 @@ export default async function StudioSite({ params, searchParams }: {
       { q: "What's the cancellation policy?", a: `Life happens! Cancel at least ${cancelHours} hour${cancelHours === 1 ? "" : "s"} before class starts and your credit is returned automatically.` },
     ],
     enabled: Object.fromEntries(SECTION_IDS.map((id) => [id, w.sections?.[id] ?? true])) as Record<SectionId, boolean>,
+    order: (() => {
+      const base = ["about", "classes", "schedule", "team", "pricing", "testimonials", "gallery", "faq"] as SectionId[];
+      const saved = (w.sectionOrder ?? []).filter((id) => base.includes(id));
+      return [...saved, ...base.filter((id) => !saved.includes(id))];
+    })(),
     bookHref: `/book/${slug}`,
     portalHref: `/book/${slug}/account`,
   };

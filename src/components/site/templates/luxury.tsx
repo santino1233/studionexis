@@ -1,3 +1,4 @@
+import React from "react";
 import type { SiteData, SiteSkin } from "@/components/site/types";
 import { AboutSection, ClassesShowcase, TeamSection, Testimonials, FaqSection, CtaBanner, SocialLinks } from "@/components/site/sections";
 
@@ -23,10 +24,11 @@ export function Luxury(d: SiteData) {
         </div>
       </header>
 
-      <AboutSection d={d} s={skin} />
-      <ClassesShowcase d={d} s={skin} />
-
-      {/* Schedule */}
+      {(() => {
+        const blocks: Record<string, React.ReactNode> = {
+          about: <AboutSection d={d} s={skin} />,
+          classes: <ClassesShowcase d={d} s={skin} />,
+          schedule: (<>{/* Schedule */}
       {d.enabled.schedule && d.sessions.length > 0 && (
         <section className="mx-auto max-w-[1100px] px-6 py-20">
           <div className="mb-10 flex items-end justify-between">
@@ -45,11 +47,9 @@ export function Luxury(d: SiteData) {
             ))}
           </div>
         </section>
-      )}
-
-      <TeamSection d={d} s={skin} />
-
-      {/* Gallery strip */}
+      )}</>),
+          team: <TeamSection d={d} s={skin} />,
+          pricing: (<>{/* Gallery strip */}
       {d.enabled.gallery && (
         <section className="grid grid-cols-2 gap-1 md:grid-cols-4">
           {d.gallery.slice(0, 4).map((g) => (
@@ -73,10 +73,13 @@ export function Luxury(d: SiteData) {
             ))}
           </div>
         </section>
-      )}
-
-      <Testimonials d={d} s={skin} />
-      <FaqSection d={d} s={skin} />
+      )}</>),
+          testimonials: <Testimonials d={d} s={skin} />,
+          gallery: null,
+          faq: <FaqSection d={d} s={skin} />,
+        };
+        return d.order.map((id) => <React.Fragment key={id}>{blocks[id]}</React.Fragment>);
+      })()}
       <CtaBanner d={d} s={skin} />
 
       {/* Contact + map */}

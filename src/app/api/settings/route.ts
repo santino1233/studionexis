@@ -147,6 +147,10 @@ export async function POST(req: Request) {
       },
     });
   }
+  const nextRaw = String(form.get("next") ?? "");
+  if (nextRaw.startsWith("/") && !nextRaw.startsWith("//")) {
+    return NextResponse.redirect(externalUrl(req, nextRaw), 303);
+  }
   let tab = "";
   try { const r = req.headers.get("referer"); tab = r ? new URL(r).searchParams.get("tab") ?? "" : ""; } catch {}
   return NextResponse.redirect(externalUrl(req, `/settings?${tab ? `tab=${encodeURIComponent(tab)}&` : ""}saved=1`), 303);

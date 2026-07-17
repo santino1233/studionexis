@@ -19,6 +19,8 @@ export async function POST(req: Request) {
 
   const form = await req.formData();
   const kind = String(form.get("kind") ?? "");
+  const nextRaw = String(form.get("next") ?? "");
+  const nextOk = nextRaw.startsWith("/") && !nextRaw.startsWith("//") ? nextRaw : null;
   const tenant = await db.tenant.findUniqueOrThrow({ where: { id: auth.tenantId } });
   const site = (tenant.website ?? {}) as Site;
 
@@ -92,5 +94,5 @@ export async function POST(req: Request) {
     site.galleryImages = [...(site.galleryImages ?? []), ...saved].slice(0, MAX_GALLERY);
   }
   await db.tenant.update({ where: { id: tenant.id }, data: { website: site as Prisma.InputJsonValue } });
-  return NextResponse.redirect(externalUrl(req, "/settings?saved=1"), 303);
+  return NextResponse.redirect(externalUrl(req, nextOk ?? "/settings?saved=1"), 303);
 }

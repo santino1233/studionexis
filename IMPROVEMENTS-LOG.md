@@ -688,3 +688,10 @@
 - Per-instructor "On site / Hidden" toggle in the builder's team card (website.teamBios[id].hidden) — the public site filters accordingly.
 - Testimonials and FAQs are now unlimited: the builder always shows two blank "add another…" rows beyond what exists (parses up to 50), and the site renders all quotes instead of capping at three.
 - Verified live: hiding Mia removed her from the site (restore worked), 5 testimonials saved & the 5th rendered publicly, builder shows toggles + expanding rows.
+
+## 2026-07-17 — V8: Website revamp (Wave 14 COMPLETE)
+- Neutral defaults: five tasteful gradient-art SVGs (public/studio-neutral/) replace the owner's own studio photos as fallbacks for every tenant.
+- Section REORDER: all five templates refactored to render their middle sections (about/classes/schedule/team/pricing/testimonials/gallery/faq) from a per-studio order list (website.sectionOrder); builder gains a "Section order" card with ↑/↓ per section (disabled sections shown struck through). Verified: moving FAQ re-ordered the live page.
+- "Create my website" wizard at /website/setup: template pick → tagline/about → hero+gallery uploads → contact/socials → done ("Open my website"); reuses the real settings/media APIs via a safe `next` redirect param. Button in the builder header.
+- Verified live: all 5 templates 200 post-refactor with zero regressions, neutral hero on a photo-less studio, all wizard steps render.
+- GrapesJS-style drag-drop advanced editor noted as a future spike (guardrails required).

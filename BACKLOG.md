@@ -269,7 +269,7 @@ https://new.nexis.revsports.ca → commit → log → next.
       (Stripe-gated).
 - [x] V7 Website: per-instructor show/hide on the site; unlimited
       testimonials + FAQs in the builder.
-- [ ] V8 Website revamp: neutral default images (not the owner's studio
+- [x] V8 Website revamp: neutral default images (not the owner's studio
       photos), section add/remove/REORDER, "Create my website" setup
       wizard for new studios; scope GrapesJS-style advanced editor as a
       follow-up spike.

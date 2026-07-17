@@ -37,6 +37,7 @@ export type SiteData = {
   testimonials: SiteQuote[];
   faqs: SiteFaq[];
   enabled: Record<SectionId, boolean>;
+  order: SectionId[]; // middle-section order (contact/footer fixed)
   bookHref: string;
   portalHref: string;
 };
