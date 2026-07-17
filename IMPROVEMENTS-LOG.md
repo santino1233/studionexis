@@ -783,3 +783,6 @@
 
 ## 2026-07-17 — Overnight loop: App Store marketplace grouped by category
 - Now that apps are split into many individual entries, the "Browse the marketplace" popup groups results by category (Automation, Team alerts, Calendar, Marketing, Support, Payments, Messaging) with headers, preserving catalog order — matching the Pipedrive-style flow. Search still filters across all, then regroups. Also verified during this pass that uninstalling the Automation app correctly clears saved webhooks. Build clean, /apps 200.
+
+## 2026-07-17 — Overnight loop: fixed off-brand/broken reminder booking link
+- Bug (customer-facing): the 24h booking-reminder email linked "Manage your booking" to https://new.nexis.revsports.ca/book/<slug>/me — an internal admin host that returns a 307, not the studio's site. Fixed to publicSiteUrl(tenant, "/book/me") so it points at <slug>.nexis.revsports.ca/book/me (or the studio's custom domain). Verified the canonical path returns 200 and no other outbound message code contains new.nexis/legacy /s/ links.
