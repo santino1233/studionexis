@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { classFormats, difficultyLevels } from "@/lib/class-config";
 import { studioStripeConfig } from "@/lib/stripe";
 import { hasFeature } from "@/lib/features";
+import { publicSiteUrl } from "@/lib/site-url";
 
 export const dynamic = "force-dynamic";
 
@@ -148,7 +149,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
                 <div className="flex items-center justify-between">
                   <span className="flex gap-3 text-[12.5px]">
                     {templates.map(([id, name]) => (
-                      <a key={id} href={`/s/${tenant.slug}?preview=${id}`} target="_blank" className="font-bold text-brand hover:underline">{name}</a>
+                      <a key={id} href={publicSiteUrl(tenant, `/?preview=${id}`)} target="_blank" className="font-bold text-brand hover:underline">{name}</a>
                     ))}
                   </span>
                   <button className="rounded-[10px] bg-brand px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-brand-ink">Save design</button>
@@ -187,7 +188,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
             );
           })()}
           <div className="flex items-center justify-between">
-            <a href={`/s/${tenant.slug}`} target="_blank" className="text-[13px] font-bold text-brand hover:underline">View my website →</a>
+            <a href={publicSiteUrl(tenant)} target="_blank" className="text-[13px] font-bold text-brand hover:underline">View my website →</a>
             <button className="rounded-[10px] bg-brand px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-brand-ink">Save website</button>
           </div>
         </form>

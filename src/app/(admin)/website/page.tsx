@@ -4,6 +4,7 @@ import { Card, CardHeader } from "@/components/ui/card";
 import { db } from "@/lib/db";
 import { getCurrentTenant } from "@/lib/tenant";
 import { SECTION_IDS, SECTION_LABELS, TEMPLATE_META, type SectionId, type SiteFaq, type SiteQuote, type TemplateId } from "@/components/site/types";
+import { publicSiteUrl } from "@/lib/site-url";
 
 export const dynamic = "force-dynamic";
 
@@ -60,7 +61,7 @@ export default async function WebsiteBuilderPage({ searchParams }: { searchParam
           <span className="rounded-full bg-line-2 px-3 py-1.5 text-[11.5px] font-bold text-ink-2">Template: {TEMPLATE_META[template]?.name ?? template}</span>
           <Link href="/website/editor" className="rounded-[10px] border border-line-2 px-4 py-2.5 text-[13px] font-bold text-ink-2 hover:text-ink">🧱 Advanced editor</Link>
           <Link href="/website/setup" className="rounded-[10px] bg-ink px-4 py-2.5 text-[13px] font-bold text-canvas hover:opacity-90">✨ Create my website</Link>
-          <a href={`/s/${tenant.slug}`} target="_blank" className="inline-flex items-center gap-1.5 rounded-[10px] bg-brand px-4 py-2.5 text-[13px] font-bold text-white hover:bg-brand-ink">
+          <a href={publicSiteUrl(tenant)} target="_blank" className="inline-flex items-center gap-1.5 rounded-[10px] bg-brand px-4 py-2.5 text-[13px] font-bold text-white hover:bg-brand-ink">
             <ExternalLink className="size-3.5" /> Open my site
           </a>
         </div>
@@ -225,7 +226,7 @@ export default async function WebsiteBuilderPage({ searchParams }: { searchParam
         <div className="text-[12px] font-bold uppercase tracking-wider text-muted">Preview your content in every template</div>
         <div className="mt-2.5 flex flex-wrap gap-2">
           {Object.entries(TEMPLATE_META).map(([id, m]) => (
-            <a key={id} href={`/s/${tenant.slug}?preview=${id}`} target="_blank" className={`rounded-full border px-4 py-2 text-[12.5px] font-bold ${id === template ? "border-brand bg-brand-wash text-brand" : "border-line-2 text-ink-2 hover:text-ink"}`}>
+            <a key={id} href={publicSiteUrl(tenant, `/?preview=${id}`)} target="_blank" className={`rounded-full border px-4 py-2 text-[12.5px] font-bold ${id === template ? "border-brand bg-brand-wash text-brand" : "border-line-2 text-ink-2 hover:text-ink"}`}>
               {m.name}{id === template ? " · current" : ""}
             </a>
           ))}

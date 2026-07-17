@@ -743,3 +743,6 @@
 
 ## 2026-07-17 — Photo attachments in all chats
 - Added 📎 photo attachments to every chat surface: visitor↔studio widget, studio↔Nexis support panel, staff Inbox, and HQ Live Chat. New shared endpoint `/api/chat/upload` handles all three auth contexts (public visitor via slug, studio staff via session, HQ superadmin via tenantId), validates JPG/PNG/WebP ≤8 MB, and stores under the tenant's uploads folder (served publicly by /api/media). All four chat APIs now accept an optional `image` (validated to `/api/media/` paths), allow image-only messages, and show "📷 Photo" in list previews. Verified end-to-end live: visitor→studio, studio→Nexis (with image), HQ→studio reply (with image), image served 200, plus security (no-auth blocked, non-image type rejected).
+
+## 2026-07-17 — Canonical public URLs (studio.nexis.revsports.ca)
+- Fixed inconsistent booking-site URLs: some links pointed at app.nexis.revsports.ca/s/<slug>. New `lib/site-url.ts` publicSiteUrl() returns the canonical public origin (custom domain if set, else <slug>.nexis.revsports.ca); every "view/open my website" link (website builder, settings, setup wizard done step, sidebar card) now routes through it. Verified: 0 /s/ hrefs remain on admin pages, subdomain preview links resolve 200.

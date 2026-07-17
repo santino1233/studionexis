@@ -4,6 +4,7 @@ import { MobileNav } from "@/components/shell/mobile-nav";
 import { getCurrentTenant } from "@/lib/tenant";
 import { getSession } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { publicSiteUrl } from "@/lib/site-url";
 
 function PlanBanner({ status, trialEndsAt }: { status: string; trialEndsAt: Date | null }) {
   if (status === "TRIAL" && trialEndsAt) {
@@ -42,7 +43,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const supportUnread = await db.chatConversation.aggregate({ where: { tenantId: tenant.id, channel: "hq" }, _sum: { unreadVisitor: true } }).then((r) => r._sum.unreadVisitor ?? 0);
   return (
     <div className="nx-admin flex h-screen overflow-hidden bg-canvas text-ink">
-      <Sidebar slug={tenant.slug} role={role} chatUnread={chatUnread} supportUnread={supportUnread} />
+      <Sidebar slug={tenant.slug} role={role} chatUnread={chatUnread} supportUnread={supportUnread} siteUrl={publicSiteUrl(tenant)} />
       <MobileNav slug={tenant.slug} role={role} />
       <div className="flex min-w-0 flex-1 flex-col">
         {maint && <div className="border-b border-rose/20 bg-rose/5 px-6 py-2 text-center text-[12.5px] font-bold text-rose">🔧 {maint}</div>}

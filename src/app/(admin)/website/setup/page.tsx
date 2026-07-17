@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getCurrentTenant } from "@/lib/tenant";
 import { TEMPLATE_META, type TemplateId } from "@/components/site/types";
+import { publicSiteUrl } from "@/lib/site-url";
 
 export const dynamic = "force-dynamic";
 
@@ -135,7 +136,7 @@ export default async function SiteSetupWizard({ searchParams }: { searchParams: 
           <h2 className="mt-3 font-display text-[26px] font-extrabold tracking-tight text-ink">Your website is live!</h2>
           <p className="mt-2 text-[14px] text-muted">Fine-tune sections, testimonials, FAQs and your team anytime in the Website builder.</p>
           <div className="mt-6 flex flex-wrap justify-center gap-2.5">
-            <a href={`/s/${tenant.slug}`} target="_blank" className="rounded-xl bg-brand px-6 py-3 text-[13.5px] font-bold text-white hover:bg-brand-ink">Open my website ↗</a>
+            <a href={publicSiteUrl(tenant)} target="_blank" className="rounded-xl bg-brand px-6 py-3 text-[13.5px] font-bold text-white hover:bg-brand-ink">Open my website ↗</a>
             <Link href="/website" className="rounded-xl border border-line-2 px-6 py-3 text-[13.5px] font-bold text-ink-2 hover:text-ink">Open the builder</Link>
           </div>
           <div className="mx-auto mt-6 max-w-[420px] rounded-2xl border-2 border-brand/25 bg-brand-wash/40 p-5 text-left">
