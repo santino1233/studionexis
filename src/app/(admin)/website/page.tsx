@@ -58,6 +58,7 @@ export default async function WebsiteBuilderPage({ searchParams }: { searchParam
         </div>
         <div className="flex items-center gap-2">
           <span className="rounded-full bg-line-2 px-3 py-1.5 text-[11.5px] font-bold text-ink-2">Template: {TEMPLATE_META[template]?.name ?? template}</span>
+          <Link href="/website/editor" className="rounded-[10px] border border-line-2 px-4 py-2.5 text-[13px] font-bold text-ink-2 hover:text-ink">🧱 Advanced editor</Link>
           <Link href="/website/setup" className="rounded-[10px] bg-ink px-4 py-2.5 text-[13px] font-bold text-canvas hover:opacity-90">✨ Create my website</Link>
           <a href={`/s/${tenant.slug}`} target="_blank" className="inline-flex items-center gap-1.5 rounded-[10px] bg-brand px-4 py-2.5 text-[13px] font-bold text-white hover:bg-brand-ink">
             <ExternalLink className="size-3.5" /> Open my site

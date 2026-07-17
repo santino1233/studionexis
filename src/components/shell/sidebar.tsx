@@ -91,6 +91,10 @@ export function Sidebar({ mobile = false, slug = "", role = "OWNER", chatUnread 
       </nav>
 
       <div className="border-t border-line px-3 py-3">
+        <Link href="/support" className="mb-2 block rounded-2xl border border-line-2 bg-raised p-3 transition-transform hover:-translate-y-px">
+          <div className="text-[12.5px] font-bold text-ink">🧪 We&apos;re in beta</div>
+          <div className="mt-0.5 text-[11px] leading-snug text-muted">Spotted something off? We&apos;d love your feedback — <span className="font-bold text-brand">report a bug →</span></div>
+        </Link>
         <a href={`/s/${slug}`} target="_blank" className="mb-2 block rounded-2xl border border-brand/25 bg-gradient-to-br from-brand/[0.07] to-brand/[0.02] p-3 transition-transform hover:-translate-y-px">
           <div className="flex items-center gap-2 text-[13px] font-bold text-ink"><Globe className="size-4 text-brand" /> Your booking page</div>
           <div className="mt-1 text-[11.5px] text-muted">See what your clients see →</div>

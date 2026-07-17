@@ -8,7 +8,7 @@ import { externalUrl } from "@/lib/request-url";
 
 const ROOT = "/opt/nexis/uploads";
 const TYPES: Record<string, string> = { "image/jpeg": ".jpg", "image/png": ".png", "image/webp": ".webp" };
-const MAX_BYTES = 5 * 1024 * 1024;
+const MAX_BYTES = 12 * 1024 * 1024;
 const MAX_GALLERY = 8;
 
 type Site = { heroImage?: string; galleryImages?: string[] } & Record<string, unknown>;
@@ -21,6 +21,10 @@ export async function POST(req: Request) {
   const kind = String(form.get("kind") ?? "");
   const nextRaw = String(form.get("next") ?? "");
   const nextOk = nextRaw.startsWith("/") && !nextRaw.startsWith("//") ? nextRaw : null;
+  const fail = (code: string) => {
+    const target = nextOk ? `${nextOk}${nextOk.includes("?") ? "&" : "?"}error=${code}` : `/settings?error=${code}`;
+    return NextResponse.redirect(externalUrl(req, target), 303);
+  };
   const tenant = await db.tenant.findUniqueOrThrow({ where: { id: auth.tenantId } });
   const site = (tenant.website ?? {}) as Site;
 
@@ -74,13 +78,13 @@ export async function POST(req: Request) {
   }
 
   const files = form.getAll("photos").filter((f): f is File => f instanceof File && f.size > 0);
-  if (files.length === 0) return NextResponse.redirect(externalUrl(req, "/settings?error=nophoto"), 303);
+  if (files.length === 0) return fail("nophoto");
 
   await mkdir(path.join(ROOT, tenant.id), { recursive: true });
   const saved: string[] = [];
   for (const f of files.slice(0, MAX_GALLERY)) {
     const ext = TYPES[f.type];
-    if (!ext || f.size > MAX_BYTES) return NextResponse.redirect(externalUrl(req, "/settings?error=phototype"), 303);
+    if (!ext || f.size > MAX_BYTES) return fail("phototype");
     const name = `${kind === "hero" ? "hero" : "g"}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}${ext}`;
     await writeFile(path.join(ROOT, tenant.id, name), Buffer.from(await f.arrayBuffer()));
     saved.push(`/api/media/${tenant.id}/${name}`);

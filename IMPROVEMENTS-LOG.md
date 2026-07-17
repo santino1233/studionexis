@@ -726,3 +726,9 @@
 - New Inbox page for studio staff (reception+): live conversation list w/ unread counts, threaded reply panel, close/reopen, "Open client →" jump; sidebar Inbox item with unread badge.
 - Plumbing: ChatConversation model (capped 200 msgs), /api/public/chat (visitor, nx_vid cookie identity, rate-limited) + /api/chat (staff JSON), chat.message flows into the existing Slack/Discord/Telegram alert pipe, App Store "Live chat widget" card with on/off kill switch (default on).
 - Verified live: visitor→studio→visitor round trip with unread counters both directions, widget on both public surfaces, toggle disables/enables the API + bubble.
+
+## 2026-07-17 — Wave 17: uploads fixed, beta bug button, domain paywall, GrapesJS editor
+- **Image uploads fixed** (recharged bug): server never received their uploads — cap raised 5→12 MB (matches nginx), upload errors now redirect back to the wizard step with a clear banner ("use JPG, PNG or WebP up to 12 MB — iPhone HEIC isn't supported, export as JPG") instead of silently landing on /settings.
+- **🧪 Beta / report-a-bug card** in every studio sidebar → /support (feeds HQ Support Center); beta feedback note on the support page.
+- **Custom domain paywall**: Settings → Domain now shows a $12/mo unlock card until purchased (customFeatures `custom-domain`, counts into MRR, audited); website wizard's done step upsells "Get your own domain".
+- **Advanced editor (GrapesJS)**: /website/editor — open-source drag-and-drop builder with starter blocks; Save & publish stores sanitized HTML/CSS (scripts + on* handlers stripped) in website.custom and replaces the template on the public site; one click switches back to templates. Verified live round-trip on dev-studio.

@@ -19,7 +19,7 @@ export default async function SupportPage({ searchParams }: { searchParams: Prom
   return (
     <div className="mx-auto max-w-[1100px]">
       <h1 className="font-display text-[30px] font-extrabold tracking-tight text-ink">Support</h1>
-      <p className="mt-1 text-sm text-muted">Message the StudioNexis team — we usually reply within a few hours.</p>
+      <p className="mt-1 text-sm text-muted">Message the StudioNexis team — we usually reply within a few hours. <b className="text-ink-2">We&apos;re still in beta, so we&apos;d genuinely love your feedback on anything that feels off.</b></p>
       {ok && <div className="mt-4 rounded-xl border border-green/20 bg-green-wash px-3.5 py-2.5 text-[13px] font-medium text-green">Sent! We&apos;re on it.</div>}
       {error && <div className="mt-4 rounded-xl border border-rose/20 bg-rose/5 px-3.5 py-2.5 text-[13px] font-medium text-rose">Add a subject and a message.</div>}
 

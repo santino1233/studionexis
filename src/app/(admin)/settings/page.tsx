@@ -3,6 +3,7 @@ import { getCurrentTenant } from "@/lib/tenant";
 import { db } from "@/lib/db";
 import { classFormats, difficultyLevels } from "@/lib/class-config";
 import { studioStripeConfig } from "@/lib/stripe";
+import { hasFeature } from "@/lib/features";
 
 export const dynamic = "force-dynamic";
 
@@ -237,7 +238,28 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
       </Card>
       </>)}
 
-      {tab === "domain" && (<>
+      {tab === "domain" && !hasFeature(tenant, "custom-domain") && (<>
+      <Card className="mt-6">
+        <CardHeader eyebrow="Add-on" title="Custom domain" sub="Serve your website and booking on your own domain — yourstudio.com" />
+        <div className="p-6">
+          <div className="rounded-2xl border-2 border-brand/30 bg-brand-wash/40 p-6 text-center">
+            <div className="text-[36px]">🌐</div>
+            <h3 className="mt-2 font-display text-[20px] font-extrabold text-ink">Your own domain</h3>
+            <p className="mx-auto mt-1.5 max-w-[380px] text-[13.5px] leading-relaxed text-ink-2">
+              Look established: <b>yourstudio.com</b> instead of a subdomain. Automatic setup and free SSL included — just point your DNS and we do the rest.
+            </p>
+            <div className="mt-3 font-display text-[26px] font-extrabold text-ink">$12<span className="text-[14px] font-bold text-muted">/month</span></div>
+            <form method="post" action="/api/settings" className="mt-4">
+              <input type="hidden" name="section" value="unlock-domain" />
+              <button className="rounded-xl bg-brand px-8 py-3 text-[14px] font-bold text-white shadow-md hover:bg-brand-ink">Unlock custom domain</button>
+            </form>
+            <p className="mt-2.5 text-[11.5px] text-muted">Added to your subscription — cancel anytime from Plan &amp; Billing.</p>
+          </div>
+        </div>
+      </Card>
+      </>)}
+
+      {tab === "domain" && hasFeature(tenant, "custom-domain") && (<>
       <Card className="mt-5">
         <CardHeader eyebrow="Add-on" title="Custom domain" sub="Serve your website on your own domain" />
         <form method="post" action="/api/settings" className="space-y-4 p-6">

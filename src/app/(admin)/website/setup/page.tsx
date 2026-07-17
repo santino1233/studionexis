@@ -10,8 +10,8 @@ const STEPS = ["template", "words", "photos", "contact", "done"] as const;
 
 // "Create my website" wizard (Wave 14 V8) — new studios go template →
 // words → photos → contact and come out with a live site.
-export default async function SiteSetupWizard({ searchParams }: { searchParams: Promise<{ step?: string }> }) {
-  const { step: raw } = await searchParams;
+export default async function SiteSetupWizard({ searchParams }: { searchParams: Promise<{ step?: string; error?: string }> }) {
+  const { step: raw, error } = await searchParams;
   const tenant = await getCurrentTenant();
   const w = (tenant.website ?? {}) as Record<string, string>;
   const step = (STEPS as readonly string[]).includes(raw ?? "") ? (raw as (typeof STEPS)[number]) : "template";
@@ -80,6 +80,9 @@ export default async function SiteSetupWizard({ searchParams }: { searchParams: 
       {step === "photos" && (
         <div className="mt-6 space-y-4">
           <h2 className="text-[16px] font-bold text-ink">Photos</h2>
+          {error && <div className="rounded-xl border border-rose/20 bg-rose/5 px-3.5 py-2.5 text-[13px] font-medium text-rose">
+            {error === "phototype" ? "That file didn't work — use JPG, PNG or WebP up to 12 MB (iPhone HEIC isn't supported yet — export as JPG)." : "Pick a photo first, then hit Upload."}
+          </div>}
           <p className="text-[13px] text-muted">A hero shot makes the biggest difference. Until you upload, tasteful neutral art fills in.</p>
           <form method="post" action="/api/media/upload" encType="multipart/form-data" className="flex items-center gap-3 rounded-xl border border-line-2 p-4">
             <input type="hidden" name="kind" value="hero" />
@@ -134,6 +137,11 @@ export default async function SiteSetupWizard({ searchParams }: { searchParams: 
           <div className="mt-6 flex flex-wrap justify-center gap-2.5">
             <a href={`/s/${tenant.slug}`} target="_blank" className="rounded-xl bg-brand px-6 py-3 text-[13.5px] font-bold text-white hover:bg-brand-ink">Open my website ↗</a>
             <Link href="/website" className="rounded-xl border border-line-2 px-6 py-3 text-[13.5px] font-bold text-ink-2 hover:text-ink">Open the builder</Link>
+          </div>
+          <div className="mx-auto mt-6 max-w-[420px] rounded-2xl border-2 border-brand/25 bg-brand-wash/40 p-5 text-left">
+            <div className="text-[13.5px] font-extrabold text-ink">🌐 Make it truly yours — <span className="text-brand">yourstudio.com</span></div>
+            <p className="mt-1 text-[12.5px] leading-relaxed text-ink-2">Your site currently lives at {tenant.slug}.nexis.revsports.ca. Add a custom domain for <b>$12/mo</b> — automatic setup, free SSL.</p>
+            <Link href="/settings?tab=domain" className="mt-2.5 inline-block rounded-lg bg-brand px-4 py-2 text-[12.5px] font-bold text-white hover:bg-brand-ink">Get my domain →</Link>
           </div>
         </div>
       )}

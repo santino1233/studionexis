@@ -105,6 +105,16 @@ export async function POST(req: Request) {
         },
       },
     });
+  } else if (section === "unlock-domain") {
+    const prev = (tenant.policies ?? {}) as Record<string, unknown>;
+    const feats = (Array.isArray(prev.customFeatures) ? prev.customFeatures : []) as { id: string }[];
+    if (!feats.some((f) => f.id === "custom-domain")) {
+      feats.push({ id: "custom-domain", label: "Custom domain", price: 12, active: true } as never);
+      await db.tenant.update({ where: { id: tenant.id }, data: { policies: { ...prev, customFeatures: feats } } });
+      const { audit } = await import("@/lib/hq");
+      audit({ tenantId: tenant.id, actor: auth.name, role: auth.role, action: "addon-unlocked", detail: "custom-domain $12/mo" });
+    }
+    return NextResponse.redirect(externalUrl(req, "/settings?tab=domain&saved=1"), 303);
   } else if (section === "webhook-add") {
     const prev = (tenant.policies ?? {}) as Record<string, unknown>;
     const url = String(form.get("url") ?? "").trim();

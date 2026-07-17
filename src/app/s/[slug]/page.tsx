@@ -53,6 +53,19 @@ export default async function StudioSite({ params, searchParams }: {
   const tenant = await tenantBySlugOrDomain(slug);
   if (!tenant || tenant.status === "SUSPENDED") notFound();
 
+  const custom = ((tenant.website ?? {}) as { custom?: { html?: string; css?: string; enabled?: boolean } }).custom;
+  if (custom?.enabled && custom.html && preview !== "template") {
+    return (
+      <>
+        <TrackView slug={slug} />
+        <Pixels policies={tenant.policies} />
+        {custom.css ? <style dangerouslySetInnerHTML={{ __html: custom.css }} /> : null}
+        <div dangerouslySetInnerHTML={{ __html: custom.html }} />
+        <ChatWidget slug={slug} brand={tenant.brandColor || "#F97316"} studio={tenant.name} />
+      </>
+    );
+  }
+
   const w = (tenant.website ?? {}) as Record<string, string> & {
     galleryImages?: string[];
     why?: string[];
