@@ -8,7 +8,7 @@ import { CheckoutPanel } from "@/components/pos/checkout-panel";
 
 export const dynamic = "force-dynamic";
 
-const PX_PER_HOUR = 64;
+const PX_PER_HOUR = 84;
 
 const statusTone: Record<string, string> = {
   BOOKED: "bg-blue-wash text-blue",
@@ -154,10 +154,13 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
     const blocked = s.status === "BLOCKED";
     const completed = s.status === "COMPLETED";
     const active = s.bookings.filter((b) => b.status !== "WAITLIST").reduce((n, b) => n + b.qty, 0);
+    // Past class with attendees that was never settled — pulse until the
+    // receptionist checks everyone out and marks it completed (commission!).
+    const attention = s.status === "SCHEDULED" && s.startsAt < new Date() && active > 0;
     const tone = colorBy === "status"
       ? blocked ? "#E5484D" : completed ? "#22A565" : active >= s.capacity ? "#F97316" : "#3B82F6"
       : s.classType.color;
-    return { blocked, completed, active, tone };
+    return { blocked, completed, active, attention, tone };
   };
 
   return (
@@ -225,13 +228,13 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
         {view === "month" ? (
           /* ── MONTH VIEW ── */
           <div className="min-w-0 flex-1 overflow-x-auto rounded-2xl border border-line-2 bg-surface shadow-[var(--shadow-card)]">
-            <div className="grid min-w-[840px] grid-cols-7 border-b border-line-2">
+            <div className="grid min-w-[900px] grid-cols-7 border-b border-line-2">
               {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((dw) => (
                 <div key={dw} className="px-3 py-2 text-[10.5px] font-bold uppercase tracking-[0.1em] text-muted">{dw}</div>
               ))}
             </div>
             {monthGrid.map((row, r) => (
-              <div key={r} className="grid min-w-[840px] grid-cols-7 border-b border-line-2 last:border-0">
+              <div key={r} className="grid min-w-[900px] grid-cols-7 border-b border-line-2 last:border-0">
                 {row.map((dk) => {
                   const inMonth = dk.startsWith(monthKey);
                   const isToday = dk === todayKey;
@@ -244,7 +247,7 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
                       {list.slice(0, 4).map((s) => {
                         const st = blockStyle(s);
                         return (
-                          <div key={s.id} className="mb-0.5 truncate rounded border-l-2 px-1 text-[10px] font-semibold text-ink-2" style={{ borderColor: st.tone, background: `color-mix(in srgb, ${st.tone} 10%, var(--color-surface))` }}>
+                          <div key={s.id} className={`mb-0.5 truncate rounded border-l-2 px-1 text-[10px] font-semibold text-ink-2 ${st.attention ? "nx-attention" : ""}`} style={{ borderColor: st.tone, background: `color-mix(in srgb, ${st.tone} 10%, var(--color-surface))` }}>
                             {timeInTz(s.startsAt, tenant.timezone).replace(":00", "")} {s.classType.name} <span className="text-muted">{st.active}/{s.capacity}</span>
                           </div>
                         );
@@ -259,7 +262,7 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
         ) : (
           /* ── WEEK / DAY TIME GRID ── */
           <div className="min-w-0 flex-1 overflow-x-auto rounded-2xl border border-line-2 bg-surface shadow-[var(--shadow-card)]">
-            <div className={view === "day" ? "" : "min-w-[840px]"}>
+            <div className={view === "day" ? "" : "min-w-[1060px]"}>
               <div className="grid border-b border-line-2" style={{ gridTemplateColumns: `52px repeat(${days.length}, 1fr)` }}>
                 <div />
                 {days.map((d) => {
@@ -316,11 +319,11 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
                         const top = (startMin / 60 - minH) * PX_PER_HOUR;
                         const height = Math.max(40, (durMin / 60) * PX_PER_HOUR - 3);
                         const st = blockStyle(s);
-                        const names = s.bookings.filter((b) => b.status !== "WAITLIST").slice(0, view === "day" ? 6 : 2).map((b) => b.client.name.split(" ")[0]);
+                        const names = s.bookings.filter((b) => b.status !== "WAITLIST").slice(0, view === "day" ? 6 : 3).map((b) => b.client.name.split(" ")[0]);
                         const isSel = sel === s.id;
                         return (
                           <Link key={s.id} href={qs({ sel: isSel ? undefined : s.id })}
-                            className={`absolute inset-x-1 z-20 overflow-hidden rounded-lg border-l-[3px] px-2 py-1.5 transition-all hover:z-30 hover:shadow-md ${isSel ? "z-30 ring-2 ring-brand" : ""} ${st.blocked ? "opacity-80" : ""}`}
+                            className={`absolute inset-x-1 z-20 overflow-hidden rounded-lg border-l-[3px] px-2 py-1.5 transition-all hover:z-30 hover:shadow-md ${isSel ? "z-30 ring-2 ring-brand" : ""} ${st.blocked ? "opacity-80" : ""} ${st.attention ? "nx-attention" : ""}`}
                             style={{
                               top, height,
                               background: st.blocked
@@ -331,15 +334,15 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
                             }}>
                             <div className="truncate text-[10px] font-semibold text-muted">{timeInTz(s.startsAt, tenant.timezone)} – {timeInTz(s.endsAt, tenant.timezone)}</div>
                             <div className="truncate text-[11.5px] font-bold leading-tight" style={{ color: st.blocked ? "#E5484D" : st.tone }}>
-                              {st.blocked ? "🔒 " : st.completed ? "✓ " : !s.isPublic ? "🙈 " : ""}{s.classType.name}
+                              {st.blocked ? "🔒 " : st.completed ? "✓ " : st.attention ? "⚠ " : !s.isPublic ? "🙈 " : ""}{s.classType.name}
                             </div>
-                            {height > 56 && (
+                            {height > 48 && (
                               <div className="mt-0.5 flex items-center gap-1.5 text-[10px] font-semibold text-ink-2">
                                 {s.instructor && <span className="inline-flex items-center gap-1"><span className="grid size-3.5 place-items-center rounded-full text-[7px] font-bold text-white" style={{ background: st.tone }}>{s.instructor.name[0]}</span>{s.instructor.name.split(" ")[0]}</span>}
                                 <span className="text-muted">{st.active}/{s.capacity}</span>
                               </div>
                             )}
-                            {height > 84 && names.map((n) => (
+                            {height > 76 && names.map((n) => (
                               <div key={n} className="flex items-center gap-1 truncate text-[9.5px] text-muted"><span className="size-1 rounded-full" style={{ background: st.tone }} />{n}</div>
                             ))}
                           </Link>
@@ -370,6 +373,11 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
               </div>
               <Link href={qs({ sel: undefined })} className="grid size-8 place-items-center rounded-lg text-muted hover:bg-line-2 hover:text-ink"><X className="size-4" /></Link>
             </div>
+            {selected.status === "SCHEDULED" && selected.startsAt < new Date() && selActiveQty > 0 && (
+              <div className="border-b border-line-2 bg-amber-500/10 px-5 py-3 text-[12.5px] font-semibold text-amber-700 dark:text-amber-400">
+                ⚠ This class needs completing — check everyone in, take payment, then <b>Mark class completed</b> so the instructor gets paid.
+              </div>
+            )}
             <div className="space-y-1.5 border-b border-line-2 p-5 text-[13px] text-ink-2">
               <div>📅 {selected.startsAt.toLocaleDateString("en-US", { timeZone: tenant.timezone, weekday: "short", month: "short", day: "numeric", year: "numeric" })}</div>
               <div>🕐 {timeInTz(selected.startsAt, tenant.timezone)} – {timeInTz(selected.endsAt, tenant.timezone)}</div>
@@ -489,6 +497,7 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
           ))}
           <span className="ml-2 inline-flex items-center gap-1.5 text-[11.5px] font-semibold text-muted">✓ Completed</span>
           <span className="inline-flex items-center gap-1.5 text-[11.5px] font-semibold text-muted">🔒 Blocked</span>
+          <span className="inline-flex items-center gap-1.5 text-[11.5px] font-semibold text-amber-600"><span className="nx-attention inline-block size-2.5 rounded-full bg-amber-500/30" /> Needs completion</span>
           <span className="inline-flex items-center gap-1.5 text-[11.5px] font-semibold text-muted">🙈 Hidden from public</span>
         </div>
       )}

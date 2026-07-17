@@ -82,3 +82,10 @@ body {
     white-space: nowrap;
   }
 }
+
+/* "Needs completion" pulse — receptionist TODO signal (Wave 14 V1) */
+@keyframes nx-pulse-ring {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.55); }
+  55% { box-shadow: 0 0 0 7px rgba(245, 158, 11, 0); }
+}
+.nx-attention { animation: nx-pulse-ring 1.7s ease-out infinite; outline: 2px solid #f59e0b; outline-offset: -1px; }

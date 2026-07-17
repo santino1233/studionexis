@@ -245,7 +245,7 @@ https://new.nexis.revsports.ca → commit → log → next.
       cards, qty shown in admin bookings list + client history, misc.
 
 ## Wave 14 — Video spec 2 (nexis updates v1.mp4, 2026-07-17) — see VIDEO-SPEC-2.md
-- [ ] V1 Calendar depth: larger/denser week grid (more info per block:
+- [x] V1 Calendar depth: larger/denser week grid (more info per block:
       attendee count + names), and the "needs completion" pulse — past
       sessions with attendees that aren't completed/settled glow+pulse
       as the receptionist's TODO; legend entry.

@@ -647,3 +647,8 @@
 
 ## 2026-07-15 — Z1: GitHub connected (Wave 12 fully complete)
 - Repo github.com/santino1233/studionexis (private, deploy key w/ write access). Full 111-commit history pushed after a secrets audit: no env/secret files ever tracked; the one leak (.hq-path secret segment) neutralized by rotating HQ_PATH and untracking the file (HQ subdomain unaffected). post-commit hook auto-pushes every future commit.
+
+## 2026-07-17 — V1: Calendar depth + "needs completion" pulse (Wave 14)
+- The receptionist TODO signal from the old system: any PAST class still SCHEDULED with active attendees pulses (amber ring animation, ⚠ prefix) in week/day/month views, with a legend entry; selecting it shows an amber banner — "check everyone in, take payment, then Mark class completed so the instructor gets paid."
+- Denser, bigger grid: hour rows 64→84px, week min-width 840→1060px, attendee names in week blocks (3), counts show at smaller block heights.
+- Verified live: 5 real unsettled sessions this week render 18 pulse markers; rail banner present; wider grid served.
