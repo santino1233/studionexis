@@ -7,6 +7,7 @@ import { mapEmbedSrc, TEMPLATE_IDS, SECTION_IDS, type SiteData, type TemplateId,
 import { difficultyLabel } from "@/lib/class-config";
 import { TrackView } from "@/components/track-view";
 import { Pixels } from "@/components/pixels";
+import { ChatWidget } from "@/components/chat-widget";
 import { Boutique } from "@/components/site/templates/boutique";
 import { Luxury } from "@/components/site/templates/luxury";
 import { Minimal } from "@/components/site/templates/minimal";
@@ -140,5 +141,5 @@ export default async function StudioSite({ params, searchParams }: {
 
   const chosen = (preview && TEMPLATE_IDS.includes(preview as TemplateId) ? preview : w.template) as TemplateId;
   const Template = TEMPLATES[chosen] ?? Boutique;
-  return <><TrackView slug={slug} /><Pixels policies={tenant.policies} />{Template(data)}</>;
+  return <><TrackView slug={slug} /><Pixels policies={tenant.policies} />{Template(data)}<ChatWidget slug={slug} brand={tenant.brandColor || "#F97316"} studio={tenant.name} /></>;
 }

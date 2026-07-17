@@ -720,3 +720,9 @@
 - ROOT CAUSE: the wildcard *.nexis vhost carried a single-host certificate (studio-test) so every new subdomain showed a cert mismatch, and it routed to the old stack; new v2 slugs were never added to the exact carve-out list.
 - FIX: wildcard fallback now uses the real *.nexis.revsports.ca certificate, and /opt/nexis/scripts/subdomain-sync.sh (cron every 5 min) syncs every v2 tenant slug into the v2 nginx carve-out, reloading nginx only on change (log: /var/log/nexis-subdomains.log).
 - Verified: wizard-flow-studio.nexis.revsports.ca serves its v2 booking page over a valid wildcard cert; unknown subdomains present a valid cert; dev-studio and app unaffected.
+
+## 2026-07-17 — Native live chat (open-source Tidio alternative, built in)
+- Floating 💬 chat bubble on every studio website + booking page (brand-colored, greeting, optional visitor name, unread badge, 3-second polling). Visitors chat without an account; logged-in clients are auto-linked to their profile.
+- New Inbox page for studio staff (reception+): live conversation list w/ unread counts, threaded reply panel, close/reopen, "Open client →" jump; sidebar Inbox item with unread badge.
+- Plumbing: ChatConversation model (capped 200 msgs), /api/public/chat (visitor, nx_vid cookie identity, rate-limited) + /api/chat (staff JSON), chat.message flows into the existing Slack/Discord/Telegram alert pipe, App Store "Live chat widget" card with on/off kill switch (default on).
+- Verified live: visitor→studio→visitor round trip with unread counters both directions, widget on both public surfaces, toggle disables/enables the API + bubble.

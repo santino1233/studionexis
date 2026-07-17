@@ -120,6 +120,23 @@ export default async function AppsPage({ searchParams }: { searchParams: Promise
           </form>
         </Card>
 
+        {/* Live chat */}
+        <Card>
+          <div className="flex items-center justify-between pr-5">
+            <CardHeader eyebrow="Support" title="Live chat widget" sub="Tidio-style chat bubble on your website & booking pages" />
+            <Chip on={!apps.chatDisabled} yes="On" no="Off" />
+          </div>
+          <div className="space-y-2.5 p-5 pt-0">
+            <p className="text-[13px] text-muted">Visitors message you from the 💬 bubble; you reply from <a href="/inbox" className="font-bold text-brand hover:underline">Inbox</a>. Pipe alerts to Slack/Telegram above.</p>
+            <form method="post" action="/api/settings">
+              <input type="hidden" name="section" value="apps" />
+              <input type="hidden" name="chatToggle" value={apps.chatDisabled ? "on" : "off"} />
+              <input type="hidden" name="next" value="/apps?saved=1" />
+              <button className={save}>{apps.chatDisabled ? "Turn chat on" : "Turn chat off"}</button>
+            </form>
+          </div>
+        </Card>
+
         {/* Payments + SMS status cards */}
         <Card>
           <div className="flex items-center justify-between pr-5">

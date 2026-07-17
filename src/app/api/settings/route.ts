@@ -136,6 +136,7 @@ export async function POST(req: Request) {
       };
     }
     if (String(form.get("regenIcal")) === "1") apps.icalToken = randomBytes(12).toString("hex");
+    if (form.has("chatToggle")) apps.chatDisabled = String(form.get("chatToggle")) === "off" ? true : undefined;
     await db.tenant.update({ where: { id: tenant.id }, data: { policies: { ...prev, apps } } });
   } else if (section === "apikey") {
     const act = String(form.get("action"));

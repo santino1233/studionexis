@@ -42,7 +42,7 @@ const groups: Group[] = [
   ]},
 ];
 
-export function Sidebar({ mobile = false, slug = "", role = "OWNER" }: { mobile?: boolean; slug?: string; role?: string }) {
+export function Sidebar({ mobile = false, slug = "", role = "OWNER", chatUnread = 0 }: { mobile?: boolean; slug?: string; role?: string; chatUnread?: number }) {
   const pathname = usePathname();
   const visible = groups
     .map((g) => ({
@@ -79,6 +79,7 @@ export function Sidebar({ mobile = false, slug = "", role = "OWNER" }: { mobile?
                 >
                   <it.icon className={cn("size-[19px]", active ? "text-brand" : "opacity-85")} />
                   {it.label}
+                  {it.href === "/inbox" && chatUnread > 0 && <span className="ml-auto rounded-full bg-brand px-1.5 py-0.5 text-[10px] font-bold text-white">{chatUnread}</span>}
                 </Link>
               );
             })}

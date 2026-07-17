@@ -49,6 +49,7 @@ model Tenant {
   timeBlocks     TimeBlock[]
   pageViews      PageView[]
   supportTickets SupportTicket[]
+  chats          ChatConversation[]
 }
 
 enum UserRole {
@@ -494,4 +495,24 @@ model GlobalSetting {
   key       String   @id
   value     Json
   updatedAt DateTime @updatedAt
+}
+
+// Native live chat — Tidio-style visitor ↔ studio messaging (2026-07-17).
+model ChatConversation {
+  id            String   @id @default(cuid())
+  tenantId      String
+  tenant        Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  visitorId     String // nx_vid cookie
+  clientId      String? // linked once the visitor is a known client
+  name          String?
+  contact       String? // email/phone the visitor leaves
+  status        String   @default("OPEN") // OPEN | CLOSED
+  messages      Json     @default("[]") // [{from:"visitor"|"studio", name, text, at}]
+  unreadStudio  Int      @default(0)
+  unreadVisitor Int      @default(0)
+  lastMessageAt DateTime @default(now())
+  createdAt     DateTime @default(now())
+
+  @@index([tenantId, lastMessageAt])
+  @@index([tenantId, visitorId])
 }

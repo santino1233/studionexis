@@ -38,9 +38,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     return aud.all || (aud.trial && tenant.status === "TRIAL") || aud.plans?.includes(tenant.plan) || aud.tenantIds?.includes(tenant.id);
   }).slice(0, 2);
   const maint = ((gset?.value ?? {}) as { maintenanceBanner?: string }).maintenanceBanner;
+  const chatUnread = await db.chatConversation.aggregate({ where: { tenantId: tenant.id, status: "OPEN" }, _sum: { unreadStudio: true } }).then((r) => r._sum.unreadStudio ?? 0);
   return (
     <div className="nx-admin flex h-screen overflow-hidden bg-canvas text-ink">
-      <Sidebar slug={tenant.slug} role={role} />
+      <Sidebar slug={tenant.slug} role={role} chatUnread={chatUnread} />
       <MobileNav slug={tenant.slug} role={role} />
       <div className="flex min-w-0 flex-1 flex-col">
         {maint && <div className="border-b border-rose/20 bg-rose/5 px-6 py-2 text-center text-[12.5px] font-bold text-rose">🔧 {maint}</div>}

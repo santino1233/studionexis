@@ -11,6 +11,7 @@ export type AppsConfig = {
   telegramToken?: string;
   telegramChatId?: string;
   icalToken?: string;
+  chatDisabled?: boolean;
   pixels?: { ga4?: string; meta?: string; tiktok?: string };
 };
 
@@ -40,6 +41,8 @@ function chatLine(event: string, data: Record<string, unknown>): string {
       return `👋 New client: ${data.name}`;
     case "order.paid":
       return `💰 Sale: ${data.total} ${data.currency} · ${data.label}`;
+    case "chat.message":
+      return `💬 Live chat from ${data.clientName}: "${data.text}"`;
     default:
       return `${event}`;
   }
