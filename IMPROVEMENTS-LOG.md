@@ -789,3 +789,7 @@
 
 ## 2026-07-18 — Overnight loop: chat upload respects disabled chat
 - Consistency/hardening bug: when a studio turned Live chat off, the visitor chat POST correctly returned 403 but /api/chat/upload still accepted image uploads (200) into the studio's uploads folder. Fixed the visitor path to check appsOf(tenant.policies).chatDisabled and return 403, matching the message endpoint. Verified live: upload → 403 when disabled, 200 when re-enabled.
+
+## 2026-07-18 — Overnight loop: verified location-switch isolation + HQ franchise tags
+- Security check: confirmed the location switcher rejects cross-organization jumps — an owner attempting to switch to a tenant outside their own org stays put (session unchanged), while same-org switches work. No vulnerability.
+- Improvement: the HQ Studios list now tags franchise locations with a "🏢 <locationLabel>" badge (any tenant with an organizationId), so super-admin can tell at a glance which studios are part of a multi-location account. Verified live (both dev-studio locations tagged).

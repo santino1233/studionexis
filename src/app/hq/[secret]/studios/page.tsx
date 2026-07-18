@@ -72,7 +72,7 @@ export default async function HqStudios({ params, searchParams }: {
               <tr key={t.id} className="border-b border-line-2 last:border-0 hover:bg-raised">
                 <td className="px-[14px] py-[12px]">
                   <Link href={`/t/${t.id}`} className="group block">
-                    <span className="text-[13.5px] font-semibold text-ink group-hover:text-brand">{t.name}</span>
+                    <span className="text-[13.5px] font-semibold text-ink group-hover:text-brand">{t.name}{t.organizationId && <span className="ml-1.5 rounded-full bg-purple-wash px-1.5 py-0.5 text-[9.5px] font-bold text-purple">🏢 {t.locationLabel || "location"}</span>}</span>
                     <span className="block text-[11px] text-muted">/{t.slug}{hqTagsOf(t).tags?.length ? ` · ${hqTagsOf(t).tags!.join(", ")}` : ""}</span>
                   </Link>
                 </td>
