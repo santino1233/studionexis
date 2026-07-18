@@ -807,3 +807,6 @@
 ## 2026-07-18 — Overnight loop: HQ health pass + canonical client-identity helper
 - HQ portal crawl: all 16 sections return 200, no user-visible errors (the "undefined" tokens were Next.js RSC flight-payload markers, not shown to users), and all ACTIVE studios have valid plans so MRR is correct ($0 rows are trials). No bug.
 - Phase 3 groundwork: extracted the cross-tenant client-identity match (phone/email within an org) into one reusable helper lib/org.ts:linkedClientOr() and refactored the client profile's "Credits at other locations" card to use it — single source of truth for cross-location lookups, reducing inconsistency risk when redemption is built. Verified live: card still shows a sibling location's package.
+
+## 2026-07-18 — Overnight loop: booking confirmation email uses canonical URL
+- Same off-brand/broken link as the reminder bug lived in the booking CONFIRMATION email ("Manage your bookings: https://new.nexis.revsports.ca/book/<slug>/me"). Fixed to publicSiteUrl(tenant, "/book/me") — <slug>.nexis.revsports.ca (or custom domain). Full-repo sweep confirms zero new.nexis.revsports.ca links remain in outbound code. Build clean.
