@@ -876,3 +876,7 @@
 ## 2026-07-18 — Overnight loop: team/voucher audit + App Store count
 - Audited staff/team management (OWNER-only, role can't escalate to OWNER/SUPERADMIN, password ≥8, bcrypt, duplicate-email caught → clear /team error messages) and vouchers (value/percent-cap/maxUses validated on create; checkout caps discount at total & increments usedCount atomically). Both solid — no bugs.
 - Improvement: App Store header now shows the live integration count ("19 integrations and counting") from APP_CATALOG. Verified live.
+
+## 2026-07-18 — App Store: official brand logos (simple-icons)
+- Replaced hand-drawn logo approximations with OFFICIAL brand marks for 14 apps, sourced from the simple-icons library (the standard curated set of official brand SVGs, used descriptively to indicate integration support): Zapier, Make, Discord, Telegram, Google Chat, Google Calendar, Google Analytics, Google Tag Manager, Meta, TikTok, Pinterest, Snapchat, Zalo, Stripe — each rendered in its official brand colour on a clean tile, self-contained (no external requests, CSP-safe). Slack, Microsoft Teams, Twilio and Microsoft Clarity opted out of simple-icons, so they keep tidy geometric marks; Live Chat uses our own. Verified live: official glyphs + brand hex render in the App Store panels.
+- Also confirmed public multi-seat booking consumes the correct number of credits (creditsLeft >= qty, decrement qty) — no under-charge.
