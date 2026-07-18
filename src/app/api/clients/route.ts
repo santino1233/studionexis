@@ -9,12 +9,15 @@ export async function POST(req: Request) {
   if (!session) return NextResponse.redirect(externalUrl(req, "/login"), 303);
 
   const form = await req.formData();
+  const backRaw = String(form.get("back") ?? "");
+  const back = backRaw.startsWith("/") && !backRaw.startsWith("//") ? backRaw : null;
+  const withErr = (code: string) => back ? `${back}${back.includes("?") ? "&" : "?"}error=${code}` : `/clients/new?error=${code}`;
   const name = String(form.get("name") ?? "").trim();
-  if (!name) return NextResponse.redirect(externalUrl(req, "/clients/new?error=name"), 303);
+  if (!name) return NextResponse.redirect(externalUrl(req, withErr("name")), 303);
 
   const tenant = await db.tenant.findUniqueOrThrow({ where: { id: session.tenantId } });
   const limit = await checkClientLimit(tenant);
-  if (!limit.ok) return NextResponse.redirect(externalUrl(req, "/clients/new?error=limit"), 303);
+  if (!limit.ok) return NextResponse.redirect(externalUrl(req, withErr("limit")), 303);
 
   const tags = String(form.get("tags") ?? "")
     .split(",").map((t) => t.trim()).filter(Boolean).slice(0, 8);
@@ -33,5 +36,5 @@ export async function POST(req: Request) {
       birthday,
     },
   });
-  return NextResponse.redirect(externalUrl(req, `/clients/${client.id}`), 303);
+  return NextResponse.redirect(externalUrl(req, back ? `${back}${back.includes("?") ? "&" : "?"}added=client` : `/clients/${client.id}`), 303);
 }

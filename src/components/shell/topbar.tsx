@@ -1,11 +1,21 @@
 import Link from "next/link";
-import { Search, Plus, MapPin } from "lucide-react";
+import { Search, MapPin } from "lucide-react";
 import { getSession } from "@/lib/auth";
 import { getCurrentTenant } from "@/lib/tenant";
+import { db } from "@/lib/db";
+import { QuickAdd } from "@/components/shell/quick-add";
 
 export async function Topbar() {
   const session = await getSession();
   const tenant = await getCurrentTenant().catch(() => null);
+  const canQuickAdd = !!session && session.role !== "INSTRUCTOR";
+  const [classTypes, instructors] = tenant && canQuickAdd
+    ? await Promise.all([
+        db.classType.findMany({ where: { tenantId: tenant.id, active: true }, orderBy: { name: "asc" }, select: { id: true, name: true, durationMin: true } }),
+        db.user.findMany({ where: { tenantId: tenant.id, active: true, role: { in: ["INSTRUCTOR", "MANAGER", "OWNER"] } }, orderBy: { name: "asc" }, select: { id: true, name: true } }),
+      ])
+    : [[], []];
+  const today = tenant ? new Date().toLocaleDateString("en-CA", { timeZone: tenant.timezone }) : "";
   const date = new Date().toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
   const initial = (session?.name ?? "A").charAt(0).toUpperCase();
   return (
@@ -24,9 +34,7 @@ export async function Topbar() {
         />
       </form>
       <span className="hidden text-[13px] font-medium text-muted sm:block">{date}</span>
-      <Link href="/schedule/new" className="grid size-9 place-items-center rounded-full bg-brand text-white transition-colors hover:bg-brand-ink" aria-label="Add a class" title="Add a class">
-        <Plus className="size-[18px]" />
-      </Link>
+      {canQuickAdd && <QuickAdd classTypes={classTypes} instructors={instructors} today={today} />}
       <div className="grid size-9 place-items-center rounded-full bg-brand text-sm font-bold text-white" title={session?.name ?? ""}>{initial}</div>
     </header>
   );
