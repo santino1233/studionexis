@@ -1,4 +1,5 @@
 import { Card, CardHeader } from "@/components/ui/card";
+import { X } from "lucide-react";
 import { db } from "@/lib/db";
 import { assertHq } from "@/lib/hq";
 
@@ -28,7 +29,7 @@ export default async function HqKb({ params, searchParams }: { params: Promise<{
                 <span className="min-w-0"><b className="block truncate text-[13.5px] text-ink">{a.title}</b><span className="text-[11.5px] text-muted">{a.tags.join(", ") || "no tags"} · {a.updatedAt.toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span></span>
                 <span className="flex shrink-0 gap-1.5">
                   <a href={`/kb?edit=${a.id}`} className="rounded-lg bg-line-2 px-2.5 py-1 text-[11px] font-bold text-ink-2 hover:text-ink">Edit</a>
-                  <form method="post" action="/api/hq/ops"><input type="hidden" name="op" value="kb-delete" /><input type="hidden" name="id" value={a.id} /><input type="hidden" name="back" value="/kb" /><button className="rounded-lg bg-line-2 px-2 py-1 text-[11px] font-bold text-ink-2 hover:bg-rose/10 hover:text-rose">✕</button></form>
+                  <form method="post" action="/api/hq/ops"><input type="hidden" name="op" value="kb-delete" /><input type="hidden" name="id" value={a.id} /><input type="hidden" name="back" value="/kb" /><button className="rounded-lg bg-line-2 px-2 py-1 text-[11px] font-bold text-ink-2 hover:bg-rose/10 hover:text-rose"><X className="size-3" /></button></form>
                 </span>
               </li>
             ))}

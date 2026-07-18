@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Puzzle } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { db } from "@/lib/db";
 import { assertHq } from "@/lib/hq";
@@ -23,7 +24,7 @@ export default async function HqRequests({ params }: { params: Promise<{ secret:
             <div className="space-y-2">
               {items.filter((i) => i.r.status === st).map(({ t, r, idx }) => (
                 <div key={`${t.id}-${idx}`} className="rounded-xl border border-line-2 bg-surface p-3">
-                  {r.text.startsWith("App request:") && <span className="mb-1 inline-block rounded-full bg-brand-wash px-2 py-0.5 text-[9.5px] font-bold uppercase tracking-wide text-brand">🧩 App Store</span>}
+                  {r.text.startsWith("App request:") && <span className="mb-1 inline-block rounded-full bg-brand-wash px-2 py-0.5 text-[9.5px] font-bold uppercase tracking-wide text-brand"><Puzzle className="inline size-3 -mt-0.5" /> App Store</span>}
                   <p className="text-[12.5px] leading-relaxed text-ink">{r.text.startsWith("App request:") ? r.text.slice("App request:".length).trim() : r.text}</p>
                   <div className="mt-1.5 flex items-center justify-between">
                     <Link href={`/t/${t.id}`} className="text-[11px] font-bold text-brand hover:underline">{t.name}</Link>

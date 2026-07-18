@@ -1,4 +1,5 @@
 import { Card, CardHeader } from "@/components/ui/card";
+import { X } from "lucide-react";
 import { db } from "@/lib/db";
 import { assertHq } from "@/lib/hq";
 
@@ -25,7 +26,7 @@ export default async function HqFlags({ params }: { params: Promise<{ secret: st
             {flags.map((f) => (
               <li key={f.id} className="flex items-start justify-between gap-2 px-5 py-3">
                 <span><b className="font-mono text-[13px] text-ink">{f.id}</b><span className="block text-[12px] text-muted">{f.label} · {f.tenants.length ? f.tenants.join(", ") : "nobody yet"}</span></span>
-                <form method="post" action="/api/hq/ops"><input type="hidden" name="op" value="flag-save" /><input type="hidden" name="mode" value="delete" /><input type="hidden" name="fid" value={f.id} /><input type="hidden" name="back" value="/flags" /><button className="rounded-lg bg-line-2 px-2 py-1 text-[11px] font-bold text-ink-2 hover:bg-rose/10 hover:text-rose">✕</button></form>
+                <form method="post" action="/api/hq/ops"><input type="hidden" name="op" value="flag-save" /><input type="hidden" name="mode" value="delete" /><input type="hidden" name="fid" value={f.id} /><input type="hidden" name="back" value="/flags" /><button className="rounded-lg bg-line-2 px-2 py-1 text-[11px] font-bold text-ink-2 hover:bg-rose/10 hover:text-rose"><X className="size-3" /></button></form>
               </li>
             ))}
             {flags.length === 0 && <li className="px-5 py-8 text-center text-sm text-muted">No flags yet.</li>}

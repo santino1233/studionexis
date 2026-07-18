@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Bug } from "lucide-react";
 import { notFound } from "next/navigation";
 import { Card, CardHeader } from "@/components/ui/card";
 import { db } from "@/lib/db";
@@ -21,7 +22,7 @@ export default async function HqTicket({ params }: { params: Promise<{ secret: s
     <div className="max-w-[1100px]">
       <Link href="/support" className="text-[12.5px] font-bold text-muted hover:text-ink">← Queue</Link>
       <div className="mt-1 flex flex-wrap items-center gap-2.5">
-        <h1 className="font-display text-[24px] font-extrabold tracking-tight">{t.kind === "bug" ? "🐛 " : ""}{t.subject}</h1>
+        <h1 className="font-display text-[24px] font-extrabold tracking-tight">{t.kind === "bug" ? <Bug className="mr-1 inline size-3.5 -mt-0.5 text-rose" /> : null}{t.subject}</h1>
         <Link href={`/t/${t.tenant.id}`} className="rounded-full bg-line-2 px-2.5 py-1 text-[11px] font-bold text-ink-2 hover:text-ink">{t.tenant.name}</Link>
       </div>
 

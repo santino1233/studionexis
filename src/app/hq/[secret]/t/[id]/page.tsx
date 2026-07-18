@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Building2, Check, Circle, VenetianMask, X } from "lucide-react";
 import { notFound } from "next/navigation";
 import { Card, CardHeader } from "@/components/ui/card";
 import { db } from "@/lib/db";
@@ -84,13 +85,13 @@ export default async function HqTenantPage({ params }: { params: Promise<{ secre
           {hqx.tags?.map((tg) => <span key={tg} className="rounded-full bg-purple-wash px-2.5 py-1 text-[10.5px] font-bold text-purple">{tg}</span>)}
           <form method="post" action={`/api/hq/${tenant.id}`} className="ml-auto">
             <input type="hidden" name="action" value="impersonate" />
-            <button className="rounded-xl bg-ink px-4 py-2 text-[12.5px] font-bold text-canvas hover:opacity-90">🎭 Log in as owner</button>
+            <button className="rounded-xl bg-ink px-4 py-2 text-[12.5px] font-bold text-canvas hover:opacity-90"><VenetianMask className="inline size-4 -mt-0.5" /> Log in as owner</button>
           </form>
         </div>
         {siblings.length > 1 && (
           <div className="mt-3 rounded-xl border border-purple/20 bg-purple-wash/40 px-4 py-2.5">
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[12.5px]">
-              <span className="font-bold text-purple">🏢 Franchise · {siblings.length} locations</span>
+              <span className="font-bold text-purple"><Building2 className="inline size-3.5 -mt-0.5" /> Franchise · {siblings.length} locations</span>
               <span className="text-muted">·</span>
               <span className="font-bold text-ink">${orgMrr}/mo combined</span>
               <span className="text-muted">·</span>
@@ -140,7 +141,7 @@ export default async function HqTenantPage({ params }: { params: Promise<{ secre
               <div className="space-y-3 p-5">
                 <div className="grid grid-cols-2 gap-1.5">
                   {onboarding.map(([label, ok]) => (
-                    <span key={label} className={`rounded-lg px-2.5 py-1.5 text-[11.5px] font-bold ${ok ? "bg-green-wash text-green" : "bg-line-2 text-muted"}`}>{ok ? "✓" : "○"} {label}</span>
+                    <span key={label} className={`rounded-lg px-2.5 py-1.5 text-[11.5px] font-bold ${ok ? "bg-green-wash text-green" : "bg-line-2 text-muted"}`}>{ok ? <Check className="inline size-3.5 -mt-0.5" /> : <Circle className="inline size-3.5 -mt-0.5" />} {label}</span>
                   ))}
                 </div>
                 <form method="post" action={`/api/hq/${tenant.id}`} className="space-y-2 border-t border-line-2 pt-3">
@@ -201,7 +202,7 @@ export default async function HqTenantPage({ params }: { params: Promise<{ secre
                     </span>
                     <span className="flex shrink-0 gap-1.5">
                       <form method="post" action={`/api/hq/${tenant.id}`}><input type="hidden" name="action" value="feature-toggle" /><input type="hidden" name="fid" value={f.id} /><input type="hidden" name="back" value={back} /><button className={`rounded-lg px-2.5 py-1.5 text-[11px] font-bold ${f.active ? "bg-green-wash text-green" : "bg-line-2 text-muted"}`}>{f.active ? "Active" : "Paused"}</button></form>
-                      <form method="post" action={`/api/hq/${tenant.id}`}><input type="hidden" name="action" value="feature-remove" /><input type="hidden" name="fid" value={f.id} /><input type="hidden" name="back" value={back} /><button className="rounded-lg bg-line-2 px-2.5 py-1.5 text-[11px] font-bold text-ink-2 hover:bg-rose/10 hover:text-rose">✕</button></form>
+                      <form method="post" action={`/api/hq/${tenant.id}`}><input type="hidden" name="action" value="feature-remove" /><input type="hidden" name="fid" value={f.id} /><input type="hidden" name="back" value={back} /><button className="rounded-lg bg-line-2 px-2.5 py-1.5 text-[11px] font-bold text-ink-2 hover:bg-rose/10 hover:text-rose"><X className="size-3" /></button></form>
                     </span>
                   </div>
                 ))}

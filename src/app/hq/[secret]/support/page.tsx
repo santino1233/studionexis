@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Bug } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { db } from "@/lib/db";
 import { assertHq } from "@/lib/hq";
@@ -38,8 +39,8 @@ export default async function HqSupport({ params, searchParams }: {
         {filt("/support", "Unresolved", !status)}
         {["OPEN", "PENDING", "WAITING", "RESOLVED"].map((s) => filt(`/support?status=${s}`, s.toLowerCase(), status === s))}
         <span className="mx-1 text-muted">·</span>
-        {filt("/support?kind=bug", "🐛 bugs", kind === "bug")}
-        {filt("/support?kind=support", "💬 support", kind === "support")}
+        {filt("/support?kind=bug", "Bugs", kind === "bug")}
+        {filt("/support?kind=support", "Support", kind === "support")}
       </div>
 
       <Card className="mt-5">
@@ -48,7 +49,7 @@ export default async function HqSupport({ params, searchParams }: {
             <li key={t.id}>
               <Link href={`/support/${t.id}`} className="flex items-center justify-between gap-3 px-5 py-3.5 hover:bg-raised">
                 <span className="min-w-0">
-                  <span className="block truncate text-[13.5px] font-semibold text-ink">{t.kind === "bug" ? "🐛 " : ""}{t.subject}</span>
+                  <span className="block truncate text-[13.5px] font-semibold text-ink">{t.kind === "bug" ? <Bug className="mr-1 inline size-3.5 -mt-0.5 text-rose" /> : null}{t.subject}</span>
                   <span className="text-[11.5px] text-muted">{t.tenant.name} · {t.updatedAt.toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })} · {(t.messages as unknown[]).length} msg{t.assignee ? ` · → ${t.assignee}` : ""}</span>
                 </span>
                 <span className="flex shrink-0 gap-1.5">
@@ -58,7 +59,7 @@ export default async function HqSupport({ params, searchParams }: {
               </Link>
             </li>
           ))}
-          {tickets.length === 0 && <li className="px-5 py-12 text-center text-sm text-muted">Queue clear. 🎉</li>}
+          {tickets.length === 0 && <li className="px-5 py-12 text-center text-sm text-muted">Queue clear.</li>}
         </ul>
       </Card>
     </div>

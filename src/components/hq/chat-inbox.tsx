@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Paperclip } from "lucide-react";
 
 // HQ inbox for live chats with studios (channel "hq"), 3s polling.
 type Msg = { from: "visitor" | "studio"; name: string; text: string; at: string; image?: string };
@@ -113,7 +114,7 @@ export function HqChatInbox() {
             </div>
             <div className="flex gap-2 border-t border-line-2 p-3">
               <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={(e) => e.target.files?.[0] && attach(e.target.files[0])} />
-              <button onClick={() => fileRef.current?.click()} disabled={busy} title="Attach a photo" className="grid size-11 shrink-0 place-items-center rounded-xl bg-line-2 text-[17px] text-ink-2 hover:text-ink disabled:opacity-50">{busy ? "…" : "📎"}</button>
+              <button onClick={() => fileRef.current?.click()} disabled={busy} title="Attach a photo" className="grid size-11 shrink-0 place-items-center rounded-xl bg-line-2 text-[17px] text-ink-2 hover:text-ink disabled:opacity-50">{busy ? "…" : <Paperclip className="size-4" />}</button>
               <input value={text} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => e.key === "Enter" && send()}
                 placeholder="Reply as Nexis Support…" className="h-11 flex-1 rounded-xl border border-line bg-surface px-3.5 text-sm outline-none focus:border-brand" />
               <button onClick={send} className="rounded-xl bg-brand px-5 text-sm font-bold text-white hover:bg-brand-ink">Send</button>

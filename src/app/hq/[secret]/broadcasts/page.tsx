@@ -1,4 +1,5 @@
 import { Card, CardHeader } from "@/components/ui/card";
+import { Info, Rocket, ShieldAlert, Wrench, X } from "lucide-react";
 import { db } from "@/lib/db";
 import { assertHq } from "@/lib/hq";
 
@@ -26,10 +27,10 @@ export default async function HqBroadcasts({ params }: { params: Promise<{ secre
             <textarea name="body" rows={3} required placeholder="Message shown to studios" className={field} />
             <div className="grid grid-cols-2 gap-2">
               <select name="kind" className={field}>
-                <option value="info">ℹ️ Product update</option>
-                <option value="maintenance">🔧 Maintenance</option>
-                <option value="security">🛡 Security notice</option>
-                <option value="release">🚀 Release</option>
+                <option value="info">Product update</option>
+                <option value="maintenance">Maintenance</option>
+                <option value="security">Security notice</option>
+                <option value="release">Release</option>
               </select>
               <input name="until" type="datetime-local" className={field} title="Show until (optional)" />
             </div>
@@ -52,10 +53,10 @@ export default async function HqBroadcasts({ params }: { params: Promise<{ secre
             {list.map((a) => (
               <li key={a.id} className="flex items-start justify-between gap-3 px-5 py-3">
                 <span>
-                  <span className="block text-[13px] font-bold text-ink">{a.kind === "maintenance" ? "🔧 " : a.kind === "security" ? "🛡 " : a.kind === "release" ? "🚀 " : "ℹ️ "}{a.title}</span>
+                  <span className="block text-[13px] font-bold text-ink">{(() => { const I = a.kind === "maintenance" ? Wrench : a.kind === "security" ? ShieldAlert : a.kind === "release" ? Rocket : Info; return <I className="mr-1 inline size-3.5 -mt-0.5" />; })()}{a.title}</span>
                   <span className="text-[11.5px] text-muted">{a.createdAt.toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}{a.activeUntil ? ` → until ${a.activeUntil.toLocaleDateString()}` : ""}</span>
                 </span>
-                <form method="post" action="/api/hq/ops"><input type="hidden" name="op" value="announce-delete" /><input type="hidden" name="id" value={a.id} /><input type="hidden" name="back" value="/broadcasts" /><button className="rounded-lg bg-line-2 px-2 py-1 text-[11px] font-bold text-ink-2 hover:bg-rose/10 hover:text-rose">✕</button></form>
+                <form method="post" action="/api/hq/ops"><input type="hidden" name="op" value="announce-delete" /><input type="hidden" name="id" value={a.id} /><input type="hidden" name="back" value="/broadcasts" /><button className="rounded-lg bg-line-2 px-2 py-1 text-[11px] font-bold text-ink-2 hover:bg-rose/10 hover:text-rose"><X className="size-3" /></button></form>
               </li>
             ))}
             {list.length === 0 && <li className="px-5 py-8 text-center text-sm text-muted">Nothing sent yet.</li>}
