@@ -857,3 +857,7 @@
 
 ## 2026-07-18 — Overnight loop: quick-add success toasts
 - Polished the new top-bar quick-add: adding a client/class/block dropped you back on the page with no confirmation. The create endpoints (/api/clients, /api/sessions, /api/timeblocks) now append ?added=client|class|block on success, and a universal QuickToast (mounted in the admin layout) shows a brief "✓ Client added / Class added to the calendar / Time blocked" toast client-side, then strips the param from the URL. Verified: all three endpoints return the added param; toast component builds & mounts. Test data cleaned up.
+
+## 2026-07-18 — Overnight loop: 2FA/App Store audit + logout cleanup
+- Audited recently-shipped surfaces: login-verify guards correct (no pending cookie → /login on both page & API); all 19 App Store catalog apps have a matching brand logo (no gray-default fallback); logout preserves the 30-day trusted-device cookie (feature intact); /developers#automation anchor still valid.
+- Fix: logout now also clears any half-finished login-verification (nx_2fa) cookie defensively, while keeping the trusted-device cookie so "save my info for 30 days" survives sign-out. Verified logout still redirects to /login.
