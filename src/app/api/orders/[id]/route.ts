@@ -21,7 +21,13 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     });
     if (!order) return;
 
-    await tx.order.update({ where: { id }, data: { status: "PAID", method: "cash" } });
+    // Membership-renewal orders already had their credits granted by the
+    // renewals cron (it resets the existing ClientPackage). Marking one paid
+    // must NOT create a second package — just record the collection.
+    const isRenewal = order.method === "membership";
+    await tx.order.update({ where: { id }, data: { status: "PAID", method: isRenewal ? "membership" : "cash" } });
+    if (isRenewal) return;
+
     for (const item of order.items) {
       if (item.kind !== "package" || !item.refId || !order.clientId) continue;
       const pkg = await tx.package.findFirst({ where: { id: item.refId, tenantId: auth.tenantId } });
