@@ -52,11 +52,8 @@ export async function POST(req: Request) {
       device: /mobile|iphone|android/i.test(ua) ? "mobile" : "desktop",
     },
   });
-  // Occasional retention sweep: keep ~6 months of views.
-  if (Math.random() < 0.01) {
-    await db.pageView.deleteMany({ where: { createdAt: { lt: new Date(Date.now() - 180 * 86400_000) } } }).catch(() => {});
-  }
-
+  // Retention (~6 months) is swept by the daily materialise cron, not here —
+  // a public beacon shouldn't trigger a table-wide delete.
   const res = NextResponse.json({ ok: true });
   res.headers.append("Set-Cookie", `nx_vid=${visitorId}; Path=/; Max-Age=31536000; SameSite=Lax`);
   return res;

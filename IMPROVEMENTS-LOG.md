@@ -821,3 +821,7 @@
 ## 2026-07-18 — Overnight loop: POS checkout verified + clearer out-of-stock message
 - Audited the POS/checkout money path: prices always come from the DB (never the client), vouchers check active/expiry/maxUses and increment usedCount atomically, product stock is checked and decremented in one transaction, and package purchases are correctly blocked without a client. Guards verified live (empty cart → "empty cart", package w/o client → "packages need a client"). No bug.
 - Improvement: the out-of-stock error now tells the front desk how many remain ("Yoga Mat — only 8 left in stock") instead of a generic "not enough stock". Verified live by over-buying.
+
+## 2026-07-18 — Overnight loop: analytics verified; page-view retention moved off the public beacon
+- Verified analytics: all queries are tenant-scoped (per-location for franchises), live-viewers/uniques/sources use proper groupBy. No bug.
+- Improvement: the ~6-month page-view retention sweep was running as a table-wide deleteMany from the public /api/public/track beacon on a 1% roll — a public request should never trigger a maintenance delete. Moved it to the daily materialise cron (returns a `pruned` count). Verified: beacon still 200 with no delete in the hot path; cron returns {"ok":true,"created":0,"pruned":0}.
