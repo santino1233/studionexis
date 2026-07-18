@@ -796,3 +796,7 @@
 
 ## 2026-07-18 — Overnight loop: clearer empty-schedule state on booking site
 - UX bug: a studio/location with ZERO upcoming classes showed "No classes match this day — try another" on every day, misleadingly implying other days had classes (hit especially on brand-new franchise locations whose sessions aren't materialised yet). Now when there are no upcoming public sessions at all, the booking page shows "No classes scheduled yet — check back soon! ✨"; the per-day message stays for studios that do have classes. Verified live: Westside (0 sessions) shows the new copy, Main (has sessions) does not.
+
+## 2026-07-18 — Overnight loop: franchise role-enforcement verified + location audit trail
+- Security check (no vuln): a STAFF user is fully blocked from franchise controls — GET /locations 307→/dashboard, POST /api/location/create makes no tenant, /api/location/switch and org-sync settings both rejected (303→login). Owner-only guards hold.
+- Improvement: location create and switch now write AuditLog entries (location-created / location-switched with from→to detail) — a trail for the owner/HQ and a prerequisite for the Phase 3 audited credit redemption. Verified live: switches recorded as "Westside → Main" etc.

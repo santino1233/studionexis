@@ -21,6 +21,9 @@ export async function POST(req: Request) {
   const owner = await db.user.findFirst({ where: { tenantId: target.id, email: me.email, active: true } });
   if (!owner) return NextResponse.redirect(externalUrl(req, "/locations?error=1"), 303);
 
+  const { audit } = await import("@/lib/hq");
+  audit({ tenantId: target.id, actor: me.name, role: "OWNER", action: "location-switched", detail: `${current.locationLabel || current.name} → ${target.locationLabel || target.name}` });
+
   await createSession({ userId: owner.id, tenantId: target.id, role: owner.role, name: owner.name });
   return NextResponse.redirect(externalUrl(req, "/dashboard"), 303);
 }

@@ -65,6 +65,9 @@ export async function POST(req: Request) {
     return t;
   });
 
+  const { audit } = await import("@/lib/hq");
+  audit({ tenantId: current.id, actor: me.name, role: auth.role, action: "location-created", detail: `${label} (${created.slug})` });
+
   if (switchNow) {
     const owner = await db.user.findFirst({ where: { tenantId: created.id, email: me.email, active: true } });
     if (owner) {
