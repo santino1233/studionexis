@@ -13,7 +13,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   const form = await req.formData();
   const action = String(form.get("action") ?? "");
 
-  const booking = await db.booking.findFirst({ where: { id, tenantId: auth.tenantId } });
+  const booking = await db.booking.findFirst({
+    where: { id, tenantId: auth.tenantId },
+    include: { client: { select: { name: true } }, session: { include: { classType: { select: { name: true } } } } },
+  });
   if (!booking) return NextResponse.redirect(externalUrl(req, "/bookings"), 303);
   const backRaw = String(form.get("back") ?? "");
   const back = backRaw.startsWith("/") && !backRaw.startsWith("//") ? backRaw : `/schedule/${booking.sessionId}`;
@@ -36,7 +39,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       // Every freed seat can promote one waitlisted client.
       if (wasActive) await promoteWaitlist(tx, auth.tenantId, booking.sessionId, booking.qty);
     });
-    emitEvent(auth.tenantId, "booking.cancelled", { bookingId: id, clientName: "", className: "" });
+    emitEvent(auth.tenantId, "booking.cancelled", { bookingId: id, clientName: booking.client?.name ?? "", className: booking.session?.classType?.name ?? "" });
   }
   return NextResponse.redirect(externalUrl(req, back), 303);
 }

@@ -868,3 +868,7 @@
 
 ## 2026-07-18 — Overnight loop: fix membership-renewal double-grant (money bug)
 - Real money bug: membership renewals create a PENDING order, but the renewals cron already grants the credits (it resets the client's existing ClientPackage). The invoices "mark paid" route then iterated the order's package items and created a BRAND-NEW ClientPackage — so marking a renewal invoice paid at the desk double-granted the membership (client got a second pack for free). Fixed /api/orders/[id]: renewal orders (method="membership") now just record the collection (flip to PAID, keep method) and skip credit-granting; only genuine reserved-online orders still grant. Verified live: marked a real PENDING renewal paid → order PAID|membership, client's package count unchanged (no duplicate). Non-renewal grant path untouched.
+
+## 2026-07-18 — Overnight loop: money-path audit + booking-cancel alert names
+- Audited more money logic: staff booking cancel refunds by qty and is idempotent (wasActive gate); promoteWaitlist consumes one credit per promotion and every waitlist entry is single-seat (public forces qty=1, staff uses Booking.qty default 1) — no overbooking / credit under-charge. All correct.
+- Fix: staff-side booking cancel fired the booking.cancelled webhook/chat alert with EMPTY client & class names ("❌ Cancelled: → "). Now includes both (fetched via booking.client + session.classType). Verified live with an echo server: alert reads "❌ Cancelled: <client> → <class>".
