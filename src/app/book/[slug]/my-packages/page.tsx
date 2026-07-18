@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Tag } from "lucide-react";
+import { PartyPopper, Tag } from "lucide-react";
 import { db } from "@/lib/db";
 import { tenantBySlugOrDomain } from "@/lib/public-tenant";
 import { getCustomerSession } from "@/lib/customer-auth";
@@ -50,7 +50,7 @@ export default async function MyPackagesPage({ params, searchParams }: {
       <main className="mx-auto max-w-[860px] px-4 py-8 sm:px-6">
         {ok === "paid" && (
           <div className="mb-5 rounded-2xl border border-green/20 bg-green-wash px-5 py-4 text-[14px] font-bold text-green">
-            🎉 Payment received — your credits are active and ready to book.
+            <PartyPopper className="inline size-4 -mt-0.5" /> Payment received — your credits are active and ready to book.
           </div>
         )}
         <div className="flex flex-wrap items-start justify-between gap-3">

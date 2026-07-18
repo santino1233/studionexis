@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { MessageCircle, Paperclip, Send, X } from "lucide-react";
 
 type Msg = { from: "visitor" | "studio"; name: string; text: string; at: string; image?: string };
 
@@ -81,12 +82,12 @@ export function ChatWidget({ slug, brand, studio }: { slug: string; brand: strin
               <div className="text-[14px] font-bold">{studio}</div>
               <div className="text-[11px] opacity-85">We usually reply within a few hours</div>
             </div>
-            <button onClick={() => setOpen(false)} className="grid size-7 place-items-center rounded-full bg-white/20 text-[13px]">✕</button>
+            <button onClick={() => setOpen(false)} className="grid size-7 place-items-center rounded-full bg-white/20"><X className="size-3.5" /></button>
           </div>
           <div className="flex-1 space-y-2 overflow-y-auto bg-[#f7f6f4] p-3">
             {messages.length === 0 && (
               <div className="rounded-2xl rounded-tl-sm bg-white px-3.5 py-2.5 text-[13px] text-[#333] shadow-sm">
-                👋 Hi! Ask us anything about classes, packages or bookings.
+                Hi! Ask us anything about classes, packages or bookings.
               </div>
             )}
             {messages.map((m, i) => (
@@ -105,15 +106,15 @@ export function ChatWidget({ slug, brand, studio }: { slug: string; brand: strin
           )}
           <div className="flex items-center gap-2 border-t border-black/10 p-2.5">
             <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={(e) => e.target.files?.[0] && attach(e.target.files[0])} />
-            <button onClick={() => fileRef.current?.click()} disabled={busy} title="Attach a photo" className="grid size-10 shrink-0 place-items-center rounded-xl bg-[#f1f0ee] text-[16px] text-[#666] disabled:opacity-50">{busy ? "…" : "📎"}</button>
+            <button onClick={() => fileRef.current?.click()} disabled={busy} title="Attach a photo" className="grid size-10 shrink-0 place-items-center rounded-xl bg-[#f1f0ee] text-[16px] text-[#666] disabled:opacity-50">{busy ? "…" : <Paperclip className="size-4" />}</button>
             <input value={text} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => e.key === "Enter" && send()}
               placeholder="Type a message…" className="h-10 flex-1 rounded-xl bg-[#f1f0ee] px-3.5 text-[13px] outline-none placeholder:text-[#999]" />
-            <button onClick={send} className="grid size-10 place-items-center rounded-xl text-white" style={{ background: brand }}>➤</button>
+            <button onClick={send} className="grid size-10 place-items-center rounded-xl text-white" style={{ background: brand }}><Send className="size-4" /></button>
           </div>
         </div>
       )}
       <button onClick={() => setOpen(!open)} className="relative grid size-14 place-items-center rounded-full text-[22px] text-white shadow-xl transition-transform hover:scale-105" style={{ background: brand }}>
-        {open ? "✕" : "💬"}
+        {open ? <X className="size-6" /> : <MessageCircle className="size-6" />}
         {!open && unread > 0 && <span className="absolute -right-1 -top-1 grid size-5 place-items-center rounded-full bg-red-500 text-[11px] font-bold">{unread}</span>}
       </button>
     </div>

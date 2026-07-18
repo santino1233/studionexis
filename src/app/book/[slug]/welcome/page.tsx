@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { tenantBySlugOrDomain } from "@/lib/public-tenant";
 import { getCustomerSession } from "@/lib/customer-auth";
+import { Cake, Hand, Sparkles, Stethoscope } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -46,7 +47,7 @@ export default async function WelcomePage({ params, searchParams }: {
       <main className="mx-auto flex w-full max-w-[520px] flex-1 flex-col justify-center px-6 py-10 text-center">
         {step === "welcome" && (
           <>
-            <div className="text-[40px]">👋</div>
+            <div className="text-brand"><Hand className="mx-auto size-9" /></div>
             <h1 className="mt-3 font-display text-[30px] font-extrabold tracking-tight text-ink">Welcome to {tenant.name}, {firstName}!</h1>
             <p className="mt-2 text-[14.5px] leading-relaxed text-muted">Your account is ready. A few quick questions help us take better care of you — every one is optional.</p>
             <Link href={nextHref} className="mx-auto mt-8 rounded-xl px-10 py-3.5 text-[14.5px] font-bold text-white" style={{ background: brand }}>Let&apos;s go →</Link>
@@ -55,7 +56,7 @@ export default async function WelcomePage({ params, searchParams }: {
 
         {step === "dob" && (
           <>
-            <div className="text-[40px]">🎂</div>
+            <div className="text-brand"><Cake className="mx-auto size-9" /></div>
             <h1 className="mt-3 font-display text-[26px] font-extrabold tracking-tight text-ink">When&apos;s your birthday?</h1>
             <p className="mt-2 text-[14px] text-muted">So the studio can celebrate with you.</p>
             <form method="post" action="/api/public/customer" className="mx-auto mt-7 w-full max-w-[320px] space-y-3">
@@ -72,7 +73,7 @@ export default async function WelcomePage({ params, searchParams }: {
 
         {step === "medical" && (
           <>
-            <div className="text-[40px]">🩺</div>
+            <div className="text-brand"><Stethoscope className="mx-auto size-9" /></div>
             <h1 className="mt-3 font-display text-[26px] font-extrabold tracking-tight text-ink">Anything we should know?</h1>
             <p className="mt-2 text-[14px] leading-relaxed text-muted">Injuries, pregnancy, conditions — shared only with your instructors so classes can be adapted for you.</p>
             <form method="post" action="/api/public/customer" className="mx-auto mt-7 w-full max-w-[380px] space-y-3">
@@ -89,7 +90,7 @@ export default async function WelcomePage({ params, searchParams }: {
 
         {step === "heard" && (
           <>
-            <div className="text-[40px]">✨</div>
+            <div className="text-brand"><Sparkles className="mx-auto size-9" /></div>
             <h1 className="mt-3 font-display text-[26px] font-extrabold tracking-tight text-ink">How did you hear about us?</h1>
             <form method="post" action="/api/public/customer" className="mx-auto mt-7 w-full max-w-[420px]">
               <input type="hidden" name="mode" value="onboard" />

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Clock, MapPin, User as UserIcon, Ticket, Dumbbell } from "lucide-react";
+import { Clock, Dumbbell, MapPin, Sparkles, Ticket, User as UserIcon } from "lucide-react";
 import { db } from "@/lib/db";
 import { tenantBySlugOrDomain } from "@/lib/public-tenant";
 import { getCustomerSession } from "@/lib/customer-auth";
@@ -117,7 +117,7 @@ export default async function ClassDetailPage({ params, searchParams }: {
                   <div>
                     <h3 className="text-[12px] font-bold uppercase tracking-[0.1em] text-muted">Benefits</h3>
                     <ul className="mt-2 space-y-1.5">
-                      {ct.benefits.map((b) => <li key={b} className="flex items-start gap-2 text-[13.5px] text-ink-2"><span style={{ color: brand }}>✦</span>{b}</li>)}
+                      {ct.benefits.map((b) => <li key={b} className="flex items-start gap-2 text-[13.5px] text-ink-2"><Sparkles className="mt-0.5 size-3.5 shrink-0" style={{ color: brand }} />{b}</li>)}
                     </ul>
                   </div>
                 )}

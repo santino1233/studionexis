@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Check, Puzzle, Timer, TrendingUp, PersonStanding, Building2, Smartphone, Sparkles, Eye, EyeOff, PartyPopper } from "lucide-react";
 
 // Studio signup wizard (owner mockups, 2026-07-17): intro splash → Studio
 // Info → Your Details → Studio Setup → account created → /getting-started.
@@ -14,13 +15,13 @@ const COUNTRIES = ["Vietnam", "Thailand", "Singapore", "Indonesia", "Philippines
 const field = "h-11 w-full rounded-xl border border-line bg-surface px-3.5 text-sm outline-none placeholder:text-muted focus:border-brand focus:ring-4 focus:ring-brand/10";
 const label = "mb-1.5 block text-[12px] font-bold text-ink-2";
 
-function Blob({ emoji, tint }: { emoji: string; tint: string }) {
+function Blob({ Icon, tint }: { Icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>; tint: string }) {
   return (
     <div className="relative hidden min-h-[420px] items-center justify-center overflow-hidden lg:flex">
       <div className="absolute size-[340px] rounded-[45%_55%_60%_40%/50%_45%_55%_50%]" style={{ background: `${tint}22` }} />
       <div className="absolute -bottom-10 -left-10 size-[220px] rounded-full" style={{ background: `${tint}14` }} />
       <div className="absolute right-6 top-10 size-[90px] rounded-full" style={{ background: `${tint}1a` }} />
-      <span className="relative text-[120px] drop-shadow-sm">{emoji}</span>
+      <Icon className="relative size-[112px] drop-shadow-sm" style={{ color: tint }} />
     </div>
   );
 }
@@ -32,7 +33,7 @@ function Progress({ step }: { step: number }) {
         <div key={s} className="flex flex-1 items-center last:flex-none">
           <div className="flex flex-col items-center">
             <div className={`grid size-8 place-items-center rounded-full text-[13px] font-bold ${i <= step ? "bg-brand text-white" : "border-2 border-line-2 bg-surface text-muted"}`}>
-              {i < step ? "✓" : i + 1}
+              {i < step ? <Check className="size-4" /> : i + 1}
             </div>
             <span className={`mt-1.5 whitespace-nowrap text-[10px] font-bold ${i <= step ? "text-ink" : "text-muted"}`}>{s}</span>
           </div>
@@ -101,14 +102,14 @@ export default function SignupWizard() {
         {step === -1 && (
           <div className="mt-10 grid items-center gap-10 lg:grid-cols-2">
             <div>
-              <h1 className="font-display text-[40px] font-extrabold leading-[1.08] tracking-tight">Let&apos;s build<br />your studio 🎉</h1>
+              <h1 className="font-display text-[40px] font-extrabold leading-[1.08] tracking-tight">Let&apos;s build<br />your studio <PartyPopper className="inline size-8 align-baseline text-brand" /></h1>
               <p className="mt-3 max-w-[360px] text-[15px] leading-relaxed text-muted">Join the Pilates studios growing with StudioNexis.</p>
               <ul className="mt-7 space-y-4">
-                {[["🧩", "All-in-one management", "Classes, clients, payments, and more."],
-                  ["⏱", "Save time", "Automate your daily operations."],
-                  ["📈", "Grow your studio", "Tools to help you scale and thrive."]].map(([ic, t, d]) => (
-                  <li key={t} className="flex items-start gap-3.5">
-                    <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-brand-wash text-[18px]">{ic}</span>
+                {[[<Puzzle key="a" className="size-[18px] text-brand" />, "All-in-one management", "Classes, clients, payments, and more."],
+                  [<Timer key="b" className="size-[18px] text-brand" />, "Save time", "Automate your daily operations."],
+                  [<TrendingUp key="c" className="size-[18px] text-brand" />, "Grow your studio", "Tools to help you scale and thrive."]].map(([ic, t, d]) => (
+                  <li key={String(t)} className="flex items-start gap-3.5">
+                    <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-brand-wash">{ic}</span>
                     <span><b className="block text-[14.5px] text-ink">{t}</b><span className="text-[13px] text-muted">{d}</span></span>
                   </li>
                 ))}
@@ -118,7 +119,7 @@ export default function SignupWizard() {
               </button>
               <p className="mt-5 text-[12.5px] text-muted">Already have a studio? <a href="/login" className="font-bold text-brand hover:underline">Sign in</a></p>
             </div>
-            <Blob emoji="🧘‍♀️" tint="#F97316" />
+            <Blob Icon={PersonStanding} tint="#F97316" />
           </div>
         )}
 
@@ -127,7 +128,7 @@ export default function SignupWizard() {
           <div className="mt-8">
             <Progress step={step} />
             <div className="grid items-center gap-10 lg:grid-cols-2">
-              {step === 0 && <Blob emoji="🏛" tint="#B45309" />}
+              {step === 0 && <Blob Icon={Building2} tint="#B45309" />}
               <div className={`mx-auto w-full max-w-[420px] ${step === 1 ? "lg:order-first" : ""}`}>
                 {err && <div className="mb-4 rounded-xl border border-rose/20 bg-rose/5 px-3.5 py-2.5 text-[13px] font-medium text-rose">{err}</div>}
 
@@ -167,7 +168,7 @@ export default function SignupWizard() {
                         <label className={label}>Password</label>
                         <div className="relative">
                           <input type={showPw ? "text" : "password"} value={f.password} onChange={(e) => set("password", e.target.value)} placeholder="••••••••••••" className={field} />
-                          <button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-[15px] text-muted">{showPw ? "🙈" : "👁"}</button>
+                          <button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-[15px] text-muted">{showPw ? <EyeOff className="size-4" /> : <Eye className="size-4" />}</button>
                         </div>
                         <p className="mt-1 text-[11.5px] text-muted">At least 8 characters</p>
                       </div>
@@ -190,7 +191,7 @@ export default function SignupWizard() {
                           {TYPES.map((t) => (
                             <button key={t} type="button" onClick={() => set("describe", t)}
                               className={`rounded-xl border px-3.5 py-2.5 text-[12.5px] font-bold transition-colors ${f.describe === t ? "border-brand bg-brand-wash text-brand" : "border-line-2 bg-surface text-ink-2 hover:text-ink"}`}>
-                              {t === "Reformer Pilates" ? "🛷 " : t === "Mat Pilates" ? "🧎 " : t === "Yoga" ? "🧘 " : t === "Barre" ? "🩰 " : "✨ "}{t}
+                              {t}
                             </button>
                           ))}
                         </div>
@@ -219,11 +220,11 @@ export default function SignupWizard() {
 
                 <button onClick={step === 2 ? submit : next} disabled={busy}
                   className="mt-7 w-full rounded-xl bg-brand py-3.5 text-[14.5px] font-bold text-white shadow-md transition-transform hover:-translate-y-0.5 disabled:opacity-60">
-                  {busy ? "Creating your studio…" : step === 2 ? "Create my studio 🎉" : "Continue →"}
+                  {busy ? "Creating your studio…" : step === 2 ? "Create my studio" : "Continue →"}
                 </button>
               </div>
-              {step === 1 && <Blob emoji="📱" tint="#0F766E" />}
-              {step === 2 && <Blob emoji="🤸" tint="#7C3AED" />}
+              {step === 1 && <Blob Icon={Smartphone} tint="#0F766E" />}
+              {step === 2 && <Blob Icon={Sparkles} tint="#7C3AED" />}
             </div>
           </div>
         )}

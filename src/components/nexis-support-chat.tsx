@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { MessageCircle, Paperclip } from "lucide-react";
 
 // Live chat panel with Studio Nexis support (studio -> HQ), shown on /support.
 type Msg = { from: "visitor" | "studio"; name: string; text: string; at: string; image?: string };
@@ -59,7 +60,7 @@ export function NexisSupportChat() {
     <div className="overflow-hidden rounded-2xl border border-line-2 bg-surface shadow-[var(--shadow-card)]">
       <button onClick={() => setOpen(!open)} className="flex w-full items-center justify-between px-5 py-4 text-left">
         <div>
-          <div className="text-[14.5px] font-bold text-ink">💬 Live chat with Nexis Support</div>
+          <div className="flex items-center gap-1.5 text-[14.5px] font-bold text-ink"><MessageCircle className="size-4 text-brand" /> Live chat with Nexis Support</div>
           <div className="text-[12px] text-muted">Talk to the Studio Nexis team directly — we reply as fast as we can.</div>
         </div>
         <span className="text-[12px] font-bold text-brand">{open ? "Hide" : messages.length ? `Open (${messages.length})` : "Start chatting"}</span>
@@ -67,7 +68,7 @@ export function NexisSupportChat() {
       {open && (
         <div className="border-t border-line-2">
           <div className="max-h-[320px] space-y-2 overflow-y-auto bg-raised/50 p-4">
-            {messages.length === 0 && <div className="py-6 text-center text-[13px] text-muted">No messages yet — say hi! 👋</div>}
+            {messages.length === 0 && <div className="py-6 text-center text-[13px] text-muted">No messages yet — say hi!</div>}
             {messages.map((m, i) => (
               <div key={i} className={`max-w-[80%] rounded-2xl px-3.5 py-2 text-[13px] shadow-sm ${m.from === "visitor" ? "ml-auto rounded-br-sm bg-brand text-white" : "rounded-tl-sm bg-surface text-ink"}`}>
                 <div className={`text-[10px] font-bold ${m.from === "visitor" ? "text-white/70" : "text-muted"}`}>{m.name} · {new Date(m.at).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}</div>
@@ -79,7 +80,7 @@ export function NexisSupportChat() {
           </div>
           <div className="flex gap-2 border-t border-line-2 p-3">
             <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={(e) => e.target.files?.[0] && attach(e.target.files[0])} />
-            <button onClick={() => fileRef.current?.click()} disabled={busy} title="Attach a photo" className="grid size-11 shrink-0 place-items-center rounded-xl bg-line-2 text-[17px] text-ink-2 hover:text-ink disabled:opacity-50">{busy ? "…" : "📎"}</button>
+            <button onClick={() => fileRef.current?.click()} disabled={busy} title="Attach a photo" className="grid size-11 shrink-0 place-items-center rounded-xl bg-line-2 text-[17px] text-ink-2 hover:text-ink disabled:opacity-50">{busy ? "…" : <Paperclip className="size-4" />}</button>
             <input value={text} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => e.key === "Enter" && send()}
               placeholder="Type a message to the Nexis team…" className="h-11 flex-1 rounded-xl border border-line bg-surface px-3.5 text-sm outline-none focus:border-brand" />
             <button onClick={send} className="rounded-xl bg-brand px-5 text-sm font-bold text-white hover:bg-brand-ink">Send</button>

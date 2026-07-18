@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Plus } from "lucide-react";
+import { Clock, PartyPopper, Plus } from "lucide-react";
 import { db } from "@/lib/db";
 import { tenantBySlugOrDomain } from "@/lib/public-tenant";
 import { getCustomerSession } from "@/lib/customer-auth";
@@ -39,7 +39,7 @@ export default async function MyBookingsPage({ params, searchParams }: {
         <main className="mx-auto max-w-[760px] px-4 py-16 text-center">
         {ok === "paid" && (
           <div className="mb-5 rounded-2xl border border-green/20 bg-green-wash px-5 py-4 text-[14px] font-bold text-green">
-            🎉 Paid & booked — see you in class!
+            <PartyPopper className="inline size-4 -mt-0.5" /> Paid &amp; booked — see you in class!
           </div>
         )}
           <h1 className="font-display text-[24px] font-extrabold text-ink">Sign in to see your bookings</h1>
@@ -113,7 +113,7 @@ export default async function MyBookingsPage({ params, searchParams }: {
                     <span className={`rounded-full px-2.5 py-0.5 text-[10.5px] font-bold uppercase tracking-wide ${statusTone[b.status]}`}>{statusLabel[b.status]}</span>
                   </div>
                   <div className="mt-1 text-[12.5px] text-muted">
-                    🕐 {timeInTz(s.startsAt, tenant.timezone)} · {s.classType.durationMin} min
+                    <Clock className="inline size-3.5 -mt-0.5" /> {timeInTz(s.startsAt, tenant.timezone)} · {s.classType.durationMin} min
                     {s.instructor ? ` · ${s.instructor.name}` : ""} · {s.classType.kind === "PRIVATE" ? "Private" : "Group"}
                   </div>
                   <div className="mt-1 font-mono text-[10.5px] uppercase tracking-wider text-muted">Ref: NX-{b.id.slice(-8)}</div>
