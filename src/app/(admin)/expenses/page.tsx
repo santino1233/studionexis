@@ -61,13 +61,14 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
       {/* P&L strip */}
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
         {([
-          ["Revenue", fmt.format(revenue), "text-ink"],
-          ["Expenses", fmt.format(spend), "text-ink"],
-          ["Profit", fmt.format(profit), profit >= 0 ? "text-green" : "text-rose"],
-        ] as const).map(([l, v, tone]) => (
+          ["Revenue", fmt.format(revenue), "text-ink", ""],
+          ["Expenses", fmt.format(spend), "text-ink", ""],
+          ["Profit", fmt.format(profit), profit >= 0 ? "text-green" : "text-rose", revenue > 0 ? `${Math.round((profit / revenue) * 100)}% margin` : ""],
+        ] as const).map(([l, v, tone, sub]) => (
           <div key={l} className="rounded-2xl border border-line-2 bg-surface px-[18px] py-4 shadow-[var(--shadow-card)]">
             <div className="text-[11px] font-bold uppercase tracking-wider text-muted">{l} — {monthLabel.split(" ")[0]}</div>
             <div className={`mt-1 font-display text-[24px] font-extrabold ${tone}`}>{v}</div>
+            {sub && <div className="mt-0.5 text-[11.5px] font-semibold text-muted">{sub}</div>}
           </div>
         ))}
       </div>

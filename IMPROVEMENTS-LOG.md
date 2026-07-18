@@ -861,3 +861,7 @@
 ## 2026-07-18 — Overnight loop: 2FA/App Store audit + logout cleanup
 - Audited recently-shipped surfaces: login-verify guards correct (no pending cookie → /login on both page & API); all 19 App Store catalog apps have a matching brand logo (no gray-default fallback); logout preserves the 30-day trusted-device cookie (feature intact); /developers#automation anchor still valid.
 - Fix: logout now also clears any half-finished login-verification (nx_2fa) cookie defensively, while keeping the trusted-device cookie so "save my info for 30 days" survives sign-out. Verified logout still redirects to /login.
+
+## 2026-07-18 — Overnight loop: money-logic audit + P&L profit margin
+- Audited the money-critical earnings/payroll logic: all four commission modes (percent, percent_tiered, fixed_per_class, per_head) are correct; retroactive tiered pay re-prices the whole month at the final tier while non-tiered modes use frozen per-class earnings; tierPct/perHeadAmount take the correct highest applicable threshold; per-class revenue = drop-in + (pricePaid/credits)×seats. Also confirmed the Expenses P&L revenue correctly filters status=PAID (no pending/unpaid orders inflating it). No bugs.
+- Improvement: the P&L "Profit" tile now shows the profit margin % (profit ÷ revenue). Verified live.
