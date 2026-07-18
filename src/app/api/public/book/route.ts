@@ -163,7 +163,7 @@ export async function POST(req: Request) {
         tenantId: tenant.id,
         to: result.client.email,
         subject: `${result.outcome === "booked" ? "Booking confirmed" : "You're on the waitlist"} — ${cls?.name ?? "class"} at ${tenant.name}`,
-        body: `Hi ${result.client.name},\n\n${result.outcome === "booked" ? "You're booked for" : "You're waitlisted for"} ${cls?.name ?? "class"} on ${s.startsAt.toLocaleDateString("en-US", { timeZone: tenant.timezone, weekday: "long", month: "long", day: "numeric" })} at ${timeInTz(s.startsAt, tenant.timezone)}.\n\nManage your bookings: ${publicSiteUrl(tenant, "/book/me")}\n\n${tenant.name}`,
+        body: `Hi ${result.client.name},\n\n${result.outcome === "booked" ? "You're booked for" : "You're waitlisted for"} ${cls?.name ?? "class"} on ${s.startsAt.toLocaleDateString("en-US", { timeZone: tenant.timezone, weekday: "long", month: "long", day: "numeric" })} at ${timeInTz(s.startsAt, tenant.timezone)}.\n\nManage your bookings: ${publicSiteUrl(tenant, "/bookings")}\n\n${tenant.name}`,
       });
     }
     emitEvent(tenant.id, "booking.created", {

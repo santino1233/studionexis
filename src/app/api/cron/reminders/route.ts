@@ -40,7 +40,7 @@ export async function POST(req: Request) {
       tenantId: b.tenantId,
       to: b.client.email!,
       subject: `Reminder: ${b.session.classType.name} at ${b.tenant.name}`,
-      body: `Hi ${b.client.name},\n\nSee you at ${b.session.classType.name} — ${b.session.startsAt.toLocaleDateString("en-US", { timeZone: b.tenant.timezone, weekday: "long", month: "long", day: "numeric" })} at ${timeInTz(b.session.startsAt, b.tenant.timezone)}.\n\nNeed to change plans? Manage your booking: ${publicSiteUrl(b.tenant, "/book/me")}\n\n${b.tenant.name}`,
+      body: `Hi ${b.client.name},\n\nSee you at ${b.session.classType.name} — ${b.session.startsAt.toLocaleDateString("en-US", { timeZone: b.tenant.timezone, weekday: "long", month: "long", day: "numeric" })} at ${timeInTz(b.session.startsAt, b.tenant.timezone)}.\n\nNeed to change plans? Manage your booking: ${publicSiteUrl(b.tenant, "/bookings")}\n\n${b.tenant.name}`,
     });
     await db.booking.update({ where: { id: b.id }, data: { remindedAt: new Date() } });
     sent++;
