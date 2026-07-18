@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Check, Globe, PartyPopper, Sparkles } from "lucide-react";
 import { getCurrentTenant } from "@/lib/tenant";
 import { TEMPLATE_META, type TemplateId } from "@/components/site/types";
 import { publicSiteUrl } from "@/lib/site-url";
@@ -23,7 +24,7 @@ export default async function SiteSetupWizard({ searchParams }: { searchParams: 
   return (
     <div className="mx-auto max-w-[640px]">
       <div className="flex items-center justify-between">
-        <h1 className="font-display text-[26px] font-extrabold tracking-tight text-ink">✨ Create my website</h1>
+        <h1 className="font-display text-[26px] font-extrabold tracking-tight text-ink"><Sparkles className="inline size-5 -mt-1" /> Create my website</h1>
         <Link href="/website" className="text-[12.5px] font-bold text-muted hover:text-ink">Exit wizard</Link>
       </div>
       <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-line-2">
@@ -89,7 +90,7 @@ export default async function SiteSetupWizard({ searchParams }: { searchParams: 
             <input type="hidden" name="kind" value="hero" />
             <input type="hidden" name="next" value={next("photos")} />
             <div className="min-w-0 flex-1">
-              <div className="text-[12.5px] font-bold text-ink">Hero image {w.heroImage ? "✓ uploaded" : ""}</div>
+              <div className="text-[12.5px] font-bold text-ink">Hero image {w.heroImage ? <span className="inline-flex items-center gap-0.5 text-green"><Check className="size-3" /> uploaded</span> : ""}</div>
               <input type="file" name="photos" accept="image/jpeg,image/png,image/webp" className="mt-1 w-full text-[12px] text-muted file:mr-2 file:rounded-md file:border-0 file:bg-line-2 file:px-2 file:py-1 file:text-[11px] file:font-bold" />
             </div>
             <button className="shrink-0 rounded-lg bg-line-2 px-3 py-2 text-[12px] font-bold text-ink-2 hover:text-ink">Upload</button>
@@ -132,7 +133,7 @@ export default async function SiteSetupWizard({ searchParams }: { searchParams: 
 
       {step === "done" && (
         <div className="mt-10 rounded-3xl border border-line-2 bg-surface p-10 text-center shadow-[var(--shadow-card)]">
-          <div className="text-[44px]">🎉</div>
+          <div className="text-[44px]"><PartyPopper className="mx-auto size-11 text-brand" /></div>
           <h2 className="mt-3 font-display text-[26px] font-extrabold tracking-tight text-ink">Your website is live!</h2>
           <p className="mt-2 text-[14px] text-muted">Fine-tune sections, testimonials, FAQs and your team anytime in the Website builder.</p>
           <div className="mt-6 flex flex-wrap justify-center gap-2.5">
@@ -140,7 +141,7 @@ export default async function SiteSetupWizard({ searchParams }: { searchParams: 
             <Link href="/website" className="rounded-xl border border-line-2 px-6 py-3 text-[13.5px] font-bold text-ink-2 hover:text-ink">Open the builder</Link>
           </div>
           <div className="mx-auto mt-6 max-w-[420px] rounded-2xl border-2 border-brand/25 bg-brand-wash/40 p-5 text-left">
-            <div className="text-[13.5px] font-extrabold text-ink">🌐 Make it truly yours — <span className="text-brand">yourstudio.com</span></div>
+            <div className="text-[13.5px] font-extrabold text-ink"><Globe className="inline size-4 -mt-0.5" /> Make it truly yours — <span className="text-brand">yourstudio.com</span></div>
             <p className="mt-1 text-[12.5px] leading-relaxed text-ink-2">Your site currently lives at {tenant.slug}.nexis.revsports.ca. Add a custom domain for <b>$12/mo</b> — automatic setup, free SSL.</p>
             <Link href="/settings?tab=domain" className="mt-2.5 inline-block rounded-lg bg-brand px-4 py-2 text-[12.5px] font-bold text-white hover:bg-brand-ink">Get my domain →</Link>
           </div>

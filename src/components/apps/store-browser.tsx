@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Search, X } from "lucide-react";
 import { AppLogo } from "@/components/apps/app-logos";
 
 type BrowseApp = { id: string; name: string; category: string; blurb: string; kind: "config" | "status" };
@@ -41,10 +42,10 @@ export function StoreBrowser({ browse }: { browse: BrowseApp[] }) {
             <div className="border-b border-line-2 p-4">
               <div className="flex items-center justify-between">
                 <h2 className="font-display text-[18px] font-extrabold text-ink">App marketplace</h2>
-                <button onClick={() => setOpen(false)} className="grid size-8 place-items-center rounded-lg text-muted hover:bg-line-2 hover:text-ink">✕</button>
+                <button onClick={() => setOpen(false)} className="grid size-8 place-items-center rounded-lg text-muted hover:bg-line-2 hover:text-ink"><X className="size-[18px]" /></button>
               </div>
               <div className="relative mt-3">
-                <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted">🔍</span>
+                <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted"><Search className="size-4" /></span>
                 <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search apps — Slack, Stripe, calendar…"
                   className="h-11 w-full rounded-xl border border-line-2 bg-canvas pl-9 pr-3 text-sm outline-none focus:border-brand focus:ring-4 focus:ring-brand/10" />
               </div>

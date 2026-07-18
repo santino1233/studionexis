@@ -1,4 +1,5 @@
 import { Card, CardHeader } from "@/components/ui/card";
+import { Check, Globe } from "lucide-react";
 import { getCurrentTenant } from "@/lib/tenant";
 import { db } from "@/lib/db";
 import { classFormats, difficultyLevels } from "@/lib/class-config";
@@ -124,7 +125,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
                           <div className="text-[10.5px] leading-tight text-muted">{vibe}</div>
                         </div>
                       </div>
-                      <span className="pointer-events-none absolute -right-1.5 -top-1.5 hidden size-5 place-items-center rounded-full bg-brand text-[11px] font-bold text-white shadow peer-checked:grid">✓</span>
+                      <span className="pointer-events-none absolute -right-1.5 -top-1.5 hidden size-5 place-items-center rounded-full bg-brand text-white shadow peer-checked:grid"><Check className="size-3" /></span>
                     </label>
                   ))}
                 </div>
@@ -247,7 +248,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
         <CardHeader eyebrow="Add-on" title="Custom domain" sub="Serve your website and booking on your own domain — yourstudio.com" />
         <div className="p-6">
           <div className="rounded-2xl border-2 border-brand/30 bg-brand-wash/40 p-6 text-center">
-            <div className="text-[36px]">🌐</div>
+            <div className="text-[36px]"><Globe className="mx-auto size-9 text-brand" /></div>
             <h3 className="mt-2 font-display text-[20px] font-extrabold text-ink">Your own domain</h3>
             <p className="mx-auto mt-1.5 max-w-[380px] text-[13.5px] leading-relaxed text-ink-2">
               Look established: <b>yourstudio.com</b> instead of a subdomain. Automatic setup and free SSL included — just point your DNS and we do the rest.
@@ -304,7 +305,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
             <div className="space-y-4 p-6">
               {sc.secretKey ? (
                 <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-green/20 bg-green-wash px-4 py-3">
-                  <div className="text-[13.5px] font-bold text-green">✓ Connected{sc.accountLabel ? ` — ${sc.accountLabel}` : ""}</div>
+                  <div className="text-[13.5px] font-bold text-green"><Check className="inline size-3.5 -mt-0.5" /> Connected{sc.accountLabel ? ` — ${sc.accountLabel}` : ""}</div>
                   <form method="post" action="/api/settings">
                     <input type="hidden" name="section" value="stripe" />
                     <input type="hidden" name="action" value="disconnect" />

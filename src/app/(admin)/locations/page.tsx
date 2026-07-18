@@ -1,4 +1,5 @@
 import { getCurrentTenant } from "@/lib/tenant";
+import { Link2, Plus } from "lucide-react";
 import { getSession } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { publicSiteUrl } from "@/lib/site-url";
@@ -88,7 +89,7 @@ export default async function LocationsPage({ searchParams }: { searchParams: Pr
 
       {/* Add a location */}
       <div className="mt-6 rounded-2xl border border-line-2 bg-surface p-5">
-        <h2 className="text-[15px] font-extrabold text-ink">➕ Add a location</h2>
+        <h2 className="text-[15px] font-extrabold text-ink"><Plus className="inline size-4 -mt-0.5" /> Add a location</h2>
         <p className="mt-1 text-[12.5px] leading-relaxed text-ink-2">
           Creates a brand-new studio under your account — its own booking site, clients and schedule, using your same login.
           It starts completely separate. <b className="text-ink">Each location is billed as its own subscription</b> (from ${getPlan(tenant.plan).monthly}/mo on your current plan).
@@ -102,7 +103,7 @@ export default async function LocationsPage({ searchParams }: { searchParams: Pr
       {/* Sharing / sync settings — only relevant with 2+ locations */}
       {multi && (
         <div className="mt-6 rounded-2xl border border-line-2 bg-surface p-5">
-          <h2 className="text-[15px] font-extrabold text-ink">🔗 Share between locations</h2>
+          <h2 className="text-[15px] font-extrabold text-ink"><Link2 className="inline size-4 -mt-0.5" /> Share between locations</h2>
           <p className="mt-1 text-[12.5px] leading-relaxed text-ink-2">Off by default — every location is independent. Turn on only what your franchise wants to share.</p>
           <form method="post" action="/api/settings" className="mt-3 space-y-2.5">
             <input type="hidden" name="section" value="org-sync" />

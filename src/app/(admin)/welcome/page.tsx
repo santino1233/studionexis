@@ -1,4 +1,5 @@
 import { Card, CardHeader } from "@/components/ui/card";
+import { PartyPopper } from "lucide-react";
 import { getCurrentTenant } from "@/lib/tenant";
 
 export const dynamic = "force-dynamic";
@@ -14,7 +15,7 @@ export default async function WelcomePage() {
   const tenant = await getCurrentTenant();
   return (
     <div className="mx-auto max-w-[640px]">
-      <h1 className="font-display text-[30px] font-extrabold tracking-tight text-ink">Welcome to Studio Nexis 🎉</h1>
+      <h1 className="font-display text-[30px] font-extrabold tracking-tight text-ink">Welcome to Studio Nexis <PartyPopper className="mx-auto size-12 text-brand" /></h1>
       <p className="mt-1 text-sm text-muted">Three quick things and your studio is ready to take bookings. You can change all of it later in Settings.</p>
 
       <Card className="mt-6">

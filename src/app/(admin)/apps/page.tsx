@@ -1,4 +1,5 @@
 import { Card } from "@/components/ui/card";
+import { X } from "lucide-react";
 import { getCurrentTenant } from "@/lib/tenant";
 import { WEBHOOK_EVENTS, webhooksOf, appsOf } from "@/lib/webhooks";
 import { studioStripeConfig } from "@/lib/stripe";
@@ -70,7 +71,7 @@ export default async function AppsPage({ searchParams }: { searchParams: Promise
           <div key={i} className="rounded-xl border border-line-2 px-3.5 py-2.5">
             <div className="flex items-center justify-between gap-2">
               <code className="truncate font-mono text-[11.5px] text-ink">{h.url}</code>
-              <form method="post" action="/api/settings"><input type="hidden" name="section" value="webhook-remove" /><input type="hidden" name="idx" value={i} /><input type="hidden" name="next" value="/apps?saved=1" /><button className="rounded-lg bg-line-2 px-2 py-1 text-[11px] font-bold text-ink-2 hover:bg-rose/10 hover:text-rose">✕</button></form>
+              <form method="post" action="/api/settings"><input type="hidden" name="section" value="webhook-remove" /><input type="hidden" name="idx" value={i} /><input type="hidden" name="next" value="/apps?saved=1" /><button className="rounded-lg bg-line-2 px-2 py-1 text-[11px] font-bold text-ink-2 hover:bg-rose/10 hover:text-rose"><X className="size-3" /></button></form>
             </div>
             <div className="mt-1 text-[11px] text-muted">{h.events.join(" · ")} · secret: <code className="font-mono">{h.secret.slice(0, 12)}…</code></div>
           </div>
@@ -244,7 +245,7 @@ export default async function AppsPage({ searchParams }: { searchParams: Promise
     livechat: (
       <Panel key="livechat" app={byId.livechat} remove chip={<Chip on={!apps.chatDisabled} yes="On" no="Off" />}>
         <div className="space-y-2.5">
-          <p className="text-[13px] text-muted">Visitors message you from the 💬 bubble; you reply from <a href="/inbox" className="font-bold text-brand hover:underline">Inbox</a>. Pipe alerts to Slack/Telegram too.</p>
+          <p className="text-[13px] text-muted">Visitors message you from the chat bubble; you reply from <a href="/inbox" className="font-bold text-brand hover:underline">Inbox</a>. Pipe alerts to Slack/Telegram too.</p>
           <form method="post" action="/api/settings">
             <input type="hidden" name="section" value="apps" />
             <input type="hidden" name="chatToggle" value={apps.chatDisabled ? "on" : "off"} />
