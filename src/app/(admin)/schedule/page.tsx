@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, Plus, X, UserCheck, Pencil } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, X, UserCheck, Pencil, Lock, LockOpen, Check, AlertTriangle, EyeOff, Calendar as CalIcon, Clock, User, Users, MapPin, StickyNote, CreditCard } from "lucide-react";
 import { db } from "@/lib/db";
 import { getCurrentTenant, moneyFormatter } from "@/lib/tenant";
 import { computeSessionFinancials } from "@/lib/earnings";
@@ -185,7 +185,7 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
           <Link href={nav(1)} className="grid size-10 place-items-center rounded-xl border border-line-2 bg-surface text-ink-2 hover:bg-raised"><ChevronRight className="size-4" /></Link>
           <span className="rounded-xl border border-line-2 bg-surface px-4 py-2.5 text-sm font-bold text-ink">{rangeLabel}</span>
           <details className="relative ml-1">
-            <summary className="inline-flex cursor-pointer list-none items-center gap-2 rounded-xl border border-line-2 bg-surface px-4 py-2.5 text-sm font-semibold text-ink-2 hover:bg-raised">🔒 Block time</summary>
+            <summary className="inline-flex cursor-pointer list-none items-center gap-2 rounded-xl border border-line-2 bg-surface px-4 py-2.5 text-sm font-semibold text-ink-2 hover:bg-raised"><Lock className="size-3.5" /> Block time</summary>
             <form method="post" action="/api/timeblocks" className="absolute right-0 z-40 mt-2 w-[290px] space-y-2.5 rounded-2xl border border-line-2 bg-surface p-4 shadow-lg">
               <input type="hidden" name="back" value={qs({})} />
               <input name="date" type="date" required defaultValue={todayKey} className="h-10 w-full rounded-[10px] border border-line bg-surface px-3 text-sm outline-none focus:border-brand" />
@@ -204,7 +204,7 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
       </div>
 
       {checkout === "done" && (
-        <div className="mb-3 flex items-center gap-2 rounded-xl border border-green/20 bg-green-wash px-4 py-2.5 text-[13.5px] font-bold text-green">✓ Checked out &amp; checked in</div>
+        <div className="mb-3 flex items-center gap-2 rounded-xl border border-green/20 bg-green-wash px-4 py-2.5 text-[13.5px] font-bold text-green"><Check className="size-4 shrink-0" /> Checked out &amp; checked in</div>
       )}
 
       {view !== "month" && (
@@ -307,7 +307,7 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
                             <input type="hidden" name="back" value={qs({})} />
                             <button type="submit" title="Click to unblock" className="h-full w-full overflow-hidden rounded-lg border border-dashed border-rose/40 px-2 py-1.5 text-left"
                               style={{ background: "repeating-linear-gradient(45deg, color-mix(in srgb, #E5484D 8%, var(--color-surface)), color-mix(in srgb, #E5484D 8%, var(--color-surface)) 6px, var(--color-surface) 6px, var(--color-surface) 12px)" }}>
-                              <span className="block truncate text-[10.5px] font-bold text-rose">🔒 Blocked</span>
+                              <span className="flex items-center gap-1 truncate text-[10.5px] font-bold text-rose"><Lock className="size-3 shrink-0" /> Blocked</span>
                               {height > 44 && <span className="block truncate text-[10px] text-muted">{b.reason ?? "Studio time"} · click to unblock</span>}
                             </button>
                           </form>
@@ -334,7 +334,7 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
                             }}>
                             <div className="truncate text-[10px] font-semibold text-muted">{timeInTz(s.startsAt, tenant.timezone)} – {timeInTz(s.endsAt, tenant.timezone)}</div>
                             <div className="truncate text-[11.5px] font-bold leading-tight" style={{ color: st.blocked ? "#E5484D" : st.tone }}>
-                              {st.blocked ? "🔒 " : st.completed ? "✓ " : st.attention ? "⚠ " : !s.isPublic ? "🙈 " : ""}{s.classType.name}
+                              {st.blocked ? <Lock className="mr-0.5 inline size-3 -mt-0.5" /> : st.completed ? <Check className="mr-0.5 inline size-3 -mt-0.5" /> : st.attention ? <AlertTriangle className="mr-0.5 inline size-3 -mt-0.5" /> : !s.isPublic ? <EyeOff className="mr-0.5 inline size-3 -mt-0.5" /> : null}{s.classType.name}
                             </div>
                             {height > 48 && (
                               <div className="mt-0.5 flex items-center gap-1.5 text-[10px] font-semibold text-ink-2">
@@ -375,16 +375,16 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
             </div>
             {selected.status === "SCHEDULED" && selected.startsAt < new Date() && selActiveQty > 0 && (
               <div className="border-b border-line-2 bg-amber-500/10 px-5 py-3 text-[12.5px] font-semibold text-amber-700 dark:text-amber-400">
-                ⚠ This class needs completing — check everyone in, take payment, then <b>Mark class completed</b> so the instructor gets paid.
+                <AlertTriangle className="inline size-4 -mt-0.5 shrink-0" /> This class needs completing — check everyone in, take payment, then <b>Mark class completed</b> so the instructor gets paid.
               </div>
             )}
             <div className="space-y-1.5 border-b border-line-2 p-5 text-[13px] text-ink-2">
-              <div>📅 {selected.startsAt.toLocaleDateString("en-US", { timeZone: tenant.timezone, weekday: "short", month: "short", day: "numeric", year: "numeric" })}</div>
-              <div>🕐 {timeInTz(selected.startsAt, tenant.timezone)} – {timeInTz(selected.endsAt, tenant.timezone)}</div>
-              {selected.instructor && <div>👤 {selected.instructor.name}</div>}
-              <div>👥 <b className="text-ink">{selActiveQty} / {selected.capacity}</b> booked{selWaitQty > 0 ? ` · ${selWaitQty} waitlisted` : ""}</div>
-              {selected.location && <div>📍 {selected.location}</div>}
-              {selected.note && <div>📝 {selected.note}</div>}
+              <div className="flex items-center gap-1.5"><CalIcon className="size-3.5 shrink-0 text-muted" /> {selected.startsAt.toLocaleDateString("en-US", { timeZone: tenant.timezone, weekday: "short", month: "short", day: "numeric", year: "numeric" })}</div>
+              <div className="flex items-center gap-1.5"><Clock className="size-3.5 shrink-0 text-muted" /> {timeInTz(selected.startsAt, tenant.timezone)} – {timeInTz(selected.endsAt, tenant.timezone)}</div>
+              {selected.instructor && <div className="flex items-center gap-1.5"><User className="size-3.5 shrink-0 text-muted" /> {selected.instructor.name}</div>}
+              <div className="flex items-center gap-1.5"><Users className="size-3.5 shrink-0 text-muted" /> <b className="text-ink">{selActiveQty} / {selected.capacity}</b> booked{selWaitQty > 0 ? ` · ${selWaitQty} waitlisted` : ""}</div>
+              {selected.location && <div className="flex items-center gap-1.5"><MapPin className="size-3.5 shrink-0 text-muted" /> {selected.location}</div>}
+              {selected.note && <div className="flex items-center gap-1.5"><StickyNote className="size-3.5 shrink-0 text-muted" /> {selected.note}</div>}
             </div>
             {fin && (
               <div className="grid grid-cols-2 gap-3 border-b border-line-2 p-4">
@@ -403,14 +403,14 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
                 <form method="post" action={`/api/sessions/${selected.id}`} className="w-full">
                   <input type="hidden" name="action" value="complete" />
                   <input type="hidden" name="back" value={qs({})} />
-                  <button className="w-full rounded-xl bg-green-wash px-3 py-2 text-[12px] font-bold text-green hover:brightness-95">✓ Mark class completed</button>
+                  <button className="w-full rounded-xl bg-green-wash px-3 py-2 text-[12px] font-bold text-green hover:brightness-95"><Check className="inline size-4 -mt-0.5" /> Mark class completed</button>
                 </form>
               )}
               <form method="post" action={`/api/sessions/${selected.id}`} className="w-full">
                 <input type="hidden" name="action" value={selected.status === "BLOCKED" ? "unblock" : "block"} />
                 <input type="hidden" name="back" value={qs({})} />
                 <button className={`w-full rounded-xl px-3 py-2 text-[12px] font-bold ${selected.status === "BLOCKED" ? "bg-line-2 text-ink-2 hover:brightness-95" : "bg-rose/10 text-rose hover:brightness-95"}`}>
-                  {selected.status === "BLOCKED" ? "🔓 Unblock this class" : "🔒 Block this class (hide from booking)"}
+                  {selected.status === "BLOCKED" ? <><LockOpen className="inline size-4 -mt-0.5" /> Unblock this class</> : <><Lock className="inline size-4 -mt-0.5" /> Block this class (hide from booking)</>}
                 </button>
               </form>
               <Link href={`/schedule/${selected.id}`} className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-brand px-3 py-2.5 text-[12.5px] font-bold text-white hover:bg-brand-ink"><Pencil className="size-3.5" /> Edit Session</Link>
@@ -448,7 +448,7 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
                     )}
                     {b.status === "CHECKED_IN" && !b.orderId && b.paymentMethod !== "package_credit" && (
                       <div className="mt-2">
-                        <Link href={qs({ co: b.id })} className="rounded-lg bg-brand px-2.5 py-1 text-[11px] font-bold text-white hover:bg-brand-ink">💳 Take payment</Link>
+                        <Link href={qs({ co: b.id })} className="rounded-lg bg-brand px-2.5 py-1 text-[11px] font-bold text-white hover:bg-brand-ink"><CreditCard className="inline size-3.5 -mt-0.5" /> Take payment</Link>
                       </div>
                     )}
                   </li>
@@ -495,10 +495,10 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
               <span className="size-2.5 rounded-full" style={{ background: t.color }} /> {t.name}
             </span>
           ))}
-          <span className="ml-2 inline-flex items-center gap-1.5 text-[11.5px] font-semibold text-muted">✓ Completed</span>
-          <span className="inline-flex items-center gap-1.5 text-[11.5px] font-semibold text-muted">🔒 Blocked</span>
+          <span className="ml-2 inline-flex items-center gap-1.5 text-[11.5px] font-semibold text-muted"><Check className="size-3.5" /> Completed</span>
+          <span className="inline-flex items-center gap-1.5 text-[11.5px] font-semibold text-muted"><Lock className="size-3.5" /> Blocked</span>
           <span className="inline-flex items-center gap-1.5 text-[11.5px] font-semibold text-amber-600"><span className="nx-attention inline-block size-2.5 rounded-full bg-amber-500/30" /> Needs completion</span>
-          <span className="inline-flex items-center gap-1.5 text-[11.5px] font-semibold text-muted">🙈 Hidden from public</span>
+          <span className="inline-flex items-center gap-1.5 text-[11.5px] font-semibold text-muted"><EyeOff className="size-3.5" /> Hidden from public</span>
         </div>
       )}
 
@@ -518,14 +518,14 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
               <div className="text-[11px] font-bold uppercase tracking-[0.1em] text-muted">Empty slot</div>
               <h2 className="mt-1 font-display text-[20px] font-extrabold tracking-tight text-ink">{when}</h2>
               <div className="mt-5 space-y-2.5">
-                <Link href={qs({ slot: undefined, nw: slotPick })} className="block w-full rounded-xl bg-brand py-3 text-center text-[14px] font-bold text-white hover:bg-brand-ink">➕ Add a class here</Link>
+                <Link href={qs({ slot: undefined, nw: slotPick })} className="block w-full rounded-xl bg-brand py-3 text-center text-[14px] font-bold text-white hover:bg-brand-ink"><Plus className="inline size-4 -mt-0.5" /> Add a class here</Link>
                 <form method="post" action="/api/timeblocks">
                   <input type="hidden" name="back" value={qs({ slot: undefined })} />
                   <input type="hidden" name="date" value={sd} />
                   <input type="hidden" name="from" value={st} />
                   <input type="hidden" name="to" value={endT} />
                   <input type="hidden" name="reason" value="Blocked from calendar" />
-                  <button className="w-full rounded-xl bg-ink py-3 text-[14px] font-bold text-canvas hover:opacity-90">🔒 Block this hour</button>
+                  <button className="w-full rounded-xl bg-ink py-3 text-[14px] font-bold text-canvas hover:opacity-90"><Lock className="inline size-4 -mt-0.5" /> Block this hour</button>
                 </form>
                 <Link href={qs({ slot: undefined })} className="block py-1 text-center text-[12.5px] font-bold text-muted hover:text-ink">Cancel</Link>
               </div>
