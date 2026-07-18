@@ -42,6 +42,7 @@ export default async function ClientProfilePage({ params }: { params: Promise<{ 
           tenantId: { not: tenant.id },
           creditsLeft: { gt: 0 }, frozen: false, expiresAt: { gt: new Date() },
           tenant: { organizationId: tenant.organizationId },
+          package: { shareable: true },
           client: { OR: links },
         },
         include: { package: { select: { name: true, interval: true } }, tenant: { select: { name: true, locationLabel: true } } },

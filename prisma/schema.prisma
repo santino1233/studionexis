@@ -238,6 +238,7 @@ model Package {
   kind         ClassKind @default(GROUP)
   interval     String  @default("none") // none = one-time pack | month | year = auto-renewing membership
   active       Boolean @default(true)
+  shareable    Boolean @default(true) // franchise Phase 3: may its credits be honoured at sibling locations
 
   purchases ClientPackage[]
 

@@ -1,0 +1,1 @@
+ALTER TABLE "Package" ADD COLUMN "shareable" BOOLEAN NOT NULL DEFAULT true;

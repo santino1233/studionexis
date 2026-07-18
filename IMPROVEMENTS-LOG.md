@@ -825,3 +825,6 @@
 ## 2026-07-18 — Overnight loop: analytics verified; page-view retention moved off the public beacon
 - Verified analytics: all queries are tenant-scoped (per-location for franchises), live-viewers/uniques/sources use proper groupBy. No bug.
 - Improvement: the ~6-month page-view retention sweep was running as a table-wide deleteMany from the public /api/public/track beacon on a 1% roll — a public request should never trigger a maintenance delete. Moved it to the daily materialise cron (returns a `pruned` count). Verified: beacon still 200 with no delete in the hot path; cron returns {"ok":true,"created":0,"pruned":0}.
+
+## 2026-07-18 — Overnight loop: Phase 3 per-package opt-out (shareable flag)
+- Added the per-package opt-out the Phase 3 spec requires: Package.shareable (default true, additive migration — existing packs unchanged). Franchises get a "Honour at other locations" checkbox on the add-package form (shown only when in an org); the cross-location credit-visibility card now filters to package.shareable=true so studios can keep specific packs local. Verified live: a non-shareable pack is hidden from another location's view, flips to visible when marked shareable; toggle renders on /products for franchises. Safe (config + visibility only, no money movement).

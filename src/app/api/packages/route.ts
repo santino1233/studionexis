@@ -20,6 +20,7 @@ export async function POST(req: Request) {
       price: String(Number(form.get("price") ?? 0) || 0),
       kind: form.get("kind") === "PRIVATE" ? "PRIVATE" : "GROUP",
       interval: ["month", "year"].includes(String(form.get("interval"))) ? String(form.get("interval")) : "none",
+      shareable: form.get("shareable") !== "off",
     },
   });
   return NextResponse.redirect(externalUrl(req, "/products"), 303);

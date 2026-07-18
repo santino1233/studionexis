@@ -77,6 +77,12 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
                 <option value="year">Yearly membership — credits reset every year</option>
               </select>
             </div>
+            {tenant.organizationId && (
+              <label className="flex items-start gap-2 rounded-[10px] border border-line-2 p-2.5">
+                <input type="checkbox" name="shareable" defaultChecked className="mt-0.5 size-4 accent-[#F97316]" />
+                <span className="text-[12px] leading-snug text-ink-2"><b className="text-ink">Honour at other locations</b> — let this pack&apos;s credits be used across your franchise (when cross-location sharing is on). Uncheck to keep it local to this studio.</span>
+              </label>
+            )}
             <button className="w-full rounded-[10px] bg-brand py-2.5 text-sm font-bold text-white transition-colors hover:bg-brand-ink">Add package</button>
           </form>
         </Card>
