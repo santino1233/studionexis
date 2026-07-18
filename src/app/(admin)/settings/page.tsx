@@ -5,6 +5,8 @@ import { classFormats, difficultyLevels } from "@/lib/class-config";
 import { studioStripeConfig } from "@/lib/stripe";
 import { hasFeature } from "@/lib/features";
 import { publicSiteUrl } from "@/lib/site-url";
+import { securityOf } from "@/lib/login-verify";
+import { getTemplate } from "@/lib/email-templates";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +26,7 @@ const TABS = [
   ["website", "Website"],
   ["domain", "Domain"],
   ["money", "Money"],
+  ["security", "Security"],
   ["api", "API"],
 ] as const;
 
@@ -369,6 +372,60 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
         </form>
       </Card>
       </>)}
+
+      {tab === "security" && (() => {
+        const sec = securityOf(tenant);
+        const mode = sec.loginVerification ?? "any";
+        const tpl = getTemplate(tenant, "loginCode");
+        const emailLive = !!process.env.SMTP_HOST;
+        const smsLive = !!process.env.TWILIO_ACCOUNT_SID;
+        const anyLive = emailLive || smsLive;
+        return (
+        <>
+        <Card className="mt-6">
+          <CardHeader eyebrow="Sign-in security" title="Login verification (2FA)" sub="Require a one-time code by email or SMS when staff sign in" />
+          <div className="p-6 pt-0 space-y-4">
+            <div className={`rounded-xl border px-4 py-3 text-[13px] ${anyLive ? "border-green/20 bg-green-wash text-green" : "border-amber-500/20 bg-amber-50 text-amber-700"}`}>
+              {anyLive
+                ? <>Active — codes will be delivered via {emailLive ? "email" : ""}{emailLive && smsLive ? " & " : ""}{smsLive ? "SMS" : ""}.</>
+                : <><b>Standby.</b> No delivery channel is connected yet, so sign-in stays password-only for now. It switches on automatically once email (SMTP) or SMS (Twilio) is configured — nobody gets locked out in the meantime.</>}
+            </div>
+            <form method="post" action="/api/settings" className="space-y-3">
+              <input type="hidden" name="section" value="security" />
+              <input type="hidden" name="next" value="/settings?tab=security&saved=1" />
+              <div>
+                <label className="mb-1 block text-[11px] font-bold uppercase tracking-wider text-muted">When staff sign in</label>
+                <select name="loginVerification" defaultValue={mode} className="h-11 w-full rounded-[10px] border border-line bg-surface px-3.5 text-sm outline-none focus:border-brand">
+                  <option value="any">Require a code (email or SMS — whichever is available)</option>
+                  <option value="email">Require an emailed code only</option>
+                  <option value="sms">Require an SMS code only</option>
+                  <option value="off">Off — password only</option>
+                </select>
+                <p className="mt-1.5 text-[11.5px] text-muted">Staff can tick &ldquo;Save my info on this device for 30 days&rdquo; to skip the code on trusted devices.</p>
+              </div>
+              <button className="rounded-[10px] bg-brand px-5 py-2.5 text-[13px] font-bold text-white hover:bg-brand-ink">Save</button>
+            </form>
+          </div>
+        </Card>
+        <Card className="mt-5">
+          <CardHeader eyebrow="Email templates" title="Verification code email" sub="Edit the email staff receive — {{studio}}, {{name}}, {{code}}, {{minutes}} are filled in" />
+          <form method="post" action="/api/settings" className="p-6 pt-0 space-y-3">
+            <input type="hidden" name="section" value="security" />
+            <input type="hidden" name="next" value="/settings?tab=security&saved=1" />
+            <div>
+              <label className="mb-1 block text-[11px] font-bold uppercase tracking-wider text-muted">Subject</label>
+              <input name="tplSubject" defaultValue={tpl.subject} className="h-11 w-full rounded-[10px] border border-line bg-surface px-3.5 text-sm outline-none focus:border-brand" />
+            </div>
+            <div>
+              <label className="mb-1 block text-[11px] font-bold uppercase tracking-wider text-muted">Body</label>
+              <textarea name="tplBody" defaultValue={tpl.body} rows={10} className="w-full rounded-[10px] border border-line bg-surface px-3.5 py-2.5 font-mono text-[12.5px] outline-none focus:border-brand" />
+            </div>
+            <button className="rounded-[10px] bg-brand px-5 py-2.5 text-[13px] font-bold text-white hover:bg-brand-ink">Save template</button>
+          </form>
+        </Card>
+        </>
+        );
+      })()}
 
       {tab === "api" && (<>
       <Card className="mt-6">

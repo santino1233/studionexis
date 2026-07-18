@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { externalUrl } from "@/lib/request-url";
@@ -152,6 +153,23 @@ export async function POST(req: Request) {
     if (String(form.get("regenIcal")) === "1") apps.icalToken = randomBytes(12).toString("hex");
     if (form.has("chatToggle")) apps.chatDisabled = String(form.get("chatToggle")) === "off" ? true : undefined;
     await db.tenant.update({ where: { id: tenant.id }, data: { policies: { ...prev, apps } } });
+  } else if (section === "security") {
+    if (["STAFF", "INSTRUCTOR"].includes(auth.role)) return NextResponse.redirect(externalUrl(req, "/settings"), 303);
+    const prev = (tenant.policies ?? {}) as Record<string, unknown>;
+    const security = { ...((prev.security as Record<string, unknown>) ?? {}) };
+    if (form.has("loginVerification")) {
+      const v = String(form.get("loginVerification"));
+      security.loginVerification = ["off", "email", "sms", "any"].includes(v) ? v : "any";
+    }
+    const templates = { ...((prev.emailTemplates as Record<string, unknown>) ?? {}) };
+    if (form.has("tplSubject") || form.has("tplBody")) {
+      templates.loginCode = {
+        subject: String(form.get("tplSubject") ?? "").slice(0, 200),
+        body: String(form.get("tplBody") ?? "").slice(0, 4000),
+      };
+    }
+    await db.tenant.update({ where: { id: tenant.id }, data: { policies: { ...prev, security, emailTemplates: templates } as Prisma.InputJsonValue } });
+    return NextResponse.redirect(externalUrl(req, "/settings?tab=security&saved=1"), 303);
   } else if (section === "org-sync") {
     if (auth.role !== "OWNER" || !tenant.organizationId) return NextResponse.redirect(externalUrl(req, "/locations"), 303);
     const org = await db.organization.findUnique({ where: { id: tenant.organizationId } });
