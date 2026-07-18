@@ -793,3 +793,6 @@
 ## 2026-07-18 — Overnight loop: verified location-switch isolation + HQ franchise tags
 - Security check: confirmed the location switcher rejects cross-organization jumps — an owner attempting to switch to a tenant outside their own org stays put (session unchanged), while same-org switches work. No vulnerability.
 - Improvement: the HQ Studios list now tags franchise locations with a "🏢 <locationLabel>" badge (any tenant with an organizationId), so super-admin can tell at a glance which studios are part of a multi-location account. Verified live (both dev-studio locations tagged).
+
+## 2026-07-18 — Overnight loop: clearer empty-schedule state on booking site
+- UX bug: a studio/location with ZERO upcoming classes showed "No classes match this day — try another" on every day, misleadingly implying other days had classes (hit especially on brand-new franchise locations whose sessions aren't materialised yet). Now when there are no upcoming public sessions at all, the booking page shows "No classes scheduled yet — check back soon! ✨"; the per-day message stays for studios that do have classes. Verified live: Westside (0 sessions) shows the new copy, Main (has sessions) does not.

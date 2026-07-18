@@ -242,7 +242,9 @@ export default async function BookPage({ params, searchParams }: {
           })}
           {list.length === 0 && (
             <div className="rounded-2xl border border-line-2 bg-surface p-12 text-center text-sm text-muted shadow-[var(--shadow-card)]">
-              No classes match this day{lvl ? " and level" : ""} — try another.
+              {all.length === 0
+                ? "No classes scheduled yet — check back soon! ✨"
+                : <>No classes match this day{lvl ? " and level" : ""} — try another.</>}
             </div>
           )}
         </div>
