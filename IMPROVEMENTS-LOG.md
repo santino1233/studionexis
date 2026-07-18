@@ -872,3 +872,7 @@
 ## 2026-07-18 — Overnight loop: money-path audit + booking-cancel alert names
 - Audited more money logic: staff booking cancel refunds by qty and is idempotent (wasActive gate); promoteWaitlist consumes one credit per promotion and every waitlist entry is single-seat (public forces qty=1, staff uses Booking.qty default 1) — no overbooking / credit under-charge. All correct.
 - Fix: staff-side booking cancel fired the booking.cancelled webhook/chat alert with EMPTY client & class names ("❌ Cancelled: → "). Now includes both (fetched via booking.client + session.classType). Verified live with an echo server: alert reads "❌ Cancelled: <client> → <class>".
+
+## 2026-07-18 — Overnight loop: team/voucher audit + App Store count
+- Audited staff/team management (OWNER-only, role can't escalate to OWNER/SUPERADMIN, password ≥8, bcrypt, duplicate-email caught → clear /team error messages) and vouchers (value/percent-cap/maxUses validated on create; checkout caps discount at total & increments usedCount atomically). Both solid — no bugs.
+- Improvement: App Store header now shows the live integration count ("19 integrations and counting") from APP_CATALOG. Verified live.

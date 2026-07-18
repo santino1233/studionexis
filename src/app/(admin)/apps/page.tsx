@@ -271,7 +271,7 @@ export default async function AppsPage({ searchParams }: { searchParams: Promise
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="font-display text-[30px] font-extrabold tracking-tight text-ink">App Store</h1>
-          <p className="mt-1 text-sm text-muted">Add the tools your studio needs — nothing you don&apos;t. Everything here works with your live data.</p>
+          <p className="mt-1 text-sm text-muted">{APP_CATALOG.length} integrations and counting — add the tools your studio needs, nothing you don&apos;t.</p>
         </div>
         <StoreBrowser browse={browse} />
       </div>
