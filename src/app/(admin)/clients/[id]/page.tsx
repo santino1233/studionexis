@@ -4,7 +4,7 @@ import { ArrowLeft, Mail, MessageCircle, Phone, Plus, Pencil, Cake } from "lucid
 import { Card, CardHeader } from "@/components/ui/card";
 import { db } from "@/lib/db";
 import { getCurrentTenant, moneyFormatter } from "@/lib/tenant";
-import { orgSync } from "@/lib/org";
+import { orgSync, linkedClientOr } from "@/lib/org";
 
 export const dynamic = "force-dynamic";
 
@@ -35,14 +35,14 @@ export default async function ClientProfilePage({ params }: { params: Promise<{ 
   // can honour them. Matched by phone/email within the org — no money moves.
   const org = tenant.organizationId ? await db.organization.findUnique({ where: { id: tenant.organizationId } }) : null;
   const sync = orgSync(org?.policies);
-  const idKeys = [client.phone?.trim(), client.email?.trim().toLowerCase()].filter(Boolean) as string[];
-  const otherCredits = (sync.sharedCredits || sync.memberships) && tenant.organizationId && idKeys.length
+  const links = linkedClientOr(client);
+  const otherCredits = (sync.sharedCredits || sync.memberships) && tenant.organizationId && links.length
     ? await db.clientPackage.findMany({
         where: {
           tenantId: { not: tenant.id },
           creditsLeft: { gt: 0 }, frozen: false, expiresAt: { gt: new Date() },
           tenant: { organizationId: tenant.organizationId },
-          client: { OR: [...(client.phone ? [{ phone: client.phone }] : []), ...(client.email ? [{ email: client.email }] : [])] },
+          client: { OR: links },
         },
         include: { package: { select: { name: true, interval: true } }, tenant: { select: { name: true, locationLabel: true } } },
         orderBy: { expiresAt: "asc" },

@@ -803,3 +803,7 @@
 
 ## 2026-07-18 — Overnight loop: current-location pill in the top bar
 - For multi-location owners it wasn't obvious which location's data you were editing after switching. Added a persistent "📍 <location>" pill to the top bar (only shown when the tenant belongs to an Organization) that links to /locations. Updates as you switch. Verified live: shows "Main", flips to "Westside" after a switch, hidden for standalone studios. Also re-confirmed org isolation during this pass — Dev Studio and Recharged are two separate franchises with no cross-contamination.
+
+## 2026-07-18 — Overnight loop: HQ health pass + canonical client-identity helper
+- HQ portal crawl: all 16 sections return 200, no user-visible errors (the "undefined" tokens were Next.js RSC flight-payload markers, not shown to users), and all ACTIVE studios have valid plans so MRR is correct ($0 rows are trials). No bug.
+- Phase 3 groundwork: extracted the cross-tenant client-identity match (phone/email within an org) into one reusable helper lib/org.ts:linkedClientOr() and refactored the client profile's "Credits at other locations" card to use it — single source of truth for cross-location lookups, reducing inconsistency risk when redemption is built. Verified live: card still shows a sibling location's package.
