@@ -814,3 +814,6 @@
 ## 2026-07-18 — Overnight loop: HQ distinguishes App Store requests; verified shared directory
 - Verified the shared client directory: "All locations" toggle + Location column render, and search preserves the scope (hidden scope=all input persists). No bug.
 - Improvement: App Store "Request an app" submissions now show a "🧩 App Store" tag in the HQ Feature Requests board with the "App request:" prefix stripped to a clean app name, so super-admin can tell them apart from feature requests. Verified live (Mailchimp request tagged).
+
+## 2026-07-18 — Overnight loop: membership renewals skip suspended studios
+- Correctness bug: renewMemberships() renewed monthly/yearly memberships and generated renewal orders for ANY tenant, including SUSPENDED (churned/offline) studios whose public sites are already down. Added a `tenant: { status: { not: "SUSPENDED" } }` filter so suspended studios no longer auto-renew or accrue phantom orders. Verified: cron runs 200 ({"ok":true,"renewed":0}); DB confirms 0 suspended tenants currently have due memberships (so no bad renewals had fired yet).

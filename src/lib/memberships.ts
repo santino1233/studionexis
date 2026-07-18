@@ -34,6 +34,8 @@ export async function renewMemberships(): Promise<number> {
       frozen: false,
       expiresAt: { lt: new Date() },
       package: { interval: { in: ["month", "year"] }, active: true },
+      // Don't auto-renew (or bill) memberships for a suspended/offline studio.
+      tenant: { status: { not: "SUSPENDED" } },
     },
     include: { package: true },
     take: 500,
