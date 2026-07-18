@@ -800,3 +800,6 @@
 ## 2026-07-18 — Overnight loop: franchise role-enforcement verified + location audit trail
 - Security check (no vuln): a STAFF user is fully blocked from franchise controls — GET /locations 307→/dashboard, POST /api/location/create makes no tenant, /api/location/switch and org-sync settings both rejected (303→login). Owner-only guards hold.
 - Improvement: location create and switch now write AuditLog entries (location-created / location-switched with from→to detail) — a trail for the owner/HQ and a prerequisite for the Phase 3 audited credit redemption. Verified live: switches recorded as "Westside → Main" etc.
+
+## 2026-07-18 — Overnight loop: current-location pill in the top bar
+- For multi-location owners it wasn't obvious which location's data you were editing after switching. Added a persistent "📍 <location>" pill to the top bar (only shown when the tenant belongs to an Organization) that links to /locations. Updates as you switch. Verified live: shows "Main", flips to "Westside" after a switch, hidden for standalone studios. Also re-confirmed org isolation during this pass — Dev Studio and Recharged are two separate franchises with no cross-contamination.
