@@ -46,5 +46,5 @@ export async function POST(req: Request) {
       };
     }),
   });
-  return NextResponse.redirect(externalUrl(req, back), 303);
+  return NextResponse.redirect(externalUrl(req, `${back}${back.includes("?") ? "&" : "?"}added=class`), 303);
 }

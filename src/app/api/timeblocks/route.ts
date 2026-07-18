@@ -27,5 +27,5 @@ export async function POST(req: Request) {
   await db.timeBlock.create({
     data: { tenantId: tenant.id, startsAt, endsAt, reason: String(form.get("reason") ?? "").trim() || null },
   });
-  return NextResponse.redirect(externalUrl(req, back), 303);
+  return NextResponse.redirect(externalUrl(req, `${back}${back.includes("?") ? "&" : "?"}added=block`), 303);
 }

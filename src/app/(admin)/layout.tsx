@@ -1,6 +1,7 @@
 import { Sidebar } from "@/components/shell/sidebar";
 import { Topbar } from "@/components/shell/topbar";
 import { MobileNav } from "@/components/shell/mobile-nav";
+import { QuickToast } from "@/components/shell/quick-toast";
 import { getCurrentTenant } from "@/lib/tenant";
 import { getSession } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -60,6 +61,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <Topbar />
         <main className="flex-1 overflow-y-auto px-6 py-6 lg:px-10">{children}</main>
       </div>
+      <QuickToast />
     </div>
   );
 }
