@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { rateLimit } from "@/lib/rate-limit";
 import { tenantBySlugOrDomain } from "@/lib/public-tenant";
+import { appsOf } from "@/lib/webhooks";
 
 // Shared photo-attachment upload for every chat surface. Returns { url } that
 // callers include as the message's `image`. Files land in the target tenant's
@@ -23,6 +24,7 @@ export async function POST(req: Request) {
     // Public visitor on a studio's site — no session.
     const tenant = await tenantBySlugOrDomain(slug);
     if (!tenant) return NextResponse.json({ error: "not_found" }, { status: 404 });
+    if (appsOf(tenant.policies).chatDisabled) return NextResponse.json({ error: "disabled" }, { status: 403 });
     tenantId = tenant.id;
   } else {
     const auth = await getSession();

@@ -786,3 +786,6 @@
 
 ## 2026-07-17 — Overnight loop: fixed off-brand/broken reminder booking link
 - Bug (customer-facing): the 24h booking-reminder email linked "Manage your booking" to https://new.nexis.revsports.ca/book/<slug>/me — an internal admin host that returns a 307, not the studio's site. Fixed to publicSiteUrl(tenant, "/book/me") so it points at <slug>.nexis.revsports.ca/book/me (or the studio's custom domain). Verified the canonical path returns 200 and no other outbound message code contains new.nexis/legacy /s/ links.
+
+## 2026-07-18 — Overnight loop: chat upload respects disabled chat
+- Consistency/hardening bug: when a studio turned Live chat off, the visitor chat POST correctly returned 403 but /api/chat/upload still accepted image uploads (200) into the studio's uploads folder. Fixed the visitor path to check appsOf(tenant.policies).chatDisabled and return 403, matching the message endpoint. Verified live: upload → 403 when disabled, 200 when re-enabled.
