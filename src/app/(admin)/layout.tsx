@@ -6,6 +6,7 @@ import { getCurrentTenant } from "@/lib/tenant";
 import { getSession } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { publicSiteUrl } from "@/lib/site-url";
+import { Wrench, ShieldAlert, Rocket, Megaphone } from "lucide-react";
 
 function PlanBanner({ status, trialEndsAt }: { status: string; trialEndsAt: Date | null }) {
   if (status === "TRIAL" && trialEndsAt) {
@@ -51,12 +52,15 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <Sidebar slug={tenant.slug} role={role} chatUnread={chatUnread} supportUnread={supportUnread} siteUrl={publicSiteUrl(tenant)} locations={locations} />
       <MobileNav slug={tenant.slug} role={role} locations={locations} siteUrl={publicSiteUrl(tenant)} />
       <div className="flex min-w-0 flex-1 flex-col">
-        {maint && <div className="border-b border-rose/20 bg-rose/5 px-6 py-2 text-center text-[12.5px] font-bold text-rose">🔧 {maint}</div>}
-        {anns.map((a) => (
-          <div key={a.id} className={`border-b px-6 py-2 text-center text-[12.5px] font-bold ${a.kind === "security" ? "border-rose/20 bg-rose/5 text-rose" : a.kind === "maintenance" ? "border-brand/20 bg-brand-wash text-brand-ink" : "border-line-2 bg-raised text-ink-2"}`}>
-            {a.kind === "security" ? "🛡" : a.kind === "release" ? "🚀" : a.kind === "maintenance" ? "🔧" : "📣"} <b>{a.title}</b> — {a.body}
+        {maint && <div className="flex items-center justify-center gap-1.5 border-b border-rose/20 bg-rose/5 px-6 py-2 text-center text-[12.5px] font-bold text-rose"><Wrench className="size-3.5" /> {maint}</div>}
+        {anns.map((a) => {
+          const AnnIcon = a.kind === "security" ? ShieldAlert : a.kind === "release" ? Rocket : a.kind === "maintenance" ? Wrench : Megaphone;
+          return (
+          <div key={a.id} className={`flex items-center justify-center gap-1.5 border-b px-6 py-2 text-center text-[12.5px] font-bold ${a.kind === "security" ? "border-rose/20 bg-rose/5 text-rose" : a.kind === "maintenance" ? "border-brand/20 bg-brand-wash text-brand-ink" : "border-line-2 bg-raised text-ink-2"}`}>
+            <AnnIcon className="size-3.5 shrink-0" /> <span><b>{a.title}</b> — {a.body}</span>
           </div>
-        ))}
+          );
+        })}
         <PlanBanner status={tenant.status} trialEndsAt={tenant.trialEndsAt} />
         <Topbar />
         <main className="flex-1 overflow-y-auto px-6 py-6 lg:px-10">{children}</main>

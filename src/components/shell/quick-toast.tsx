@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Check } from "lucide-react";
 
 // Brief success toast after a quick-add. Reads ?added= from the URL client-side
 // (no Suspense needed), shows a confirmation, then strips the param.
@@ -26,8 +27,8 @@ export function QuickToast() {
   }, []);
   if (!msg) return null;
   return (
-    <div className="fixed bottom-6 left-1/2 z-[80] -translate-x-1/2 rounded-full bg-ink px-5 py-2.5 text-[13px] font-bold text-canvas shadow-xl">
-      ✓ {msg}
+    <div className="fixed bottom-6 left-1/2 z-[80] flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-ink px-5 py-2.5 text-[13px] font-bold text-canvas shadow-xl">
+      <Check className="size-4" /> {msg}
     </div>
   );
 }

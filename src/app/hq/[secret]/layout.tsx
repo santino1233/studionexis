@@ -1,27 +1,31 @@
 import Link from "next/link";
 import { assertHq } from "@/lib/hq";
 import { db } from "@/lib/db";
+import {
+  LayoutGrid, Building2, Ticket, MessagesSquare, Vote, CreditCard, TrendingUp,
+  Megaphone, Activity, ScrollText, Mail, Flag, Rocket, Users, BookOpen, Settings,
+} from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
 // HQ v2 shell (Wave 16 B1) — sidebar per the CRM spec's navigation.
-const NAV: [string, string, string][] = [
-  ["/", "Dashboard", "◧"],
-  ["/studios", "Studios", "🏢"],
-  ["/support", "Support", "🎫"],
-  ["/chats", "Live Chat", "💬"],
-  ["/requests", "Feature Requests", "🗳"],
-  ["/billing", "Billing", "💳"],
-  ["/analytics", "Analytics", "📈"],
-  ["/broadcasts", "Broadcasts", "📣"],
-  ["/status", "System Status", "🩺"],
-  ["/logs", "Activity Logs", "📜"],
-  ["/comms", "Email & SMS", "✉️"],
-  ["/flags", "Feature Flags", "🚩"],
-  ["/releases", "Releases", "🚀"],
-  ["/team", "Team", "👥"],
-  ["/kb", "Knowledge Base", "📚"],
-  ["/hq-settings", "Settings", "⚙️"],
+const NAV: [string, string, React.ComponentType<{ className?: string }>][] = [
+  ["/", "Dashboard", LayoutGrid],
+  ["/studios", "Studios", Building2],
+  ["/support", "Support", Ticket],
+  ["/chats", "Live Chat", MessagesSquare],
+  ["/requests", "Feature Requests", Vote],
+  ["/billing", "Billing", CreditCard],
+  ["/analytics", "Analytics", TrendingUp],
+  ["/broadcasts", "Broadcasts", Megaphone],
+  ["/status", "System Status", Activity],
+  ["/logs", "Activity Logs", ScrollText],
+  ["/comms", "Email & SMS", Mail],
+  ["/flags", "Feature Flags", Flag],
+  ["/releases", "Releases", Rocket],
+  ["/team", "Team", Users],
+  ["/kb", "Knowledge Base", BookOpen],
+  ["/hq-settings", "Settings", Settings],
 ];
 
 export default async function HqLayout({ children, params }: { children: React.ReactNode; params: Promise<{ secret: string }> }) {
@@ -42,9 +46,9 @@ export default async function HqLayout({ children, params }: { children: React.R
           <div className="mt-1 text-[9.5px] font-bold uppercase tracking-[0.18em] text-muted">Mission Control</div>
         </div>
         <nav className="flex-1 overflow-y-auto px-3 pb-4">
-          {NAV.map(([href, label, icon]) => (
+          {NAV.map(([href, label, Icon]) => (
             <Link key={href} href={href} className="mt-0.5 flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-semibold text-ink-2 hover:bg-raised hover:text-ink">
-              <span className="w-4 text-center text-[13px]">{icon}</span> {label}
+              <Icon className="size-[17px] shrink-0 opacity-80" /> {label}
               {href === "/support" && openTickets > 0 && <span className="ml-auto rounded-full bg-brand px-1.5 py-0.5 text-[10px] font-bold text-white">{openTickets}</span>}
               {href === "/chats" && unreadChats > 0 && <span className="ml-auto rounded-full bg-brand px-1.5 py-0.5 text-[10px] font-bold text-white">{unreadChats}</span>}
             </Link>
