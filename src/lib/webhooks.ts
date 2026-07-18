@@ -10,9 +10,11 @@ export type AppsConfig = {
   discordUrl?: string;
   telegramToken?: string;
   telegramChatId?: string;
+  googleChatUrl?: string;
+  teamsUrl?: string;
   icalToken?: string;
   chatDisabled?: boolean;
-  pixels?: { ga4?: string; meta?: string; tiktok?: string };
+  pixels?: { ga4?: string; meta?: string; tiktok?: string; clarity?: string; gtm?: string; pinterest?: string; snapchat?: string };
   installed?: string[]; // App Store: ids the studio has explicitly added
 };
 
@@ -67,6 +69,8 @@ export function emitEvent(tenantId: string, event: string, data: Record<string, 
       const line = chatLine(event, data);
       if (apps.slackUrl?.startsWith("http")) await post(apps.slackUrl, JSON.stringify({ text: line }), { "Content-Type": "application/json" });
       if (apps.discordUrl?.startsWith("http")) await post(apps.discordUrl, JSON.stringify({ content: line }), { "Content-Type": "application/json" });
+      if (apps.googleChatUrl?.startsWith("http")) await post(apps.googleChatUrl, JSON.stringify({ text: line }), { "Content-Type": "application/json" });
+      if (apps.teamsUrl?.startsWith("http")) await post(apps.teamsUrl, JSON.stringify({ text: line }), { "Content-Type": "application/json" });
       if (apps.telegramToken && apps.telegramChatId) {
         await post(`https://api.telegram.org/bot${apps.telegramToken}/sendMessage`, JSON.stringify({ chat_id: apps.telegramChatId, text: line }), { "Content-Type": "application/json" });
       }

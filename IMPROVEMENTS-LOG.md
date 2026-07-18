@@ -834,3 +834,10 @@
 
 ## 2026-07-18 — Overnight loop: customer booking-cancel gives feedback (no more silent failure)
 - Bug: a customer cancelling a booking inside the cancellation window silently failed — the transaction returned with no change and dumped them on the account page with zero feedback. Also, successful cancels gave no confirmation. Reworked the cancel handler to return an outcome (cancelled/toolate/notfound) and redirect back to /bookings with a message: "Booking cancelled — any class credit has been returned", "It's too close to class time to cancel online — please contact the studio", or a not-found notice. Credit-refund + waitlist-promotion logic unchanged. Verified live: both banners render for a logged-in customer.
+
+## 2026-07-18 — App Store: 6 new integrations (tested to perfection)
+- Added 6 easy, high-value apps that slot into the existing pixel-injection and webhook-alert pipelines:
+  - Marketing/Insights (script injection on public pages): Google Tag Manager, Microsoft Clarity (free heatmaps), Pinterest Tag, Snapchat Pixel.
+  - Team alerts (booking/sale/chat alerts via webhook): Google Chat, Microsoft Teams.
+- Each has its own inline-SVG brand logo, catalog entry, config panel, install/uninstall (clears its config), and appConfigured detection. Pixel saves merge (adding one never wipes another).
+- Verified live end-to-end: all 4 scripts render on the public booking site with the studio's ID (GTM gtm.js?id=, Clarity clarity.ms/tag, Pinterest s.pinimg.com/ct/core.js, Snapchat sc-static.net/scevent); both webhooks delivered a real chat.message alert to a local echo server ({"text":"💬 Live chat from Visitor: …"}) on /gchat and /teams. All test data cleaned up.

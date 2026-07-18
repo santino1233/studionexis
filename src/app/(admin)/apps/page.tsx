@@ -117,6 +117,24 @@ export default async function AppsPage({ searchParams }: { searchParams: Promise
         </form>
       </Panel>
     ),
+    googlechat: (
+      <Panel key="googlechat" app={byId.googlechat} remove chip={<Chip on={!!apps.googleChatUrl} />}>
+        <form method="post" action="/api/settings" className="flex gap-2">
+          <input type="hidden" name="section" value="apps" /><input type="hidden" name="next" value="/apps?saved=1" />
+          <input name="googleChatUrl" defaultValue={apps.googleChatUrl ?? ""} placeholder="Google Chat webhook URL" className={field} />
+          <button className={save}>Save</button>
+        </form>
+      </Panel>
+    ),
+    teams: (
+      <Panel key="teams" app={byId.teams} remove chip={<Chip on={!!apps.teamsUrl} />}>
+        <form method="post" action="/api/settings" className="flex gap-2">
+          <input type="hidden" name="section" value="apps" /><input type="hidden" name="next" value="/apps?saved=1" />
+          <input name="teamsUrl" defaultValue={apps.teamsUrl ?? ""} placeholder="Microsoft Teams incoming-webhook URL" className={field} />
+          <button className={save}>Save</button>
+        </form>
+      </Panel>
+    ),
     calendar: (
       <Panel key="calendar" app={byId.calendar} remove chip={<Chip on={!!apps.icalToken} yes="Feed active" no="Off" />}>
         <div className="space-y-3">
@@ -153,6 +171,45 @@ export default async function AppsPage({ searchParams }: { searchParams: Promise
           <input type="hidden" name="section" value="apps" /><input type="hidden" name="next" value="/apps?saved=1" />
           <input name="tiktok" defaultValue={apps.pixels?.tiktok ?? ""} placeholder="TikTok Pixel ID" className={field} />
           <button className={save}>Save</button>
+        </form>
+      </Panel>
+    ),
+    gtm: (
+      <Panel key="gtm" app={byId.gtm} remove chip={<Chip on={!!apps.pixels?.gtm} />}>
+        <form method="post" action="/api/settings" className="flex gap-2">
+          <input type="hidden" name="section" value="apps" /><input type="hidden" name="next" value="/apps?saved=1" />
+          <input name="gtm" defaultValue={apps.pixels?.gtm ?? ""} placeholder="Container ID (GTM-XXXXXX)" className={field} />
+          <button className={save}>Save</button>
+        </form>
+      </Panel>
+    ),
+    pinterest: (
+      <Panel key="pinterest" app={byId.pinterest} remove chip={<Chip on={!!apps.pixels?.pinterest} />}>
+        <form method="post" action="/api/settings" className="flex gap-2">
+          <input type="hidden" name="section" value="apps" /><input type="hidden" name="next" value="/apps?saved=1" />
+          <input name="pinterest" defaultValue={apps.pixels?.pinterest ?? ""} placeholder="Pinterest Tag ID" className={field} />
+          <button className={save}>Save</button>
+        </form>
+      </Panel>
+    ),
+    snapchat: (
+      <Panel key="snapchat" app={byId.snapchat} remove chip={<Chip on={!!apps.pixels?.snapchat} />}>
+        <form method="post" action="/api/settings" className="flex gap-2">
+          <input type="hidden" name="section" value="apps" /><input type="hidden" name="next" value="/apps?saved=1" />
+          <input name="snapchat" defaultValue={apps.pixels?.snapchat ?? ""} placeholder="Snap Pixel ID" className={field} />
+          <button className={save}>Save</button>
+        </form>
+      </Panel>
+    ),
+    clarity: (
+      <Panel key="clarity" app={byId.clarity} remove chip={<Chip on={!!apps.pixels?.clarity} />}>
+        <form method="post" action="/api/settings" className="space-y-2">
+          <input type="hidden" name="section" value="apps" /><input type="hidden" name="next" value="/apps?saved=1" />
+          <div className="flex gap-2">
+            <input name="clarity" defaultValue={apps.pixels?.clarity ?? ""} placeholder="Clarity Project ID" className={field} />
+            <button className={save}>Save</button>
+          </div>
+          <p className="text-[11.5px] text-muted">Free from Microsoft — heatmaps and session recordings of your booking site.</p>
         </form>
       </Panel>
     ),

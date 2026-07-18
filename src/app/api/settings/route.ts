@@ -137,14 +137,15 @@ export async function POST(req: Request) {
     const set = (k: keyof typeof apps, v: string) => { (apps as Record<string, unknown>)[k] = v || undefined; };
     if (form.has("slackUrl")) set("slackUrl", String(form.get("slackUrl")).trim());
     if (form.has("discordUrl")) set("discordUrl", String(form.get("discordUrl")).trim());
+    if (form.has("googleChatUrl")) set("googleChatUrl", String(form.get("googleChatUrl")).trim());
+    if (form.has("teamsUrl")) set("teamsUrl", String(form.get("teamsUrl")).trim());
     if (form.has("telegramToken")) { set("telegramToken", String(form.get("telegramToken")).trim()); set("telegramChatId", String(form.get("telegramChatId")).trim()); }
-    if (form.has("ga4") || form.has("meta") || form.has("tiktok")) {
-      // Merge — each pixel is now its own app, so only touch the fields present.
-      apps.pixels = {
-        ga4: form.has("ga4") ? (String(form.get("ga4")).trim() || undefined) : apps.pixels?.ga4,
-        meta: form.has("meta") ? (String(form.get("meta")).trim() || undefined) : apps.pixels?.meta,
-        tiktok: form.has("tiktok") ? (String(form.get("tiktok")).trim() || undefined) : apps.pixels?.tiktok,
-      };
+    const PIXEL_KEYS = ["ga4", "meta", "tiktok", "clarity", "gtm", "pinterest", "snapchat"] as const;
+    if (PIXEL_KEYS.some((k) => form.has(k))) {
+      // Merge — each pixel is its own app, so only touch the fields present.
+      const px = { ...(apps.pixels ?? {}) } as Record<string, string | undefined>;
+      for (const k of PIXEL_KEYS) if (form.has(k)) px[k] = String(form.get(k)).trim() || undefined;
+      apps.pixels = px;
     }
     if (String(form.get("regenIcal")) === "1") apps.icalToken = randomBytes(12).toString("hex");
     if (form.has("chatToggle")) apps.chatDisabled = String(form.get("chatToggle")) === "off" ? true : undefined;
@@ -175,11 +176,11 @@ export async function POST(req: Request) {
       // Removing an app also clears its live configuration so it truly goes away.
       if (id === "slack") apps.slackUrl = undefined;
       if (id === "discord") apps.discordUrl = undefined;
+      if (id === "googlechat") apps.googleChatUrl = undefined;
+      if (id === "teams") apps.teamsUrl = undefined;
       if (id === "telegram") { apps.telegramToken = undefined; apps.telegramChatId = undefined; }
       if (id === "calendar") apps.icalToken = undefined;
-      if (id === "ga4" && apps.pixels) apps.pixels = { ...apps.pixels, ga4: undefined };
-      if (id === "meta" && apps.pixels) apps.pixels = { ...apps.pixels, meta: undefined };
-      if (id === "tiktok" && apps.pixels) apps.pixels = { ...apps.pixels, tiktok: undefined };
+      if (["ga4", "meta", "tiktok", "clarity", "gtm", "pinterest", "snapchat"].includes(id) && apps.pixels) apps.pixels = { ...apps.pixels, [id]: undefined };
       if (id === "livechat") apps.chatDisabled = true;
       if (id === "automation") prev.webhooks = [];
     }

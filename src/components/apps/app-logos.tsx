@@ -32,5 +32,17 @@ const LOGOS: Record<string, string> = {
   stripe: wrap(`<rect width="32" height="32" rx="8" fill="#635BFF"/><path d="M15.7 12.4c0-.8.7-1.1 1.7-1.1 1.5 0 3.4.5 4.9 1.3V8.2c-1.6-.6-3.2-.9-4.9-.9-4 0-6.7 2.1-6.7 5.6 0 5.5 7.5 4.6 7.5 7 0 .9-.8 1.2-1.9 1.2-1.6 0-3.8-.7-5.5-1.6v4.5c1.9.8 3.8 1.2 5.5 1.2 4.1 0 6.9-2 6.9-5.6 0-5.9-7.5-4.8-7.5-7.2z" fill="#fff"/>`),
   // Twilio — red rounded square, message dots
   twilio: wrap(`<rect width="32" height="32" rx="8" fill="#F22F46"/><circle cx="16" cy="16" r="8.5" fill="#fff"/><g fill="#F22F46"><circle cx="12.8" cy="12.8" r="2.1"/><circle cx="19.2" cy="12.8" r="2.1"/><circle cx="12.8" cy="19.2" r="2.1"/><circle cx="19.2" cy="19.2" r="2.1"/></g>`),
+  // Google Chat — green speech bubble
+  googlechat: wrap(`<rect width="32" height="32" rx="8" fill="#fff"/><path d="M7 11a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-9l-4 3v-3H9a2 2 0 0 1-2-2z" fill="#00AC47"/><circle cx="13" cy="15" r="1.5" fill="#fff"/><circle cx="19" cy="15" r="1.5" fill="#fff"/>`),
+  // Microsoft Teams — purple badge, white T + person
+  teams: wrap(`<rect width="32" height="32" rx="8" fill="#5B5FC7"/><circle cx="21.5" cy="10.5" r="2.6" fill="#fff" opacity="0.9"/><rect x="7" y="10" width="12" height="12" rx="2" fill="#fff"/><rect x="9" y="12.4" width="8" height="1.8" fill="#5B5FC7"/><rect x="12.1" y="12.8" width="1.8" height="7" fill="#5B5FC7"/>`),
+  // Google Tag Manager — blue diamond
+  gtm: wrap(`<rect width="32" height="32" rx="8" fill="#fff"/><rect x="16" y="4" width="12" height="12" rx="2.5" transform="rotate(45 16 16)" fill="#8AB4F8"/><rect x="16" y="7" width="8" height="8" rx="2" transform="rotate(45 16 16)" fill="#4285F4"/><circle cx="16" cy="16" r="2" fill="#fff"/>`),
+  // Pinterest — red badge, white P
+  pinterest: wrap(`<rect width="32" height="32" rx="8" fill="#E60023"/><path d="M16.4 8.5c-4.3 0-6.6 2.8-6.6 5.6 0 1.3.7 2.9 1.9 3.4.2.1.3 0 .3-.2l.2-.8c0-.1 0-.2-.1-.3-.5-.6-.8-1.4-.8-2.2 0-2.4 1.8-4.5 4.7-4.5 2.6 0 4 1.6 4 3.7 0 2.7-1.2 5-3 5-1 0-1.7-.8-1.5-1.8.3-1.2.9-2.5.9-3.4 0-.8-.4-1.4-1.3-1.4-1 0-1.9 1.1-1.9 2.5 0 .9.3 1.5.3 1.5l-1.2 5.2c-.3 1.5-.1 3.3 0 3.5 0 .1.2.1.3 0 .1-.1 1.4-1.8 1.9-3.4l.7-2.7c.4.7 1.4 1.3 2.5 1.3 3.3 0 5.5-3 5.5-7 0-3-2.5-5.5-6.2-5.5z" fill="#fff"/>`),
+  // Snapchat — yellow badge, white ghost
+  snapchat: wrap(`<rect width="32" height="32" rx="8" fill="#FFFC00"/><path d="M16 7c2.6 0 4.2 1.9 4.3 4.3 0 .5 0 1 .1 1.4.2.4.9.3 1.3.1.6-.3 1.2.5.7 1-.4.4-1.4.6-1.6 1.1-.2.6.9 2.1 2.6 2.7.4.1.4.5.1.7-.6.5-1.7.4-2 .9-.2.4 0 1-.6 1-.5 0-1-.4-1.8-.4-1.1 0-1.6 1.1-3.2 1.1s-2.1-1.1-3.2-1.1c-.8 0-1.3.4-1.8.4-.6 0-.4-.6-.6-1-.3-.5-1.4-.4-2-.9-.3-.2-.3-.6.1-.7 1.7-.6 2.8-2.1 2.6-2.7-.2-.5-1.2-.7-1.6-1.1-.5-.5.1-1.3.7-1 .4.2 1.1.3 1.3-.1.1-.4.1-.9.1-1.4C11.8 8.9 13.4 7 16 7z" fill="#fff"/>`),
+  // Microsoft Clarity — blue badge, eye
+  clarity: wrap(`<rect width="32" height="32" rx="8" fill="#1A6DFF"/><path d="M6 16s3.6-6 10-6 10 6 10 6-3.6 6-10 6S6 16 6 16z" fill="#fff"/><circle cx="16" cy="16" r="3.2" fill="#1A6DFF"/>`),
   default: wrap(`<rect width="32" height="32" rx="8" fill="#E5E7EB"/><circle cx="16" cy="16" r="5" fill="#9CA3AF"/>`),
 };
