@@ -11,7 +11,11 @@ const wrap = (inner: string) => `<svg viewBox="0 0 32 32" width="100%" height="1
 
 const LOGOS: Record<string, string> = {
   // Zapier — orange 6-spoke asterisk
-  automation: wrap(`<rect width="32" height="32" rx="8" fill="#FF4A00"/><g stroke="#fff" stroke-width="2.6" stroke-linecap="round"><line x1="16" y1="7" x2="16" y2="25"/><line x1="8.2" y1="11.5" x2="23.8" y2="20.5"/><line x1="8.2" y1="20.5" x2="23.8" y2="11.5"/></g>`),
+  zapier: wrap(`<rect width="32" height="32" rx="8" fill="#FF4A00"/><g stroke="#fff" stroke-width="2.6" stroke-linecap="round"><line x1="16" y1="7" x2="16" y2="25"/><line x1="8.2" y1="11.5" x2="23.8" y2="20.5"/><line x1="8.2" y1="20.5" x2="23.8" y2="11.5"/></g>`),
+  // Make — purple/pink gradient blocks
+  make: wrap(`<rect width="32" height="32" rx="8" fill="#2E1A47"/><g fill="none" stroke-width="3.4" stroke-linecap="round"><path d="M9 22V11" stroke="#B14BF4"/><path d="M15 22l3-11" stroke="#C86DF7"/><path d="M23 22V11" stroke="#F04B8A"/><path d="M19.5 22l3-11" stroke="#F04B8A"/></g>`),
+  // Zalo — blue badge with white speech mark
+  zalo: wrap(`<rect width="32" height="32" rx="8" fill="#0068FF"/><path d="M16 7c-5 0-9 3.4-9 7.6 0 2.4 1.3 4.6 3.4 6-.2.9-.7 2-1.4 2.7-.3.3-.1.7.3.7 1.7-.1 3.2-.7 4.2-1.4.8.2 1.6.3 2.5.3 5 0 9-3.4 9-7.6S21 7 16 7z" fill="#fff"/><text x="16" y="18.5" font-family="Arial, sans-serif" font-size="8.5" font-weight="800" fill="#0068FF" text-anchor="middle">Zalo</text>`),
   // Slack — 4-colour pinwheel
   slack: wrap(`<rect x="13" y="3" width="6" height="13" rx="3" fill="#36C5F0"/><rect x="16" y="13" width="13" height="6" rx="3" fill="#ECB22E"/><rect x="13" y="16" width="6" height="13" rx="3" fill="#2EB67D"/><rect x="3" y="13" width="13" height="6" rx="3" fill="#E01E5A"/>`),
   // Discord — blurple badge with white face

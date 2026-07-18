@@ -13,7 +13,8 @@ export type AppDef = {
 };
 
 export const APP_CATALOG: AppDef[] = [
-  { id: "automation", name: "Make.com & Zapier", category: "Automation", icon: "⚡", blurb: "Push bookings, clients and sales to 6,000+ apps with signed webhooks.", kind: "config" },
+  { id: "zapier", name: "Zapier", category: "Automation", icon: "⚡", blurb: "Push bookings, clients and sales to 7,000+ apps with a Zapier Catch Hook.", kind: "config" },
+  { id: "make", name: "Make", category: "Automation", icon: "🔧", blurb: "Send bookings, clients and sales into Make.com scenarios via a webhook.", kind: "config" },
   { id: "slack", name: "Slack", category: "Team alerts", icon: "💬", blurb: "Post booking & sale alerts to a Slack channel the moment they happen.", kind: "config" },
   { id: "discord", name: "Discord", category: "Team alerts", icon: "🎮", blurb: "Send booking & sale alerts to your Discord server.", kind: "config" },
   { id: "telegram", name: "Telegram", category: "Team alerts", icon: "✈️", blurb: "Get booking & sale alerts in a Telegram chat via your bot.", kind: "config" },
@@ -27,6 +28,7 @@ export const APP_CATALOG: AppDef[] = [
   { id: "pinterest", name: "Pinterest Tag", category: "Marketing", icon: "📌", blurb: "Track conversions and retarget from your Pinterest campaigns.", kind: "config" },
   { id: "snapchat", name: "Snapchat Pixel", category: "Marketing", icon: "👻", blurb: "Measure and retarget visitors from your Snapchat ads.", kind: "config" },
   { id: "clarity", name: "Microsoft Clarity", category: "Insights", icon: "🔥", blurb: "Free heatmaps & session recordings to see how visitors use your site.", kind: "config" },
+  { id: "zalo", name: "Zalo", category: "Support", icon: "💙", blurb: "Add a “Chat on Zalo” button to your booking site so clients reach you on Zalo.", kind: "config" },
   { id: "livechat", name: "Live chat widget", category: "Support", icon: "💬", blurb: "A chat bubble on your website and booking pages, answered from your Inbox.", kind: "config" },
   { id: "stripe", name: "Stripe payments", category: "Payments", icon: "💳", blurb: "Take card payments for packages, memberships and classes.", kind: "status" },
   { id: "twilio", name: "SMS & WhatsApp", category: "Messaging", icon: "✉️", blurb: "Send confirmations and reminders by text and WhatsApp.", kind: "status" },
@@ -37,7 +39,8 @@ export const CONFIG_APP_IDS = APP_CATALOG.filter((a) => a.kind === "config").map
 // Does this app already have real configuration? (so we never hide live setups)
 export function appConfigured(id: string, apps: AppsConfig, hooks: Webhook[]): boolean {
   switch (id) {
-    case "automation": return hooks.length > 0;
+    case "zapier": return hooks.some((h) => h.source !== "make");
+    case "make": return hooks.some((h) => h.source === "make");
     case "slack": return !!apps.slackUrl;
     case "discord": return !!apps.discordUrl;
     case "googlechat": return !!apps.googleChatUrl;
@@ -51,6 +54,7 @@ export function appConfigured(id: string, apps: AppsConfig, hooks: Webhook[]): b
     case "pinterest": return !!apps.pixels?.pinterest;
     case "snapchat": return !!apps.pixels?.snapchat;
     case "clarity": return !!apps.pixels?.clarity;
+    case "zalo": return !!apps.zaloId;
     case "livechat": return !apps.chatDisabled; // on by default
     default: return false;
   }

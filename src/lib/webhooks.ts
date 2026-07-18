@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 // Outgoing webhooks + chat notifications (Wave 15 A2/A3).
 // Fire-and-forget: never blocks or fails the caller.
 
-export type Webhook = { url: string; secret: string; events: string[] };
+export type Webhook = { url: string; secret: string; events: string[]; source?: "zapier" | "make" };
 export type AppsConfig = {
   slackUrl?: string;
   discordUrl?: string;
@@ -12,6 +12,7 @@ export type AppsConfig = {
   telegramChatId?: string;
   googleChatUrl?: string;
   teamsUrl?: string;
+  zaloId?: string; // Zalo phone/OA id → "Chat on Zalo" button on public pages
   icalToken?: string;
   chatDisabled?: boolean;
   pixels?: { ga4?: string; meta?: string; tiktok?: string; clarity?: string; gtm?: string; pinterest?: string; snapchat?: string };

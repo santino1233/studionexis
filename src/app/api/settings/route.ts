@@ -119,10 +119,11 @@ export async function POST(req: Request) {
     const prev = (tenant.policies ?? {}) as Record<string, unknown>;
     const url = String(form.get("url") ?? "").trim();
     const events = WEBHOOK_EVENTS.filter((e) => form.getAll("events").includes(e));
+    const src = form.get("source"); const source = src === "make" ? "make" : src === "zapier" ? "zapier" : undefined;
     if (/^https:\/\//.test(url) && events.length > 0) {
       const hooks = webhooksOf(tenant.policies);
       if (hooks.length < 5) {
-        hooks.push({ url, secret: `whsec_${randomBytes(16).toString("hex")}`, events });
+        hooks.push({ url, secret: `whsec_${randomBytes(16).toString("hex")}`, events, ...(source ? { source } : {}) });
         await db.tenant.update({ where: { id: tenant.id }, data: { policies: { ...prev, webhooks: hooks } } });
       }
     }
@@ -139,6 +140,7 @@ export async function POST(req: Request) {
     if (form.has("discordUrl")) set("discordUrl", String(form.get("discordUrl")).trim());
     if (form.has("googleChatUrl")) set("googleChatUrl", String(form.get("googleChatUrl")).trim());
     if (form.has("teamsUrl")) set("teamsUrl", String(form.get("teamsUrl")).trim());
+    if (form.has("zaloId")) set("zaloId", String(form.get("zaloId")).trim().replace(/[^A-Za-z0-9]/g, ""));
     if (form.has("telegramToken")) { set("telegramToken", String(form.get("telegramToken")).trim()); set("telegramChatId", String(form.get("telegramChatId")).trim()); }
     const PIXEL_KEYS = ["ga4", "meta", "tiktok", "clarity", "gtm", "pinterest", "snapchat"] as const;
     if (PIXEL_KEYS.some((k) => form.has(k))) {
@@ -182,7 +184,9 @@ export async function POST(req: Request) {
       if (id === "calendar") apps.icalToken = undefined;
       if (["ga4", "meta", "tiktok", "clarity", "gtm", "pinterest", "snapchat"].includes(id) && apps.pixels) apps.pixels = { ...apps.pixels, [id]: undefined };
       if (id === "livechat") apps.chatDisabled = true;
-      if (id === "automation") prev.webhooks = [];
+      if (id === "zalo") apps.zaloId = undefined;
+      if (id === "zapier") prev.webhooks = webhooksOf(tenant.policies).filter((h) => h.source === "make");
+      if (id === "make") prev.webhooks = webhooksOf(tenant.policies).filter((h) => h.source !== "make");
     }
     apps.installed = [...set];
     await db.tenant.update({ where: { id: tenant.id }, data: { policies: { ...prev, apps } } });

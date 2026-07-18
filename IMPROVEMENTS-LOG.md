@@ -841,3 +841,8 @@
   - Team alerts (booking/sale/chat alerts via webhook): Google Chat, Microsoft Teams.
 - Each has its own inline-SVG brand logo, catalog entry, config panel, install/uninstall (clears its config), and appConfigured detection. Pixel saves merge (adding one never wipes another).
 - Verified live end-to-end: all 4 scripts render on the public booking site with the studio's ID (GTM gtm.js?id=, Clarity clarity.ms/tag, Pinterest s.pinimg.com/ct/core.js, Snapchat sc-static.net/scevent); both webhooks delivered a real chat.message alert to a local echo server ({"text":"💬 Live chat from Visitor: …"}) on /gchat and /teams. All test data cleaned up.
+
+## 2026-07-18 — App Store: split Make/Zapier + add Zalo (tested to perfection)
+- Split the combined "Make.com & Zapier" app into separate **Zapier** and **Make** apps, each with its own logo and webhook manager. Webhooks are now tagged with a `source` ("zapier"/"make"; legacy untagged ones belong to Zapier); each panel lists/adds/removes only its own, and install state + uninstall are independent. Event dispatch is unchanged (fires to every hook). Verified: a Zapier hook and a Make hook coexist under their own tiles; uninstalling Zapier leaves the Make hook intact.
+- Added **Zalo** (big for the VN market): stores apps.zaloId; a "Chat on Zalo" floating button (bottom-left, clear of the chat bubble) links to zalo.me/<id> on the booking site and studio site. Verified live: button + zalo.me/84901234567 render on both public surfaces when set, and are absent for studios without it.
+- App Store now offers 16 integrations.

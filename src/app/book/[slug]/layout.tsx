@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { tenantBySlugOrDomain } from "@/lib/public-tenant";
 import { Pixels } from "@/components/pixels";
 import { ChatWidget } from "@/components/chat-widget";
+import { ZaloButton } from "@/components/zalo-button";
 
 // Per-studio SEO for every booking/portal page (Wave 13 P3).
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
@@ -31,6 +32,7 @@ export default async function BookLayout({ children, params }: { children: React
       {tenant && <Pixels policies={tenant.policies} />}
       {children}
       {tenant && <ChatWidget slug={slug} brand={tenant.brandColor || "#F97316"} studio={tenant.name} />}
+      {tenant && <ZaloButton policies={tenant.policies} />}
     </>
   );
 }

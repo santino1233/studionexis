@@ -59,34 +59,62 @@ export default async function AppsPage({ searchParams }: { searchParams: Promise
   const browse = APP_CATALOG.filter((a) => !isOn(a)).map(({ id, name, category, blurb, kind }) => ({ id, name, category, blurb, kind }));
 
   const byId = Object.fromEntries(APP_CATALOG.map((a) => [a.id, a]));
+
+  // Zapier owns untagged (legacy) + zapier-tagged hooks; Make owns make-tagged.
+  const hooksFor = (src: "zapier" | "make") => hooks.map((h, i) => ({ h, i })).filter(({ h }) => src === "make" ? h.source === "make" : h.source !== "make");
+  const webhookPanel = (src: "zapier" | "make", placeholder: string) => {
+    const mine = hooksFor(src);
+    return (
+      <div className="space-y-3">
+        {mine.map(({ h, i }) => (
+          <div key={i} className="rounded-xl border border-line-2 px-3.5 py-2.5">
+            <div className="flex items-center justify-between gap-2">
+              <code className="truncate font-mono text-[11.5px] text-ink">{h.url}</code>
+              <form method="post" action="/api/settings"><input type="hidden" name="section" value="webhook-remove" /><input type="hidden" name="idx" value={i} /><input type="hidden" name="next" value="/apps?saved=1" /><button className="rounded-lg bg-line-2 px-2 py-1 text-[11px] font-bold text-ink-2 hover:bg-rose/10 hover:text-rose">✕</button></form>
+            </div>
+            <div className="mt-1 text-[11px] text-muted">{h.events.join(" · ")} · secret: <code className="font-mono">{h.secret.slice(0, 12)}…</code></div>
+          </div>
+        ))}
+        <form method="post" action="/api/settings" className="space-y-2.5 border-t border-line-2 pt-3">
+          <input type="hidden" name="section" value="webhook-add" />
+          <input type="hidden" name="source" value={src} />
+          <input type="hidden" name="next" value="/apps?saved=1" />
+          <input name="url" required placeholder={placeholder} className={field} />
+          <div className="flex flex-wrap gap-3">
+            {WEBHOOK_EVENTS.map((e) => (
+              <label key={e} className="flex items-center gap-1.5 text-[12px] font-semibold text-ink-2">
+                <input type="checkbox" name="events" value={e} defaultChecked className="size-3.5 accent-[#F97316]" /> {e}
+              </label>
+            ))}
+          </div>
+          <button className={save}>Add webhook</button>
+          <p className="text-[11.5px] text-muted">We POST signed JSON the moment events happen. Full payloads in the <a href="/developers#automation" target="_blank" className="font-bold text-brand hover:underline">API docs</a>.</p>
+        </form>
+      </div>
+    );
+  };
+
   const panels: Record<string, React.ReactNode> = {
-    automation: (
-      <Panel key="automation" app={byId.automation} remove chip={<Chip on={hooks.length > 0} yes={`${hooks.length} webhook${hooks.length === 1 ? "" : "s"}`} no="No webhooks" />}>
-        <div className="space-y-3">
-          {hooks.map((h, i) => (
-            <div key={i} className="rounded-xl border border-line-2 px-3.5 py-2.5">
-              <div className="flex items-center justify-between gap-2">
-                <code className="truncate font-mono text-[11.5px] text-ink">{h.url}</code>
-                <form method="post" action="/api/settings"><input type="hidden" name="section" value="webhook-remove" /><input type="hidden" name="idx" value={i} /><input type="hidden" name="next" value="/apps?saved=1" /><button className="rounded-lg bg-line-2 px-2 py-1 text-[11px] font-bold text-ink-2 hover:bg-rose/10 hover:text-rose">✕</button></form>
-              </div>
-              <div className="mt-1 text-[11px] text-muted">{h.events.join(" · ")} · secret: <code className="font-mono">{h.secret.slice(0, 12)}…</code></div>
-            </div>
-          ))}
-          <form method="post" action="/api/settings" className="space-y-2.5 border-t border-line-2 pt-3">
-            <input type="hidden" name="section" value="webhook-add" />
-            <input type="hidden" name="next" value="/apps?saved=1" />
-            <input name="url" required placeholder="https:// webhook URL (from Make or Zapier)" className={field} />
-            <div className="flex flex-wrap gap-3">
-              {WEBHOOK_EVENTS.map((e) => (
-                <label key={e} className="flex items-center gap-1.5 text-[12px] font-semibold text-ink-2">
-                  <input type="checkbox" name="events" value={e} defaultChecked className="size-3.5 accent-[#F97316]" /> {e}
-                </label>
-              ))}
-            </div>
-            <button className={save}>Add webhook</button>
-            <p className="text-[11.5px] text-muted">We POST signed JSON the moment events happen. Full payloads in the <a href="/developers#automation" target="_blank" className="font-bold text-brand hover:underline">API docs</a>.</p>
-          </form>
-        </div>
+    zapier: (
+      <Panel key="zapier" app={byId.zapier} remove chip={<Chip on={hooksFor("zapier").length > 0} yes={`${hooksFor("zapier").length} hook${hooksFor("zapier").length === 1 ? "" : "s"}`} no="No hooks" />}>
+        {webhookPanel("zapier", "https:// Zapier Catch Hook URL")}
+      </Panel>
+    ),
+    make: (
+      <Panel key="make" app={byId.make} remove chip={<Chip on={hooksFor("make").length > 0} yes={`${hooksFor("make").length} hook${hooksFor("make").length === 1 ? "" : "s"}`} no="No hooks" />}>
+        {webhookPanel("make", "https:// Make.com custom-webhook URL")}
+      </Panel>
+    ),
+    zalo: (
+      <Panel key="zalo" app={byId.zalo} remove chip={<Chip on={!!apps.zaloId} />}>
+        <form method="post" action="/api/settings" className="space-y-2">
+          <input type="hidden" name="section" value="apps" /><input type="hidden" name="next" value="/apps?saved=1" />
+          <div className="flex gap-2">
+            <input name="zaloId" defaultValue={apps.zaloId ?? ""} placeholder="Zalo phone or OA id (e.g. 84901234567)" className={field} />
+            <button className={save}>Save</button>
+          </div>
+          <p className="text-[11.5px] text-muted">Adds a &ldquo;Chat on Zalo&rdquo; button to your booking site linking to zalo.me/your-id.</p>
+        </form>
       </Panel>
     ),
     slack: (
