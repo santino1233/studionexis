@@ -810,3 +810,7 @@
 
 ## 2026-07-18 — Overnight loop: booking confirmation email uses canonical URL
 - Same off-brand/broken link as the reminder bug lived in the booking CONFIRMATION email ("Manage your bookings: https://new.nexis.revsports.ca/book/<slug>/me"). Fixed to publicSiteUrl(tenant, "/book/me") — <slug>.nexis.revsports.ca (or custom domain). Full-repo sweep confirms zero new.nexis.revsports.ca links remain in outbound code. Build clean.
+
+## 2026-07-18 — Overnight loop: HQ distinguishes App Store requests; verified shared directory
+- Verified the shared client directory: "All locations" toggle + Location column render, and search preserves the scope (hidden scope=all input persists). No bug.
+- Improvement: App Store "Request an app" submissions now show a "🧩 App Store" tag in the HQ Feature Requests board with the "App request:" prefix stripped to a clean app name, so super-admin can tell them apart from feature requests. Verified live (Mailchimp request tagged).
