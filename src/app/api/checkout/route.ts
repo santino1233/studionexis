@@ -45,7 +45,7 @@ export async function POST(req: Request) {
         } else {
           const p = prodMap.get(i.refId);
           if (!p) throw new Error("unknown product");
-          if (p.stock < i.qty) throw new Error(`not enough stock: ${p.name}`);
+          if (p.stock < i.qty) throw new Error(`${p.name} — only ${p.stock} left in stock`);
           lines.push({ kind: "product", refId: p.id, productId: p.id, label: p.name, qty: i.qty, unitPrice: Number(p.price) });
           total += Number(p.price) * i.qty;
         }

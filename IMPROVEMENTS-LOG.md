@@ -817,3 +817,7 @@
 
 ## 2026-07-18 — Overnight loop: membership renewals skip suspended studios
 - Correctness bug: renewMemberships() renewed monthly/yearly memberships and generated renewal orders for ANY tenant, including SUSPENDED (churned/offline) studios whose public sites are already down. Added a `tenant: { status: { not: "SUSPENDED" } }` filter so suspended studios no longer auto-renew or accrue phantom orders. Verified: cron runs 200 ({"ok":true,"renewed":0}); DB confirms 0 suspended tenants currently have due memberships (so no bad renewals had fired yet).
+
+## 2026-07-18 — Overnight loop: POS checkout verified + clearer out-of-stock message
+- Audited the POS/checkout money path: prices always come from the DB (never the client), vouchers check active/expiry/maxUses and increment usedCount atomically, product stock is checked and decremented in one transaction, and package purchases are correctly blocked without a client. Guards verified live (empty cart → "empty cart", package w/o client → "packages need a client"). No bug.
+- Improvement: the out-of-stock error now tells the front desk how many remain ("Yoga Mat — only 8 left in stock") instead of a generic "not enough stock". Verified live by over-buying.
