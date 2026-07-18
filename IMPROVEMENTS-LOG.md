@@ -831,3 +831,6 @@
 
 ## 2026-07-18 — Overnight loop: "Manage your bookings" emails point to the actual bookings page
 - The confirmation & reminder emails said "Manage your bookings" but linked to /book/me → the account/profile page (stats, password), which doesn't list upcoming bookings to cancel. Repointed both to publicSiteUrl(tenant, "/bookings") — the real bookings-management page (confirmed classes + cancel-window logic). Verified: /bookings resolves 200 on the subdomain; both email bodies now use the canonical /bookings link.
+
+## 2026-07-18 — Overnight loop: customer booking-cancel gives feedback (no more silent failure)
+- Bug: a customer cancelling a booking inside the cancellation window silently failed — the transaction returned with no change and dumped them on the account page with zero feedback. Also, successful cancels gave no confirmation. Reworked the cancel handler to return an outcome (cancelled/toolate/notfound) and redirect back to /bookings with a message: "Booking cancelled — any class credit has been returned", "It's too close to class time to cancel online — please contact the studio", or a not-found notice. Credit-refund + waitlist-promotion logic unchanged. Verified live: both banners render for a logged-in customer.

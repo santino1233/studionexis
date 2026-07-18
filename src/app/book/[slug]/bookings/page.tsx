@@ -24,10 +24,10 @@ const statusLabel: Record<string, string> = {
 
 export default async function MyBookingsPage({ params, searchParams }: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ t?: string; ok?: string }>;
+  searchParams: Promise<{ t?: string; ok?: string; error?: string }>;
 }) {
   const { slug } = await params;
-  const { t, ok } = await searchParams;
+  const { t, ok, error } = await searchParams;
   const tenant = await tenantBySlugOrDomain(slug);
   if (!tenant || tenant.status === "SUSPENDED") notFound();
   const brand = tenant.brandColor || "#F97316";
@@ -70,6 +70,9 @@ export default async function MyBookingsPage({ params, searchParams }: {
     <div className="min-h-screen bg-canvas">
       <CustomerNav slug={slug} active="bookings" brand={brand} />
       <main className="mx-auto max-w-[860px] px-4 py-8 sm:px-6">
+        {ok === "cancelled" && <div className="mb-5 rounded-2xl border border-green/20 bg-green-wash px-5 py-3.5 text-[13.5px] font-bold text-green">Booking cancelled — any class credit has been returned to your account.</div>}
+        {error === "toolate" && <div className="mb-5 rounded-2xl border border-rose/20 bg-rose/5 px-5 py-3.5 text-[13.5px] font-medium text-rose">It&apos;s too close to class time to cancel online — please contact the studio.</div>}
+        {error === "notfound" && <div className="mb-5 rounded-2xl border border-line-2 bg-raised px-5 py-3.5 text-[13.5px] font-medium text-ink-2">That booking could not be found — it may already be cancelled.</div>}
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <h1 className="font-display text-[28px] font-extrabold tracking-tight text-ink">My Bookings</h1>

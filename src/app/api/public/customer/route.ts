@@ -27,17 +27,18 @@ export async function POST(req: Request) {
     const session = await getCustomerSession();
     if (!session || session.slug !== slug) return NextResponse.redirect(externalUrl(req, me), 303);
     const bookingId = String(form.get("bookingId") ?? "");
+    const bookings = `/book/${slug}/bookings`;
 
-    await db.$transaction(async (tx) => {
+    const outcome = await db.$transaction(async (tx) => {
       const booking = await tx.booking.findFirst({
         where: { id: bookingId, tenantId: session.tenantId, clientId: session.clientId, status: { in: ["BOOKED", "WAITLIST"] } },
         include: { session: { include: { classType: true } }, tenant: true },
       });
-      if (!booking) return;
+      if (!booking) return "notfound";
       const pol = (booking.tenant.policies ?? {}) as { cancelWindowGroupHours?: number; cancelWindowPrivateHours?: number };
       const windowH = booking.session.classType.kind === "PRIVATE" ? pol.cancelWindowPrivateHours ?? 3 : pol.cancelWindowGroupHours ?? 3;
       const hoursOut = (booking.session.startsAt.getTime() - Date.now()) / 3600_000;
-      if (hoursOut < windowH) return; // inside the window — portal refuses
+      if (hoursOut < windowH) return "toolate"; // inside the window — portal refuses
 
       await tx.booking.update({ where: { id: booking.id }, data: { status: "CANCELLED" } });
       if (booking.status === "BOOKED" && booking.clientPackageId) {
@@ -45,8 +46,9 @@ export async function POST(req: Request) {
       }
       if (booking.status === "BOOKED") await promoteWaitlist(tx, booking.tenantId, booking.sessionId, booking.qty);
       emitEvent(booking.tenantId, "booking.cancelled", { bookingId: booking.id, clientName: "", className: booking.session.classType.name });
+      return "cancelled";
     });
-    return NextResponse.redirect(externalUrl(req, me), 303);
+    return NextResponse.redirect(externalUrl(req, outcome === "cancelled" ? `${bookings}?ok=cancelled` : `${bookings}?error=${outcome}`), 303);
   }
 
   if (mode === "profile") {
