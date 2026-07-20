@@ -2,6 +2,7 @@ import React from "react";
 import { Card, CardHeader } from "@/components/ui/card";
 import { db } from "@/lib/db";
 import { getCurrentTenant, moneyFormatter } from "@/lib/tenant";
+import { X } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -161,7 +162,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
                             <input name="vprice" type="number" step="0.01" min={0} defaultValue={v.price ? Number(v.price) : ""} placeholder={`${Number(p.price)}`} title="Price (blank = product price)" className="h-8 w-[80px] rounded-lg border border-line bg-surface px-2 text-right text-[12px] outline-none focus:border-brand" />
                             <input name="vstock" type="number" min={0} defaultValue={v.stock} title="Stock" className="h-8 w-[64px] rounded-lg border border-line bg-surface px-2 text-center text-[12px] outline-none focus:border-brand" />
                             <button className="rounded-lg bg-line-2 px-2.5 py-1 text-[11px] font-bold text-ink-2 hover:text-ink">Save</button>
-                            <button name="_remove" value="1" className="rounded-lg bg-line-2 px-2 py-1 text-[11px] font-bold text-ink-2 hover:bg-rose/10 hover:text-rose">✕</button>
+                            <button name="_remove" value="1" className="rounded-lg bg-line-2 px-2 py-1 text-[11px] font-bold text-ink-2 hover:bg-rose/10 hover:text-rose"><X className="size-3" /></button>
                           </form>
                         ))}
                         <form method="post" action={`/api/products/${p.id}`} className="flex flex-wrap items-center gap-2 border-t border-line-2 pt-2">

@@ -1,4 +1,5 @@
 import type { SiteData, SiteSkin } from "@/components/site/types";
+import { Check, Star } from "lucide-react";
 
 // Shared, skin-driven sections used by all five templates (Wave 11 Y1).
 // Each template supplies its SiteSkin; sections adopt its colors, corner
@@ -32,7 +33,7 @@ export function AboutSection({ d, s }: { d: SiteData; s: SiteSkin }) {
           <ul className="space-y-4 md:pt-12">
             {d.why.map((w) => (
               <li key={w} className="flex items-start gap-3.5 border-b pb-4 text-[15px] font-medium last:border-0" style={{ borderColor: s.line }}>
-                <span className="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full text-[12px] font-bold text-white" style={{ background: d.brand }}>✦</span>
+                <span className="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full text-[12px] font-bold text-white" style={{ background: d.brand }}><Check className="size-3.5" /></span>
                 {w}
               </li>
             ))}
@@ -118,7 +119,7 @@ export function Testimonials({ d, s }: { d: SiteData; s: SiteSkin }) {
         <div className="mt-10 grid gap-5 md:grid-cols-3">
           {d.testimonials.map((t) => (
             <figure key={t.name} className="p-7" style={{ background: s.cardBg, borderRadius: s.radius, border: `1px solid ${s.line}` }}>
-              <div className="text-[20px] tracking-[0.15em]" style={{ color: d.brand }}>★★★★★</div>
+              <div className="flex gap-0.5" style={{ color: d.brand }}>{[0,1,2,3,4].map((i) => <Star key={i} className="size-4 fill-current" />)}</div>
               <blockquote className={`mt-4 text-[15px] leading-relaxed ${s.serif ? "font-serif italic" : ""}`}>&ldquo;{t.quote}&rdquo;</blockquote>
               <figcaption className="mt-4 text-[13px] font-bold" style={MUTED}>— {t.name}</figcaption>
             </figure>

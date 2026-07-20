@@ -1,6 +1,7 @@
 import React from "react";
 import type { SiteData, SiteSkin } from "@/components/site/types";
 import { AboutSection, ClassesShowcase, TeamSection, Testimonials, FaqSection, CtaBanner, SocialLinks } from "@/components/site/sections";
+import { Clock, Leaf, MapPin, Phone } from "lucide-react";
 
 const skin: SiteSkin = { bg: "#FAF5EE", bg2: "#F4EDE2", fg: "#2A241D", line: "#2A241D14", cardBg: "#FFFFFF", serif: true, radius: "24px", dark: false };
 
@@ -94,9 +95,9 @@ export function Boutique(d: SiteData) {
           <div>
             <h2 className="font-serif text-[30px] font-medium">Come move with us</h2>
             <div className="mt-6 space-y-2.5 text-[14.5px] opacity-85">
-              {d.address && <p>📍 {d.address}</p>}
-              {d.phone && <p>📞 {d.phone}</p>}
-              {d.hours && <p>🕐 {d.hours}</p>}
+              {d.address && <p className="flex items-center gap-1.5"><MapPin className="size-3.5 shrink-0" /> {d.address}</p>}
+              {d.phone && <p className="flex items-center gap-1.5"><Phone className="size-3.5 shrink-0" /> {d.phone}</p>}
+              {d.hours && <p className="flex items-center gap-1.5"><Clock className="size-3.5 shrink-0" /> {d.hours}</p>}
               <SocialLinks d={d} />
             </div>
             <a href={d.bookHref} className="mt-8 inline-block rounded-full px-7 py-3.5 text-[14px] font-bold text-white" style={{ background: d.brand }}>Book a Class</a>

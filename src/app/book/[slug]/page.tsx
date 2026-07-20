@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Ticket } from "lucide-react";
+import { Calendar, Check, Clock, Heart, Leaf, Lightbulb, Ticket, X } from "lucide-react";
 import { db } from "@/lib/db";
 import { tenantBySlugOrDomain } from "@/lib/public-tenant";
 import { getCustomerSession } from "@/lib/customer-auth";
@@ -95,7 +95,7 @@ export default async function BookPage({ params, searchParams }: {
           <div>
             <h1 className="font-display text-[28px] font-extrabold tracking-tight text-ink">Book a Class</h1>
             <p className="mt-1 text-sm text-muted">
-              🕐 All class times are shown in {tenant.timezone.split("/").pop()!.replace("_", " ")} time ({(() => { try { return new Intl.DateTimeFormat("en-US", { timeZone: tenant.timezone, timeZoneName: "shortOffset" }).formatToParts(new Date()).find((p) => p.type === "timeZoneName")?.value ?? "local"; } catch { return "local"; } })()})
+              <Clock className="inline size-3.5 -mt-0.5" /> All class times are shown in {tenant.timezone.split("/").pop()!.replace("_", " ")} time ({(() => { try { return new Intl.DateTimeFormat("en-US", { timeZone: tenant.timezone, timeZoneName: "shortOffset" }).formatToParts(new Date()).find((p) => p.type === "timeZoneName")?.value ?? "local"; } catch { return "local"; } })()})
             </p>
           </div>
           {authed && (
@@ -111,7 +111,7 @@ export default async function BookPage({ params, searchParams }: {
 
         {/* Group / Private tabs (old-system style) */}
         <div className="mt-6 flex gap-2">
-          {([["group", "👥 Group Classes"], ["private", "🤍 Private Sessions"]] as const).map(([kk, label]) => {
+          {([["group", "Group Classes"], ["private", "Private Sessions"]] as const).map(([kk, label]) => {
             const active = (k === "private" ? "private" : "group") === kk;
             return (
               <Link key={kk} href={qsHere({ k: kk === "group" ? undefined : kk, sd: undefined })}
@@ -164,7 +164,7 @@ export default async function BookPage({ params, searchParams }: {
 
         {ok === "booked" && ref ? (
           <div className="mt-6 rounded-3xl border border-line-2 bg-surface p-8 text-center shadow-[var(--shadow-card)]">
-            <div className="mx-auto grid size-14 place-items-center rounded-full bg-green-wash text-[26px]">✓</div>
+            <div className="mx-auto grid size-14 place-items-center rounded-full bg-green-wash text-green"><Check className="size-7" /></div>
             <h2 className="mt-4 font-display text-[26px] font-extrabold tracking-tight text-ink">You&apos;re All Set!</h2>
             <p className="mt-1 text-[14px] text-muted">Your class has been booked successfully.</p>
             <div className="mx-auto mt-5 inline-block rounded-xl bg-raised px-6 py-3">
@@ -172,19 +172,19 @@ export default async function BookPage({ params, searchParams }: {
               <div className="mt-0.5 font-mono text-[17px] font-bold tracking-wider text-ink">{ref}</div>
             </div>
             <div className="mt-6 flex flex-wrap justify-center gap-2.5">
-              <Link href={`/book/${slug}/bookings`} className="rounded-xl px-6 py-3 text-[13.5px] font-bold text-white" style={{ background: brand }}>📅 View My Bookings</Link>
+              <Link href={`/book/${slug}/bookings`} className="rounded-xl px-6 py-3 text-[13.5px] font-bold text-white" style={{ background: brand }}><Calendar className="inline size-4 -mt-0.5" /> View My Bookings</Link>
               <Link href={`/book/${slug}`} className="rounded-xl border border-line-2 bg-surface px-6 py-3 text-[13.5px] font-bold text-ink-2 hover:text-ink">Book another class</Link>
             </div>
-            <p className="mt-6 text-[13px] font-semibold" style={{ color: brand }}>🤍 We can&apos;t wait to see you!</p>
+            <p className="mt-6 text-[13px] font-semibold" style={{ color: brand }}><Heart className="inline size-3.5 -mt-0.5" /> We can&apos;t wait to see you!</p>
           </div>
         ) : ok === "booked" ? (
-          <div className="mt-5 rounded-2xl border border-green/20 bg-green-wash px-5 py-4 text-[14px] font-bold text-green">You&apos;re booked! See you in class. 🎉</div>
+          <div className="mt-5 rounded-2xl border border-green/20 bg-green-wash px-5 py-4 text-[14px] font-bold text-green">You&apos;re booked! See you in class.</div>
         ) : null}
         {ok === "waitlist" && <div className="mt-5 rounded-2xl border px-5 py-4 text-[14px] font-bold" style={{ borderColor: `${brand}33`, background: `${brand}14`, color: brand }}>That class is full — you&apos;re on the waitlist.</div>}
         {err && <div className="mt-5 rounded-2xl border border-rose/20 bg-rose/5 px-5 py-4 text-[14px] font-medium text-rose">{err === "already" ? "You're already on that class." : err === "missing" ? "Please give your name and a phone or email." : err === "full" ? "The studio can't take online bookings right now — please contact them directly." : err === "pay" ? "This studio books with class credits — grab a package first." : "That didn't work — try again."}</div>}
         {rolled && (
           <div className="mt-5 rounded-2xl px-5 py-3.5 text-[13.5px] font-semibold" style={{ background: `${brand}14`, color: brand }}>
-            🌿 No more classes today — here&apos;s the next available day.
+            <Leaf className="inline size-3.5 -mt-0.5" /> No more classes today — here&apos;s the next available day.
           </div>
         )}
 
@@ -243,7 +243,7 @@ export default async function BookPage({ params, searchParams }: {
           {list.length === 0 && (
             <div className="rounded-2xl border border-line-2 bg-surface p-12 text-center text-sm text-muted shadow-[var(--shadow-card)]">
               {all.length === 0
-                ? "No classes scheduled yet — check back soon! ✨"
+                ? "No classes scheduled yet — check back soon!"
                 : <>No classes match this day{lvl ? " and level" : ""} — try another.</>}
             </div>
           )}
@@ -266,7 +266,7 @@ export default async function BookPage({ params, searchParams }: {
                     </>
                   )}
                   <div className="relative">
-                    <Link href={qsHere({ sd: undefined })} className="absolute -right-2 -top-3 grid size-9 place-items-center rounded-full bg-white/15 text-white hover:bg-white/25">✕</Link>
+                    <Link href={qsHere({ sd: undefined })} className="absolute -right-2 -top-3 grid size-9 place-items-center rounded-full bg-white/15 text-white hover:bg-white/25"><X className="size-4" /></Link>
                     <div className="flex flex-wrap gap-1.5">
                       <span className="rounded-full bg-white/20 px-2.5 py-1 text-[10.5px] font-bold">{difficultyLabel(ct.difficulty)}</span>
                       {ct.format && <span className="rounded-full bg-white/20 px-2.5 py-1 text-[10.5px] font-bold">{ct.format}</span>}
@@ -285,7 +285,7 @@ export default async function BookPage({ params, searchParams }: {
                   {ct.description && <p className="text-[13.5px] leading-relaxed text-ink-2">{ct.description}</p>}
                   {ct.benefits.length > 0 && (
                     <div className="flex flex-wrap gap-1.5">
-                      {ct.benefits.map((bn) => <span key={bn} className="rounded-full bg-line-2 px-2.5 py-1 text-[11.5px] font-semibold text-ink-2">✦ {bn}</span>)}
+                      {ct.benefits.map((bn) => <span key={bn} className="rounded-full bg-line-2 px-2.5 py-1 text-[11.5px] font-semibold text-ink-2">{bn}</span>)}
                     </div>
                   )}
                   {ct.muscles.length > 0 && (
@@ -297,7 +297,7 @@ export default async function BookPage({ params, searchParams }: {
 
                   {upsellPkg && (
                     <div className="rounded-2xl border p-4" style={{ borderColor: `${brand}44`, background: `${brand}0d` }}>
-                      <div className="text-[10.5px] font-bold uppercase tracking-[0.1em]" style={{ color: brand }}>💡 Save with a package</div>
+                      <div className="text-[10.5px] font-bold uppercase tracking-[0.1em]" style={{ color: brand }}><Lightbulb className="inline size-3 -mt-0.5" /> Save with a package</div>
                       <div className="mt-1 text-[13.5px] font-bold text-ink">{upsellPkg.name} — {fmt.format(Number(upsellPkg.price))}{upsellPkg.interval === "month" ? "/mo" : upsellPkg.interval === "year" ? "/yr" : ""} for {upsellPkg.credits} classes</div>
                       <div className="text-[11.5px] text-muted">≈ {fmt.format(Number(upsellPkg.price) / Math.max(1, upsellPkg.credits))} per class instead of {fmt.format(Number(ct.price))}</div>
                       <Link href={`/book/${slug}/packages`} className="mt-2.5 inline-block rounded-lg px-3.5 py-2 text-[12px] font-bold text-white" style={{ background: brand }}>Get the package →</Link>

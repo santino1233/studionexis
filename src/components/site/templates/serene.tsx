@@ -1,6 +1,7 @@
 import React from "react";
 import type { SiteData, SiteSkin } from "@/components/site/types";
 import { AboutSection, ClassesShowcase, TeamSection, Testimonials, FaqSection, CtaBanner, SocialLinks } from "@/components/site/sections";
+import { Clock, Leaf, MapPin, Phone } from "lucide-react";
 
 const skin: SiteSkin = { bg: "#F2F4EF", bg2: "#FFFFFFb3", fg: "#2B322B", line: "#2B322B14", cardBg: "#FFFFFF", serif: false, radius: "24px", dark: false };
 
@@ -17,7 +18,7 @@ export function Serene(d: SiteData) {
       <header className="mx-auto max-w-[1080px] px-6 pb-20 pt-6">
         <div className="grid items-center gap-12 md:grid-cols-[1.1fr_1fr]">
           <div>
-            <div className="inline-block rounded-full px-4 py-1.5 text-[11.5px] font-bold" style={{ background: `${d.brand}1f`, color: d.brand }}>🌿 A calmer way to move</div>
+            <div className="inline-block rounded-full px-4 py-1.5 text-[11.5px] font-bold" style={{ background: `${d.brand}1f`, color: d.brand }}><Leaf className="inline size-3.5 -mt-0.5" /> A calmer way to move</div>
             <h1 className="mt-5 font-display text-[42px] font-extrabold leading-[1.06] tracking-tight sm:text-[54px]">{d.tagline || `Breathe. Move. ${d.name}.`}</h1>
             {d.about && <p className="mt-6 max-w-[460px] text-[15.5px] leading-relaxed opacity-70">{d.about}</p>}
             <div className="mt-8 flex gap-3">
@@ -90,9 +91,9 @@ export function Serene(d: SiteData) {
           <div>
             <h2 className="font-display text-[28px] font-extrabold tracking-tight">Find your calm</h2>
             <div className="mt-6 space-y-2.5 text-[14.5px] opacity-75">
-              {d.address && <p>📍 {d.address}</p>}
-              {d.phone && <p>📞 {d.phone}</p>}
-              {d.hours && <p>🕐 {d.hours}</p>}
+              {d.address && <p className="flex items-center gap-1.5"><MapPin className="size-3.5 shrink-0" /> {d.address}</p>}
+              {d.phone && <p className="flex items-center gap-1.5"><Phone className="size-3.5 shrink-0" /> {d.phone}</p>}
+              {d.hours && <p className="flex items-center gap-1.5"><Clock className="size-3.5 shrink-0" /> {d.hours}</p>}
               <SocialLinks d={d} />
             </div>
             <a href={d.bookHref} className="mt-8 inline-block rounded-full px-7 py-3.5 text-[14px] font-bold text-white" style={{ background: d.brand }}>Book a Class</a>

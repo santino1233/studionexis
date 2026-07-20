@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Card, CardHeader } from "@/components/ui/card";
 import { db } from "@/lib/db";
 import { getCurrentTenant } from "@/lib/tenant";
+import { Bug } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -60,7 +61,7 @@ export default async function SupportPage({ searchParams }: { searchParams: Prom
                   <li key={t.id}>
                     <Link href={`/support?t=${t.id}`} className="flex items-center justify-between px-5 py-3.5 hover:bg-raised">
                       <span className="min-w-0">
-                        <span className="block truncate text-[13.5px] font-semibold text-ink">{t.kind === "bug" ? "🐛 " : ""}{t.subject}</span>
+                        <span className="block truncate text-[13.5px] font-semibold text-ink">{t.kind === "bug" ? <Bug className="mr-0.5 inline size-3.5 -mt-0.5" /> : null}{t.subject}</span>
                         <span className="text-[11.5px] text-muted">{t.updatedAt.toLocaleDateString("en-US", { month: "short", day: "numeric" })} · {(t.messages as unknown[]).length} message(s)</span>
                       </span>
                       <span className={`shrink-0 rounded-full px-2.5 py-1 text-[10.5px] font-bold ${tone[t.status]}`}>{t.status}</span>

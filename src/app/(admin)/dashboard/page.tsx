@@ -1,5 +1,5 @@
 import { Card, CardHeader } from "@/components/ui/card";
-import { Globe } from "lucide-react";
+import { Globe, Rocket } from "lucide-react";
 import { Kpi } from "@/components/ui/kpi";
 import {
   DollarSign, CalendarCheck, Gauge, Users, CheckCircle2, Circle,
@@ -128,7 +128,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
         <Card className="mb-6">
           <div className="px-5 py-4">
             <div className="flex items-center justify-between">
-              <div className="font-display text-[16.5px] font-extrabold text-ink">Get your studio ready <span className="ml-1">🚀</span></div>
+              <div className="font-display text-[16.5px] font-extrabold text-ink">Get your studio ready <Rocket className="inline size-4 -mt-0.5 text-brand" /></div>
               <span className="text-[13px] font-semibold text-muted">{done} of {setupSteps.length} complete</span>
             </div>
             <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-line-2">

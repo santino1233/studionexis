@@ -1,6 +1,7 @@
 import React from "react";
 import type { SiteData, SiteSkin } from "@/components/site/types";
 import { AboutSection, ClassesShowcase, TeamSection, Testimonials, FaqSection, CtaBanner, SocialLinks } from "@/components/site/sections";
+import { Clock, Leaf, MapPin, Phone } from "lucide-react";
 
 const skin: SiteSkin = { bg: "#17181C", bg2: "#1E2026", fg: "#FFFFFF", line: "#ffffff1a", cardBg: "#ffffff0d", serif: false, radius: "20px", dark: true };
 
@@ -96,9 +97,9 @@ export function Bold(d: SiteData) {
           <div>
             <h2 className="font-display text-[34px] font-extrabold uppercase tracking-tight">Pull up</h2>
             <div className="mt-6 space-y-2.5 text-[14.5px] text-white/70">
-              {d.address && <p>📍 {d.address}</p>}
-              {d.phone && <p>📞 {d.phone}</p>}
-              {d.hours && <p>🕐 {d.hours}</p>}
+              {d.address && <p className="flex items-center gap-1.5"><MapPin className="size-3.5 shrink-0" /> {d.address}</p>}
+              {d.phone && <p className="flex items-center gap-1.5"><Phone className="size-3.5 shrink-0" /> {d.phone}</p>}
+              {d.hours && <p className="flex items-center gap-1.5"><Clock className="size-3.5 shrink-0" /> {d.hours}</p>}
               <SocialLinks d={d} />
             </div>
             <a href={d.bookHref} className="mt-8 inline-block rounded-xl px-8 py-4 text-[14px] font-extrabold uppercase text-black" style={{ background: d.brand }}>Book a Class</a>
