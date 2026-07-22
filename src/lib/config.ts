@@ -1,13 +1,38 @@
-// Per-deployment configuration. The base domain is the one value that differs
+// Per-deployment configuration. Base domains are the one thing that differs
 // between environments (prod = nexis.revsports.ca, staging = stg.nexis.revsports.ca,
-// and later studionexis.com). Everything host-related derives from it, so a new
-// environment only needs NEXT_PUBLIC_BASE_DOMAIN set in its .env.
+// and the studionexis.com move). Everything host-related derives from them, so a
+// new environment or a domain migration only needs env changes, no code changes.
 //
 // NEXT_PUBLIC_ is inlined into the client bundle at build time AND readable on the
-// server/edge at runtime, so a single variable covers middleware, server code and
-// client components alike. Unset → production default.
-export const BASE_DOMAIN = process.env.NEXT_PUBLIC_BASE_DOMAIN ?? "nexis.revsports.ca";
+// server/edge at runtime, so these cover middleware, server code and client
+// components alike. Unset → production default.
+//
+// A deployment can serve MORE THAN ONE base domain at once (e.g. during the
+// studionexis.com migration both studionexis.com and nexis.revsports.ca are live).
+// NEXT_PUBLIC_BASE_DOMAINS is a comma-separated list; the FIRST entry is the
+// canonical one used to build outbound links. NEXT_PUBLIC_BASE_DOMAIN (singular)
+// is still honoured for backwards compatibility.
+const RAW = process.env.NEXT_PUBLIC_BASE_DOMAINS ?? process.env.NEXT_PUBLIC_BASE_DOMAIN ?? "nexis.revsports.ca";
+
+export const BASE_DOMAINS = RAW.split(",").map((s) => s.trim().toLowerCase()).filter(Boolean);
+
+// Canonical base domain (first in the list) — used for all generated links.
+export const BASE_DOMAIN = BASE_DOMAINS[0];
 
 // Canonical origins for this deployment.
 export const APP_ORIGIN = `https://app.${BASE_DOMAIN}`;
 export const APEX_ORIGIN = `https://${BASE_DOMAIN}`;
+
+// Which of our base domains does this request host belong to? Returns the
+// matching base (longest match wins if several would match), or null when the
+// host is none of ours — i.e. a tenant's own custom domain.
+export function baseForHost(host: string): string | null {
+  const h = (host ?? "").toLowerCase();
+  let best: string | null = null;
+  for (const b of BASE_DOMAINS) {
+    if (h === b || h.endsWith(`.${b}`)) {
+      if (best === null || b.length > best.length) best = b;
+    }
+  }
+  return best;
+}

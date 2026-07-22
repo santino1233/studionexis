@@ -1,14 +1,13 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { jwtVerify } from "jose";
 import { canAccess, homeFor } from "@/lib/access";
-import { BASE_DOMAIN } from "@/lib/config";
+import { baseForHost } from "@/lib/config";
 
 const PUBLIC = ["/login", "/api/login", "/signup", "/api/signup", "/book", "/s", "/api/public", "/api/cron", "/api/media", "/api/twilio", "/api/stripe", "/api/v1", "/developers", "/api/hq-impersonate"];
 
-const BASE = BASE_DOMAIN;
-// Hosts that serve the (hidden) admin app. Everything else on the base
-// domain is a tenant's customer world.
-const ADMIN_HOSTS = [`app.${BASE}`, `new.${BASE}`, "localhost", "127.0.0.1"];
+// Sub-hosts of a base that serve the (hidden) admin app rather than a tenant.
+const adminHostsFor = (base: string) => [`app.${base}`, `new.${base}`];
+const LOCAL_HOSTS = ["localhost", "127.0.0.1"];
 const RESERVED_SLUGS = ["app", "new", "www", "hq", "api", "mail", "admin"];
 
 // Pretty customer paths on a tenant host → internal slugged routes.
@@ -26,8 +25,14 @@ export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const host = (req.headers.get("x-forwarded-host") ?? req.headers.get("host") ?? "").split(":")[0].toLowerCase();
 
+  // Which of our base domains (if any) does this host belong to? A deployment
+  // can serve several at once during a domain migration; everything downstream
+  // routes relative to the matched base so both domains behave identically.
+  const BASE = baseForHost(host);
+  const ADMIN_HOSTS = BASE ? [...adminHostsFor(BASE), ...LOCAL_HOSTS] : LOCAL_HOSTS;
+
   // ── Super-admin portal on its own subdomain (Wave 12 Z9) ─────────────
-  if (host === `hq.${BASE}`) {
+  if (BASE && host === `hq.${BASE}`) {
     if (pathname === "/login" || pathname.startsWith("/api/") || pathname.startsWith(`/${process.env.HQ_PATH ?? "hq"}`)) {
       return NextResponse.next();
     }
@@ -49,19 +54,20 @@ export async function middleware(req: NextRequest) {
 
   // ── Apex marketing host: the public SaaS landing site. The admin app
   //    lives on app.<BASE>, so keep "/" here and bounce every other path
-  //    (login, signup, dashboard, developers…) to the app host. ─────────
-  if (host === BASE || host === `www.${BASE}`) {
+  //    (login, signup, dashboard, developers…) to the app host on the SAME
+  //    base domain the visitor arrived on. ────────────────────────────────
+  if (BASE && (host === BASE || host === `www.${BASE}`)) {
     if (pathname === "/") return NextResponse.next();
     return NextResponse.redirect(new URL(`https://app.${BASE}${pathname}${req.nextUrl.search}`));
   }
 
   // ── Tenant hosts: <slug>.BASE and custom domains ──────────────────────
   let slugParam: string | null = null;
-  if (host.endsWith(`.${BASE}`) && !ADMIN_HOSTS.includes(host)) {
+  if (BASE && host.endsWith(`.${BASE}`) && !ADMIN_HOSTS.includes(host)) {
     const slug = host.slice(0, -(BASE.length + 1));
     if (slug && !RESERVED_SLUGS.includes(slug)) slugParam = slug;
-  } else if (host && host !== BASE && !ADMIN_HOSTS.includes(host)) {
-    slugParam = `~${host}`; // custom domain
+  } else if (!BASE && host && !ADMIN_HOSTS.includes(host)) {
+    slugParam = `~${host}`; // a tenant's own custom domain (none of our bases)
   }
 
   if (slugParam) {
