@@ -46,6 +46,14 @@ export async function middleware(req: NextRequest) {
     return NextResponse.rewrite(url);
   }
 
+  // ── Apex marketing host: the public SaaS landing site. The admin app
+  //    lives on app.<BASE>, so keep "/" here and bounce every other path
+  //    (login, signup, dashboard, developers…) to the app host. ─────────
+  if (host === BASE || host === `www.${BASE}`) {
+    if (pathname === "/") return NextResponse.next();
+    return NextResponse.redirect(new URL(`https://app.${BASE}${pathname}${req.nextUrl.search}`));
+  }
+
   // ── Tenant hosts: <slug>.BASE and custom domains ──────────────────────
   let slugParam: string | null = null;
   if (host.endsWith(`.${BASE}`) && !ADMIN_HOSTS.includes(host)) {

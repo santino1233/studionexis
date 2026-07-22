@@ -883,3 +883,36 @@
 
 ## 2026-07-18 — App Store: official brand logos
 - Replaced hand-drawn approximations with official brand marks from the simple-icons library (used descriptively to indicate integration support) for 14 apps: Zapier, Make, Discord, Telegram, Google Chat, Google Calendar, Google Analytics, Google Tag Manager, Meta, TikTok, Pinterest, Snapchat, Zalo, Stripe — each rendered on a clean white tile in the brand's official hex colour (Snapchat inverted for contrast). Slack, Microsoft Teams, Twilio and Microsoft Clarity opted out of that library, so they keep tidy geometric marks; Live Chat is our own. Self-contained inline SVGs (CSP-safe). All 19 catalog apps have logos; verified official brand colours render live.
+
+## 2026-07-22 — Marketing site overhaul + apex cutover to v2
+- Built a brand-new, bespoke SaaS marketing landing INSIDE the v2 Next app
+  (src/components/site/landing.tsx + landing.css) and cut the apex domain over
+  to it. Replaces the old Astro landing that ran on the deprecated /opt/studionexis
+  stack (docker :3720) — which was emoji-heavy and disconnected from the real product.
+- Design: its own self-contained system scoped under `.nxs` (warm ivory + orange,
+  Fraunces serif italic display accents over Manrope/Inter), so it never touches the
+  app theme. All icons are lucide-react (zero emojis), consistent with the rest of v2.
+  Instagram/LinkedIn/X marks are inline SVGs (lucide dropped brand icons).
+- Sections: sticky glass nav + mobile menu, editorial hero with an animated live
+  "activity ticker" and a realistic browser-framed product window, an INTERACTIVE
+  product tour (clickable app sidebar + 7 real v2 screens: Dashboard, Schedule,
+  Booking, Clients, POS, Finance, Analytics — all CSS-drawn, no screenshots), a
+  logo marquee, a features bento with mini live mocks, a "why owners switch" grid,
+  a dark automation-flow section, a mobile client-experience with phone mockups,
+  testimonials with stats, a monthly/annual PRICING toggle wired to the REAL plans
+  ($36/$49/$75, 20% annual, Growth = most popular), an FAQ accordion, a final CTA,
+  and a footer. Scroll-reveal via IntersectionObserver; respects prefers-reduced-motion.
+- Real data: pricing/features mirror lib/plans.ts; trial is the real 7 days; CTAs
+  point at https://app.nexis.revsports.ca/signup (session cookie is host-scoped, so
+  auth must happen on the app host).
+- Routing: src/app/page.tsx is now host-aware — apex/www render the landing, the app
+  host still redirects "/" → /dashboard. middleware.ts serves "/" publicly on the apex
+  and bounces every other apex path (login/signup/dashboard/developers) to app.<base>,
+  query preserved.
+- Infra cutover: /etc/nginx/conf.d/nexis.revsports.ca.conf `location /` repointed
+  3720 (Astro) → 3105 (Next), with full proxy headers. Old Astro container left
+  running as instant rollback (revert the one proxy_pass line). nginx -t clean, reloaded.
+- Verified live: nexis.revsports.ca + www serve the landing (200, correct <title>,
+  all 12 sections, CSS/fonts load); apex /login /signup /dashboard /developers 307 to
+  the app host with query intact; app.nexis.revsports.ca/login still 200. No emojis in
+  the rendered HTML.
