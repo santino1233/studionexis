@@ -939,3 +939,24 @@
   hq.stg, dev-studio.stg tenant site — all 200/HTTPS. Isolation proven: a write to
   nexis_staging did NOT appear in live nexis (0 matches); the sync test wiped it and
   re-mirrored live (9 tenants); prod stayed healthy throughout.
+
+## 2026-07-22 — Brand-domain move to studionexis.com (zero-downtime, dual-domain)
+- Code: taught the app to serve MULTIPLE base domains at once (src/lib/config.ts →
+  NEXT_PUBLIC_BASE_DOMAINS comma list, first = canonical for links; baseForHost();
+  middleware + page.tsx resolve each request's base from its host). Built on the
+  `staging` branch, verified on staging with Host headers (studionexis.com routed
+  identically to the primary), promoted to prod via the staging→main workflow (50b53e0).
+- DNS/TLS: studionexis.com is on a SEPARATE Cloudflare account/zone (owner supplied a
+  zone-scoped API token, stored at /root/.secrets/cloudflare-studionexis.ini — must NOT
+  be revoked or cert renewals break). Repointed apex A studionexis.com and added wildcard
+  A *.studionexis.com → 72.62.69.9 (DNS-only/grey), replacing the old origin 72.62.240.50.
+  Issued *.studionexis.com + studionexis.com LE wildcard cert via certbot dns-cloudflare.
+- nginx: conf.d/studionexis.com.conf serves studionexis.com + *.studionexis.com → :3105
+  (one vhost; the app routes apex/app/hq/tenant by host).
+- Cutover: prod .env NEXT_PUBLIC_BASE_DOMAINS="studionexis.com,nexis.revsports.ca"
+  (studionexis.com CANONICAL, old domain still fully live), rebuilt + restarted.
+- Verified LIVE: studionexis.com + www + app.studionexis.com/login + hq.studionexis.com +
+  dev-studio.studionexis.com all 200/307 over valid HTTPS; nexis.revsports.ca still 200
+  everywhere; canonical links (even on the old domain) now point to app.studionexis.com.
+  No downtime, nobody stranded. Old nexis.revsports.ca can later be reduced to a 301 → new.
+- PENDING owner roadmap: move the whole project to a different server.
