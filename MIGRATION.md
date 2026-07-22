@@ -12,10 +12,10 @@ cut over with minimal downtime. Fill in `NEW_IP` (the new server's public IP).
 | Database | Docker `nexis-postgres` (postgres:16-alpine), volume `nexis_pgdata`, `127.0.0.1:5599`; DBs `nexis` + `nexis_staging`, user `nexis` |
 | Uploads | `/opt/nexis/uploads` |
 | Env/secrets | `/opt/nexis/.env`, `/opt/nexis/.env.local.secrets`, `/opt/nexis-staging/.env`, `/root/.secrets/cloudflare*.ini` |
-| nginx | `/etc/nginx/conf.d/{nexis.revsports.ca,v2-subdomains.nexis.revsports.ca,studionexis.com,stg.nexis.revsports.ca}.conf` |
+| nginx | `/etc/nginx/conf.d/{studionexis.com,stg.studionexis.com}.conf` |
 | Cron | `/etc/cron.d/nexis-{backup,reminders,staging-sync,domains,subdomains}` |
-| TLS | LE certs for `*.nexis.revsports.ca`, `*.stg.nexis.revsports.ca`, `*.studionexis.com` (all via certbot dns-cloudflare) |
-| Domains | `studionexis.com` (canonical) + `nexis.revsports.ca` (alias), both grey-cloud → server IP |
+| TLS | LE certs for `*.studionexis.com`, `*.stg.studionexis.com` (via certbot dns-cloudflare) |
+| Domains | `studionexis.com` only (grey-cloud → server IP). `nexis.revsports.ca` was retired 2026-07-22. |
 
 ## 0. Prereqs on the NEW server (Ubuntu/Debian assumed)
 ```

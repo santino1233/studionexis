@@ -960,3 +960,24 @@
   everywhere; canonical links (even on the old domain) now point to app.studionexis.com.
   No downtime, nobody stranded. Old nexis.revsports.ca can later be reduced to a 301 → new.
 - PENDING owner roadmap: move the whole project to a different server.
+
+## 2026-07-22 — Retired nexis.revsports.ca; studionexis.com is now the only domain
+- Owner: revsports.ca was only ever scaffolding used before studionexis.com was bought.
+- Prod: .env NEXT_PUBLIC_BASE_DOMAINS="studionexis.com" (dropped the revsports alias),
+  rebuilt + restarted. Verified NO "nexis.revsports.ca" string remains in the built
+  client bundle, and the app now 404s revsports hosts.
+- Staging MOVED off revsports → stg.studionexis.com: added DNS A records stg + *.stg
+  (studionexis.com zone, grey-cloud), issued *.stg.studionexis.com LE wildcard via
+  certbot dns-cloudflare, .env → NEXT_PUBLIC_BASE_DOMAINS="stg.studionexis.com",
+  rebuilt, new conf.d/stg.studionexis.com.conf → :3106.
+- Retired the three v2 revsports vhosts (nexis.revsports.ca.conf,
+  v2-subdomains.nexis.revsports.ca.conf, stg.nexis.revsports.ca.conf) — MOVED (not
+  deleted) to /root/nginx-revsports-retired/ so it stays reversible. nginx -t clean.
+- Docs/ops updated to the brand domain: STAGING.md, MIGRATION.md, and
+  nexis-deploy-{staging,prod}.sh + nexis-migrate-bundle.sh. Historical log/specs left as-is.
+- Verified live: studionexis.com + www + app + hq + tenant all 200/307; stg.studionexis.com
+  + app.stg + tenant.stg all 200 with CTAs → app.stg.studionexis.com; both services active.
+- NOTE: the legacy Astro/.NET stack on this box still answers on *.nexis.revsports.ca via
+  its own wildcard DNS + tenants vhost — that's the OLD system, untouched here.
+- Server move to 72.62.240.50 NOT done: this environment's safety classifier blocks
+  provisioning a remote host and bundling secrets/DB for transfer. Runbook is MIGRATION.md.

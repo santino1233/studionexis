@@ -5,22 +5,26 @@ Postgres **container** (they use different **databases**).
 
 | | Live (prod) | Staging |
 |---|---|---|
-| Base domain | `nexis.revsports.ca` | `stg.nexis.revsports.ca` |
-| Hosts | `nexis` · `app.` · `hq.` · `<slug>.` | `stg` · `app.stg` · `hq.stg` · `<slug>.stg` |
+| Base domain | `studionexis.com` | `stg.studionexis.com` |
+| Hosts | `studionexis.com` · `app.` · `hq.` · `<slug>.` | `stg` · `app.stg` · `hq.stg` · `<slug>.stg` |
 | Code | `/opt/nexis` (branch `main`) | `/opt/nexis-staging` (branch `staging`) |
 | Service | `nexis-next` (:3105) | `nexis-staging` (:3106) |
 | Database | `nexis` | `nexis_staging` (same container `nexis-postgres`) |
-| Nginx | `conf.d/nexis.revsports.ca.conf` + `v2-subdomains…` | `conf.d/stg.nexis.revsports.ca.conf` |
-| TLS | `*.nexis.revsports.ca` | `*.stg.nexis.revsports.ca` (Cloudflare DNS-01) |
+| Nginx | `conf.d/studionexis.com.conf` | `conf.d/stg.studionexis.com.conf` |
+| TLS | `*.studionexis.com` | `*.stg.studionexis.com` (Cloudflare DNS-01) |
 | Email/SMS | as configured | **disabled** (no SMTP/Twilio in staging `.env`) |
 
+> `nexis.revsports.ca` was temporary scaffolding used before the brand domain was
+> bought. It was fully retired on 2026-07-22 — `studionexis.com` is now the only
+> domain. (Retired vhosts kept at `/root/nginx-revsports-retired/`.)
+
 The only per-environment difference in code is the base domain, read from
-`NEXT_PUBLIC_BASE_DOMAIN` via `src/lib/config.ts` (unset → prod default).
+`NEXT_PUBLIC_BASE_DOMAINS` via `src/lib/config.ts` (unset → prod default).
 
 ## Workflow: build on staging, promote to live
 
 1. Do feature work on the **`staging`** branch, push it.
-2. Deploy to staging and test on `https://stg.nexis.revsports.ca`:
+2. Deploy to staging and test on `https://stg.studionexis.com`:
    ```
    nexis-deploy-staging.sh
    ```
