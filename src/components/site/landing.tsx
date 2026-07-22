@@ -5,8 +5,9 @@ import {
   Menu, X, Check, Zap, Sparkles, ArrowRight,
   LayoutDashboard, CalendarDays, Ticket, Users, ShoppingBag, Wallet, BarChart3, MessageSquare,
   CreditCard, Bell, Smartphone, TrendingUp, Store, Repeat, Mail, Star, Globe, Lock, Clock, Heart, Megaphone,
-  CalendarPlus, CalendarCheck, MessageCircle, CheckCircle2, RefreshCw, Rocket, Gauge, PiggyBank,
+  CalendarPlus, CalendarCheck, MessageCircle, CheckCircle2, RefreshCw, Rocket, Gauge, PiggyBank, Plug,
 } from "lucide-react";
+import { AppLogo } from "@/components/apps/app-logos";
 import { BASE_DOMAIN } from "@/lib/config";
 import "./landing.css";
 
@@ -240,6 +241,7 @@ export default function Landing() {
           <div className="nav-links">
             <a href="#features">Features</a>
             <a href="#tour">Product</a>
+            <a href="#integrations">Integrations</a>
             <a href="#pricing">Pricing</a>
             <a href="#faq">FAQ</a>
           </div>
@@ -253,6 +255,7 @@ export default function Landing() {
       <div className={`nxs-mobile${menu ? " open" : ""}`}>
         <a href="#features" onClick={() => setMenu(false)}>Features</a>
         <a href="#tour" onClick={() => setMenu(false)}>Product</a>
+        <a href="#integrations" onClick={() => setMenu(false)}>Integrations</a>
         <a href="#pricing" onClick={() => setMenu(false)}>Pricing</a>
         <a href="#faq" onClick={() => setMenu(false)}>FAQ</a>
         <a href={LOGIN}>Log in</a>
@@ -470,6 +473,28 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* ── integrations (logo wall) ── */}
+      <section className="nxs-integrations" id="integrations">
+        <div className="wrap">
+          <div className="center rv">
+            <span className="eyebrow"><Plug />Integrations</span>
+            <h2 className="h2">Works with the tools <em>you already use.</em></h2>
+            <p className="lead">Take payments, text your clients, fire alerts to your team and feed your ad platforms — connected in a few clicks, no developer needed.</p>
+          </div>
+          <div className="intg-grid">
+            {INTEGRATIONS.map((i) => (
+              <div className="intg rv" key={i.id}>
+                <AppLogo id={i.id} className="mark" />
+                <b>{i.name}</b>
+              </div>
+            ))}
+          </div>
+          <p className="intg-note">
+            …plus a REST API and signed webhooks for anything custom. <a href="/developers">Read the developer docs →</a>
+          </p>
+        </div>
+      </section>
+
       {/* ── automation (dark) ── */}
       <section className="nxs-auto">
         <div className="wrap">
@@ -635,6 +660,29 @@ export default function Landing() {
 }
 
 // ── content data ───────────────────────────────────────────────────────────
+// Integration logo wall. Ids map to the official brand marks in
+// components/apps/app-logos.tsx (the same ones the in-app App Store uses).
+const INTEGRATIONS = [
+  { id: "stripe", name: "Stripe" },
+  { id: "twilio", name: "Twilio SMS" },
+  { id: "zapier", name: "Zapier" },
+  { id: "make", name: "Make" },
+  { id: "slack", name: "Slack" },
+  { id: "discord", name: "Discord" },
+  { id: "telegram", name: "Telegram" },
+  { id: "teams", name: "Microsoft Teams" },
+  { id: "googlechat", name: "Google Chat" },
+  { id: "calendar", name: "Calendar feed" },
+  { id: "ga4", name: "Google Analytics" },
+  { id: "gtm", name: "Tag Manager" },
+  { id: "meta", name: "Meta Pixel" },
+  { id: "tiktok", name: "TikTok Pixel" },
+  { id: "pinterest", name: "Pinterest" },
+  { id: "snapchat", name: "Snapchat" },
+  { id: "clarity", name: "Microsoft Clarity" },
+  { id: "zalo", name: "Zalo" },
+];
+
 const TICKER = [
   { icon: <CalendarPlus size={13} />, text: <><b>Ava</b> booked Reformer Flow</>, bg: "var(--or-bg)", fg: "var(--or-ink)" },
   { icon: <CreditCard size={13} />, text: <><b>+$220</b> · 10-Class Pack</>, bg: "var(--green-bg)", fg: "var(--green)" },
