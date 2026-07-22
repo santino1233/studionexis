@@ -916,3 +916,26 @@
   all 12 sections, CSS/fonts load); apex /login /signup /dashboard /developers 307 to
   the app host with query intact; app.nexis.revsports.ca/login still 200. No emojis in
   the rendered HTML.
+
+## 2026-07-22 — Staging environment (stg.nexis.revsports.ca)
+- Groundwork: made the base domain env-configurable (src/lib/config.ts → BASE_DOMAIN
+  from NEXT_PUBLIC_BASE_DOMAIN, default nexis.revsports.ca), replacing hardcoded
+  nexis.revsports.ca across middleware/site-url/request-url/page/landing/sidebar/
+  settings-validation/api routes. Zero prod behaviour change; also unblocks the
+  studionexis.com move. Committed to main (307d59e).
+- Stood up a fully isolated staging env, mirroring prod:
+  · code: /opt/nexis-staging on a new `staging` branch (own .env, base = stg.nexis.revsports.ca)
+  · service: systemd nexis-staging on :3106
+  · db: nexis_staging on the same nexis-postgres container (initial copy from live)
+  · TLS: *.stg.nexis.revsports.ca wildcard via certbot dns-cloudflare
+  · nginx: conf.d/stg.nexis.revsports.ca.conf routes stg/app.stg/hq.stg/<slug>.stg → 3106
+  · SAFETY: staging .env has NO SMTP/Twilio, so staging can never email/text real clients.
+- Nightly one-way refresh: /usr/local/bin/nexis-sync-staging.sh (cron 04:00,
+  /etc/cron.d/nexis-staging-sync) drops+recreates nexis_staging from a live pg_dump and
+  rsyncs uploads. Reads live only — never writes to it. Staging test data resets nightly.
+- Workflow helpers: nexis-deploy-staging.sh (deploy staging branch) and
+  nexis-deploy-prod.sh (merge staging→main + deploy live). Documented in STAGING.md.
+- Verified live: https://stg.nexis.revsports.ca (landing, CTAs → app.stg), app.stg login,
+  hq.stg, dev-studio.stg tenant site — all 200/HTTPS. Isolation proven: a write to
+  nexis_staging did NOT appear in live nexis (0 matches); the sync test wiped it and
+  re-mirrored live (9 tenants); prod stayed healthy throughout.
