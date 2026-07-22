@@ -3,6 +3,7 @@ import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { externalUrl } from "@/lib/request-url";
+import { APP_ORIGIN } from "@/lib/config";
 import { customFeatures, featureRequests, slugifyFeature, type FeatureRequest } from "@/lib/features";
 import { audit } from "@/lib/hq";
 import { SignJWT } from "jose";
@@ -76,7 +77,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         .setProtectedHeader({ alg: "HS256" }).setExpirationTime("60s").setIssuedAt()
         .sign(new TextEncoder().encode(process.env.AUTH_SECRET!));
       audit({ tenantId: id, actor: auth.name, action: "impersonate", detail: owner.email });
-      return NextResponse.redirect(`https://app.nexis.revsports.ca/api/hq-impersonate?token=${encodeURIComponent(token)}`, 303);
+      return NextResponse.redirect(`${APP_ORIGIN}/api/hq-impersonate?token=${encodeURIComponent(token)}`, 303);
     }
   } else if (action === "request-status") {
     const idx = Number(form.get("idx"));

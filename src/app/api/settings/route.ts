@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { externalUrl } from "@/lib/request-url";
 import { verifyStripeKey } from "@/lib/stripe";
+import { BASE_DOMAIN } from "@/lib/config";
 import { randomBytes } from "crypto";
 import { WEBHOOK_EVENTS, webhooksOf, appsOf } from "@/lib/webhooks";
 
@@ -42,7 +43,7 @@ export async function POST(req: Request) {
       delete prevPol.domain;
       await db.tenant.update({ where: { id: tenant.id }, data: { customDomain: null, policies: prevPol as object } });
     } else {
-      if (!/^(?!-)[a-z0-9-]+(\.[a-z0-9-]+)+$/.test(raw) || raw.endsWith("nexis.revsports.ca")) {
+      if (!/^(?!-)[a-z0-9-]+(\.[a-z0-9-]+)+$/.test(raw) || raw.endsWith(BASE_DOMAIN)) {
         return NextResponse.redirect(externalUrl(req, "/settings?error=domain"), 303);
       }
       const taken = await db.tenant.findFirst({ where: { customDomain: raw, id: { not: tenant.id } } });

@@ -6,6 +6,7 @@ import { publicSiteUrl } from "@/lib/site-url";
 import { getPlan } from "@/lib/plans";
 import { mrrOf } from "@/lib/hq";
 import { orgSync, combinedMrr } from "@/lib/org";
+import { BASE_DOMAIN } from "@/lib/config";
 
 export const dynamic = "force-dynamic";
 
@@ -65,7 +66,7 @@ export default async function LocationsPage({ searchParams }: { searchParams: Pr
                   {isCurrent && <span className="rounded-full bg-brand px-2 py-0.5 text-[10px] font-bold text-white">You&apos;re here</span>}
                   {l.status !== "ACTIVE" && <span className="rounded-full bg-line-2 px-2 py-0.5 text-[10px] font-bold text-muted">{l.status}</span>}
                 </div>
-                <a href={publicSiteUrl(l)} target="_blank" className="text-[12px] font-medium text-muted hover:text-brand">{(l.customDomain || `${l.slug}.nexis.revsports.ca`)} ↗</a>
+                <a href={publicSiteUrl(l)} target="_blank" className="text-[12px] font-medium text-muted hover:text-brand">{(l.customDomain || `${l.slug}.${BASE_DOMAIN}`)} ↗</a>
                 <div className="mt-0.5 text-[11.5px] text-muted">{plan.name} plan · ${mrrOf(l)}/mo</div>
               </div>
               {!isCurrent && (

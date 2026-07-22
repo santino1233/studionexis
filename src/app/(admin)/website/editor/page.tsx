@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { Editor } from "grapesjs";
+import { APP_ORIGIN } from "@/lib/config";
 import "grapesjs/dist/css/grapes.min.css";
 
 // Advanced website editor (GrapesJS — open-source drag-and-drop builder).
@@ -40,7 +41,7 @@ export default function AdvancedEditorPage() {
       blk("nx-hero", "Hero", `<section style="padding:80px 24px;text-align:center;background:#f5f1ea;"><h1 style="font-size:40px;margin:0;">Big headline here</h1><p style="color:#666;margin-top:12px;">A short supporting line.</p><a href="/book" style="display:inline-block;margin-top:20px;background:#F97316;color:#fff;padding:13px 28px;border-radius:12px;font-weight:700;text-decoration:none;">Book a class</a></section>`);
       blk("nx-text", "Text", `<section style="padding:48px 24px;max-width:720px;margin:0 auto;"><h2>Section title</h2><p style="color:#555;line-height:1.7;">Tell your story here.</p></section>`);
       blk("nx-2col", "Two columns", `<section style="display:flex;gap:24px;padding:48px 24px;flex-wrap:wrap;max-width:960px;margin:0 auto;"><div style="flex:1;min-width:260px;"><h3>Left</h3><p style="color:#555;">Column text.</p></div><div style="flex:1;min-width:260px;"><h3>Right</h3><p style="color:#555;">Column text.</p></div></section>`);
-      blk("nx-image", "Image", `<img src="https://app.nexis.revsports.ca/window.svg" style="max-width:100%;display:block;margin:0 auto;" alt=""/>`);
+      blk("nx-image", "Image", `<img src="${APP_ORIGIN}/window.svg" style="max-width:100%;display:block;margin:0 auto;" alt=""/>`);
       blk("nx-cta", "Book button", `<div style="text-align:center;padding:32px;"><a href="/book" style="display:inline-block;background:#F97316;color:#fff;padding:14px 30px;border-radius:12px;font-weight:700;text-decoration:none;">Book a class</a></div>`);
       blk("nx-footer", "Footer", `<footer style="padding:40px 24px;text-align:center;color:#888;border-top:1px solid #eee;">© Your Studio · <a href="/book" style="color:#F97316;">Book</a></footer>`);
       ed.current = editor;

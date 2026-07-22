@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Check, Circle, PartyPopper, Sparkles } from "lucide-react";
 import { getCurrentTenant } from "@/lib/tenant";
 import { getSession } from "@/lib/auth";
+import { BASE_DOMAIN } from "@/lib/config";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +18,7 @@ export default async function GettingStartedPage() {
     ...(ob.studioType ? [["Studio type", ob.studioType] as [string, string]] : []),
     ...(ob.city || ob.country ? [["Location", [ob.city, ob.country].filter(Boolean).join(", ")] as [string, string]] : []),
     ...(ob.sizeBand ? [["Instructors", ob.sizeBand] as [string, string]] : []),
-    ["Booking page", `${tenant.slug}.nexis.revsports.ca`],
+    ["Booking page", `${tenant.slug}.${BASE_DOMAIN}`],
   ];
 
   return (

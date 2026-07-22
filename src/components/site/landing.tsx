@@ -7,13 +7,14 @@ import {
   CreditCard, Bell, Smartphone, TrendingUp, Store, Repeat, Mail, Star, Globe, Lock, Clock, Heart, Megaphone,
   CalendarPlus, CalendarCheck, MessageCircle, CheckCircle2, RefreshCw, Rocket, Gauge, PiggyBank,
 } from "lucide-react";
+import { BASE_DOMAIN } from "@/lib/config";
 import "./landing.css";
 
 // Studio Nexis — marketing landing page, served on the apex host. Everything
 // is CSS-drawn (no stock photos); the "product tour" recreates the real v2
 // admin surfaces so the site shows the actual system, not mockup fluff.
 
-const APP = "https://app.nexis.revsports.ca";
+const APP = `https://app.${BASE_DOMAIN}`;
 const SIGNUP = `${APP}/signup`;
 const LOGIN = `${APP}/login`;
 
@@ -292,7 +293,7 @@ export default function Landing() {
             <div className="chip float chip-tl"><span className="ci" style={{ background: "var(--green-bg)", color: "var(--green)" }}><TrendingUp /></span><div>+42% revenue<small>vs last month</small></div></div>
             <div className="chip float2 chip-br"><span className="ci" style={{ background: "var(--or-bg)", color: "var(--or-ink)" }}><Repeat /></span><div>Membership renewed<small>Unlimited · Sarah M.</small></div></div>
             <div className="win">
-              <div className="win-bar"><i /><i /><i /><span className="win-url"><Lock />app.nexis.revsports.ca/dashboard</span></div>
+              <div className="win-bar"><i /><i /><i /><span className="win-url"><Lock />app.{BASE_DOMAIN}/dashboard</span></div>
               <div className="app">
                 <aside className="app-side">
                   <div className="app-brand"><span className="m"><Sparkles /></span>Nexis</div>
@@ -438,7 +439,7 @@ export default function Landing() {
           </div>
           <div className="nxs-stage rv" style={{ marginTop: 4 }}>
             <div className="win">
-              <div className="win-bar"><i /><i /><i /><span className="win-url"><Lock />app.nexis.revsports.ca/{Active.id === "pos" ? "checkout" : Active.id}</span></div>
+              <div className="win-bar"><i /><i /><i /><span className="win-url"><Lock />app.{BASE_DOMAIN}/{Active.id === "pos" ? "checkout" : Active.id}</span></div>
               <div className="app">
                 <aside className="app-side">
                   <div className="app-brand"><span className="m"><Sparkles /></span>Nexis</div>

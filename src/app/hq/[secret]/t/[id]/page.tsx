@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { PLANS, annualMonthly } from "@/lib/plans";
 import { customFeatures, featureRequests } from "@/lib/features";
+import { BASE_DOMAIN } from "@/lib/config";
 import { hqTagsOf } from "@/lib/hq";
 
 export const dynamic = "force-dynamic";
@@ -81,7 +82,7 @@ export default async function HqTenantPage({ params }: { params: Promise<{ secre
           <h1 className="font-display text-[30px] font-extrabold tracking-tight text-ink">{tenant.name}</h1>
           <span className={`rounded-full px-2.5 py-1 text-[11px] font-bold capitalize ${statusTone[tenant.status]}`}>{tenant.status.toLowerCase().replace("_", " ")}</span>
           <span className="rounded-full bg-line-2 px-2.5 py-1 text-[11px] font-bold capitalize text-ink-2">{tenant.plan}{pol.billingCycle === "annual" ? " · annual" : ""}</span>
-          <a href={`https://${tenant.slug}.nexis.revsports.ca`} target="_blank" className="text-[12.5px] font-bold text-brand hover:underline">{tenant.slug}.nexis.revsports.ca ↗</a>
+          <a href={`https://${tenant.slug}.${BASE_DOMAIN}`} target="_blank" className="text-[12.5px] font-bold text-brand hover:underline">{tenant.slug}.{BASE_DOMAIN} ↗</a>
           {hqx.tags?.map((tg) => <span key={tg} className="rounded-full bg-purple-wash px-2.5 py-1 text-[10.5px] font-bold text-purple">{tg}</span>)}
           <form method="post" action={`/api/hq/${tenant.id}`} className="ml-auto">
             <input type="hidden" name="action" value="impersonate" />

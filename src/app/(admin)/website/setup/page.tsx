@@ -3,6 +3,7 @@ import { Check, Globe, PartyPopper, Sparkles } from "lucide-react";
 import { getCurrentTenant } from "@/lib/tenant";
 import { TEMPLATE_META, type TemplateId } from "@/components/site/types";
 import { publicSiteUrl } from "@/lib/site-url";
+import { BASE_DOMAIN } from "@/lib/config";
 
 export const dynamic = "force-dynamic";
 
@@ -142,7 +143,7 @@ export default async function SiteSetupWizard({ searchParams }: { searchParams: 
           </div>
           <div className="mx-auto mt-6 max-w-[420px] rounded-2xl border-2 border-brand/25 bg-brand-wash/40 p-5 text-left">
             <div className="text-[13.5px] font-extrabold text-ink"><Globe className="inline size-4 -mt-0.5" /> Make it truly yours — <span className="text-brand">yourstudio.com</span></div>
-            <p className="mt-1 text-[12.5px] leading-relaxed text-ink-2">Your site currently lives at {tenant.slug}.nexis.revsports.ca. Add a custom domain for <b>$12/mo</b> — automatic setup, free SSL.</p>
+            <p className="mt-1 text-[12.5px] leading-relaxed text-ink-2">Your site currently lives at {tenant.slug}.{BASE_DOMAIN}. Add a custom domain for <b>$12/mo</b> — automatic setup, free SSL.</p>
             <Link href="/settings?tab=domain" className="mt-2.5 inline-block rounded-lg bg-brand px-4 py-2 text-[12.5px] font-bold text-white hover:bg-brand-ink">Get my domain →</Link>
           </div>
         </div>

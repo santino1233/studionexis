@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/cn";
+import { BASE_DOMAIN } from "@/lib/config";
 import { ThemeToggle } from "@/components/shell/theme-toggle";
 import {
   LayoutGrid, Calendar, Star, ClipboardList, BookOpen, Users, CreditCard,
@@ -115,7 +116,7 @@ export function Sidebar({ mobile = false, slug = "", role = "OWNER", chatUnread 
           <div className="flex items-center gap-1.5 text-[12.5px] font-bold text-ink"><FlaskConical className="size-3.5 text-brand" /> We&apos;re in beta{supportUnread > 0 && <span className="rounded-full bg-brand px-1.5 py-0.5 text-[10px] font-bold text-white">{supportUnread} new</span>}</div>
           <div className="mt-0.5 text-[11px] leading-snug text-muted">{supportUnread > 0 ? <>Nexis Support replied — <span className="font-bold text-brand">open chat →</span></> : <>Spotted something off? We&apos;d love your feedback — <span className="font-bold text-brand">report a bug →</span></>}</div>
         </Link>
-        <a href={siteUrl || `https://${slug}.nexis.revsports.ca`} target="_blank" className="mb-2 block rounded-2xl border border-brand/25 bg-gradient-to-br from-brand/[0.07] to-brand/[0.02] p-3 transition-transform hover:-translate-y-px">
+        <a href={siteUrl || `https://${slug}.${BASE_DOMAIN}`} target="_blank" className="mb-2 block rounded-2xl border border-brand/25 bg-gradient-to-br from-brand/[0.07] to-brand/[0.02] p-3 transition-transform hover:-translate-y-px">
           <div className="flex items-center gap-2 text-[13px] font-bold text-ink"><Globe className="size-4 text-brand" /> Your booking page</div>
           <div className="mt-1 text-[11.5px] text-muted">See what your clients see →</div>
         </a>

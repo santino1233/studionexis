@@ -6,6 +6,7 @@ import { studioStripeConfig } from "@/lib/stripe";
 import { APP_CATALOG, appInstalled, type AppDef } from "@/lib/appstore";
 import { AppLogo } from "@/components/apps/app-logos";
 import { StoreBrowser } from "@/components/apps/store-browser";
+import { APP_ORIGIN } from "@/lib/config";
 
 export const dynamic = "force-dynamic";
 
@@ -53,7 +54,7 @@ export default async function AppsPage({ searchParams }: { searchParams: Promise
   const hooks = webhooksOf(tenant.policies);
   const stripeOn = !!studioStripeConfig(tenant).secretKey;
   const twilioOn = !!process.env.TWILIO_ACCOUNT_SID;
-  const icalUrl = apps.icalToken ? `https://app.nexis.revsports.ca/api/public/ical/${tenant.slug}?token=${apps.icalToken}` : null;
+  const icalUrl = apps.icalToken ? `${APP_ORIGIN}/api/public/ical/${tenant.slug}?token=${apps.icalToken}` : null;
 
   const isOn = (a: AppDef) => a.id === "stripe" ? stripeOn : a.id === "twilio" ? twilioOn : appInstalled(a.id, apps, hooks);
   const installed = APP_CATALOG.filter(isOn);

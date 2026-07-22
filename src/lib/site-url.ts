@@ -3,7 +3,9 @@
 // /s/<slug> form. Custom domain wins when configured; otherwise the studio's
 // subdomain <slug>.nexis.revsports.ca. Pure (no db) so it's safe in client
 // components too.
-const BASE = "nexis.revsports.ca";
+import { BASE_DOMAIN } from "@/lib/config";
+
+const BASE = BASE_DOMAIN;
 
 export function publicSiteUrl(tenant: { slug: string; customDomain?: string | null }, path = ""): string {
   const origin = tenant.customDomain ? `https://${tenant.customDomain}` : `https://${tenant.slug}.${BASE}`;

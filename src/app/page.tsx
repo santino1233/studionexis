@@ -2,12 +2,12 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import Landing from "@/components/site/landing";
+import { BASE_DOMAIN } from "@/lib/config";
 
 // The apex host (nexis.revsports.ca / www) serves the public marketing site.
 // The admin app lives on app.<base> — hitting "/" there means a signed-in
 // user, so send them to their dashboard. Middleware already gates access.
-const BASE = "nexis.revsports.ca";
-const MARKETING_HOSTS = [BASE, `www.${BASE}`];
+const MARKETING_HOSTS = [BASE_DOMAIN, `www.${BASE_DOMAIN}`];
 
 export const metadata: Metadata = {
   title: "Studio Nexis — Run your whole studio from one calm place",

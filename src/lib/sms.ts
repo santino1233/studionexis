@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
 import { getPlan } from "@/lib/plans";
+import { APP_ORIGIN } from "@/lib/config";
 
 // Pay-as-you-go SMS with a platform markup on carrier cost:
 // $1.00 of Twilio usage costs the studio $1.10 of credits.
@@ -45,7 +46,7 @@ export async function sendSms(opts: { tenantId: string; to: string; body: string
         To: to,
         From: from,
         Body: body,
-        StatusCallback: `https://app.nexis.revsports.ca/api/twilio/status?token=${process.env.CRON_TOKEN}`,
+        StatusCallback: `${APP_ORIGIN}/api/twilio/status?token=${process.env.CRON_TOKEN}`,
       }),
     });
     const data = (await res.json()) as { sid?: string; message?: string };

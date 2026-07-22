@@ -1,10 +1,11 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { jwtVerify } from "jose";
 import { canAccess, homeFor } from "@/lib/access";
+import { BASE_DOMAIN } from "@/lib/config";
 
 const PUBLIC = ["/login", "/api/login", "/signup", "/api/signup", "/book", "/s", "/api/public", "/api/cron", "/api/media", "/api/twilio", "/api/stripe", "/api/v1", "/developers", "/api/hq-impersonate"];
 
-const BASE = "nexis.revsports.ca";
+const BASE = BASE_DOMAIN;
 // Hosts that serve the (hidden) admin app. Everything else on the base
 // domain is a tenant's customer world.
 const ADMIN_HOSTS = [`app.${BASE}`, `new.${BASE}`, "localhost", "127.0.0.1"];
