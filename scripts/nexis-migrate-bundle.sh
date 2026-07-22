@@ -32,8 +32,8 @@ log "4/7 systemd units"
 cp -a /etc/systemd/system/nexis-next.service /etc/systemd/system/nexis-staging.service "$WORK/systemd/"
 
 log "5/7 nginx v2 vhosts"
-for c in nexis.revsports.ca.conf v2-subdomains.nexis.revsports.ca.conf \
-         studionexis.com.conf stg.nexis.revsports.ca.conf; do
+for c in studionexis.com.conf stg.studionexis.com.conf \
+         ; do
   cp -a "/etc/nginx/conf.d/$c" "$WORK/nginx/" 2>/dev/null || true
 done
 

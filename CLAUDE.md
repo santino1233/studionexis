@@ -9,11 +9,16 @@ src/app/globals.css) · lucide-react · (planned: Postgres + Prisma, Auth.js,
 Stripe). Node 22, npm.
 
 ## Deployment
-- systemd: nexis-next.service → `next start -p 3105` (3100 is taken by docker)
-- nginx: /etc/nginx/conf.d/new.nexis.revsports.ca.conf → https://new.nexis.revsports.ca
-  (VestaCP: vhosts MUST use `listen 72.62.69.9:80/443`; wildcard cert lives at
-  /etc/letsencrypt/live/nexis.revsports.ca-0001/ — the non-0001 cert is apex-only)
-- Deploy = `npm run build && systemctl restart nexis-next`
+- Domain: **studionexis.com** only (nexis.revsports.ca was scaffolding, retired 2026-07-22).
+  The base domain is env-driven via `NEXT_PUBLIC_BASE_DOMAINS` (src/lib/config.ts) —
+  NEVER hardcode a domain in code, docs or scripts; derive it from config.
+- LIVE: systemd nexis-next.service → `next start -p 3105`, /opt/nexis (branch `main`),
+  nginx conf.d/studionexis.com.conf, wildcard cert /etc/letsencrypt/live/studionexis.com/
+- STAGING: systemd nexis-staging.service → `-p 3106`, /opt/nexis-staging (branch `staging`),
+  nginx conf.d/stg.studionexis.com.conf, database `nexis_staging`. See STAGING.md.
+  (VestaCP: vhosts MUST use `listen 72.62.69.9:80/443`)
+- Workflow: build on **staging** first (`nexis-deploy-staging.sh`), promote to live only
+  when the owner approves (`nexis-deploy-prod.sh`). Never restart on a failed build.
 
 ## Rules
 - The OLD system in /opt/studionexis stays live and untouched until v2 reaches
