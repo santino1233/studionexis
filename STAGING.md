@@ -35,6 +35,25 @@ The only per-environment difference in code is the base domain, read from
 
 Live is never touched until step 3.
 
+## Git: how staging stays separate from live
+
+One repo, two branches — isolated by design:
+
+- The `post-commit` hook (installed in **both** checkouts) pushes only the branch
+  you committed on. Committing on `staging` pushes `origin/staging` and **cannot**
+  advance `main`.
+- `main` moves **only** when someone runs `nexis-deploy-prod.sh`, which explicitly
+  merges `staging` → `main`. Production deploys from `main` alone.
+- So experimental work can be pushed freely (it's backed up) without any risk of
+  reaching the live system.
+
+**Changed your mind about staging work?** Throw it away — live is untouched:
+```
+nexis-reset-staging.sh
+```
+It lists the commits it will drop, resets `staging` back to `main` locally and on
+GitHub, and rebuilds staging to match live.
+
 ## Nightly data refresh (one-way: live → staging)
 
 `/usr/local/bin/nexis-sync-staging.sh` runs daily at **04:00** (`/etc/cron.d/nexis-staging-sync`).
