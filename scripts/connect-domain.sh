@@ -2,11 +2,12 @@
 # Go-live for a studio's custom domain on Studio Nexis v2.
 # Usage: ./connect-domain.sh www.theirstudio.com
 # Prereqs: the studio saved the domain in Settings, and their DNS A record
-# points at 72.62.69.9. NOT yet exercised against real DNS.
+# points at this server's public IP.
 set -euo pipefail
 
 DOMAIN="${1:?usage: connect-domain.sh <domain>}"
-IP="72.62.69.9"
+# Auto-detected so this survives a server migration; override with NEXIS_PUBLIC_IP.
+IP="${NEXIS_PUBLIC_IP:-$(ip -4 route get 1.1.1.1 2>/dev/null | awk '{for(i=1;i<=NF;i++) if($i=="src") print $(i+1)}' | head -1)}"
 CONF="/etc/nginx/conf.d/${DOMAIN}.conf"
 
 echo "→ Checking DNS for ${DOMAIN}…"
