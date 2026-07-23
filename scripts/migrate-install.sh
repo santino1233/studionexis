@@ -18,7 +18,24 @@ step(){ echo; echo "=== $* ==="; }
 IP=$(ip -4 route get 1.1.1.1 2>/dev/null | awk '{for(i=1;i<=NF;i++) if($i=="src") print $(i+1)}' | head -1)
 echo "Installing Studio Nexis on $(hostname) ($IP)"
 
-step "0. unpack"
+step "0. PRE-FLIGHT — refuse to run if we'd collide with anything already here"
+FATAL=0
+chk(){ # description, condition-already-in-use
+  if [ "$2" = "1" ]; then echo "  CONFLICT: $1"; FATAL=1; else echo "  ok: $1"; fi
+}
+chk "docker container 'nexis-postgres' is free" "$(docker ps -a --format '{{.Names}}' 2>/dev/null | grep -qx nexis-postgres && echo 1 || echo 0)"
+chk "docker volume 'nexis_pgdata' is free"      "$(docker volume ls --format '{{.Name}}' 2>/dev/null | grep -qx nexis_pgdata && echo 1 || echo 0)"
+for p in 3105 3106 5599; do
+  chk "port $p is free" "$(ss -tlnH 2>/dev/null | awk '{print $4}' | grep -qE "[:.]$p\$" && echo 1 || echo 0)"
+done
+chk "/opt/nexis does not already exist"         "$([ -e /opt/nexis ] && echo 1 || echo 0)"
+chk "no existing nexis-* systemd units"         "$(ls /etc/systemd/system/nexis-*.service >/dev/null 2>&1 && echo 1 || echo 0)"
+if [ "$FATAL" = "1" ]; then
+  echo; echo "ABORTED before making any change. Resolve the conflicts above first."; exit 1
+fi
+echo "  -> no conflicts; nothing on this server will be modified or replaced."
+
+step "0b. unpack"
 rm -rf "$W"; mkdir -p "$W"; tar -xzf "$BUNDLE" -C "$W"; cat "$W/MANIFEST.txt"
 
 step "1. prerequisites"
@@ -57,7 +74,19 @@ fi
 cp "$W/env/prod.env" /opt/nexis/.env
 [ -f "$W/env/prod.local.secrets" ] && cp "$W/env/prod.local.secrets" /opt/nexis/.env.local.secrets
 [ -f "$W/env/staging.env" ] && cp "$W/env/staging.env" /opt/nexis-staging/.env
-mkdir -p /root/.secrets && cp -a "$W/env/secrets/." /root/.secrets/ 2>/dev/null || true
+# Secrets: NEVER overwrite a file that already exists — this box may host other
+# systems whose credentials live here (e.g. an unrelated cloudflare.ini).
+mkdir -p /root/.secrets
+for f in "$W/env/secrets"/*; do
+  [ -f "$f" ] || continue
+  b=$(basename "$f")
+  if [ -e "/root/.secrets/$b" ]; then
+    if cmp -s "$f" "/root/.secrets/$b"; then echo "  secrets: $b identical, leaving as-is"
+    else echo "  secrets: $b ALREADY EXISTS and differs — NOT overwritten (kept theirs)"; fi
+  else
+    cp -a "$f" "/root/.secrets/$b"; echo "  secrets: $b installed"
+  fi
+done
 chmod 600 /root/.secrets/* /opt/nexis/.env* /opt/nexis-staging/.env 2>/dev/null || true
 tar -xzf "$W/uploads/nexis.tar.gz" -C /opt/nexis 2>/dev/null || true
 tar -xzf "$W/uploads/nexis-staging.tar.gz" -C /opt/nexis-staging 2>/dev/null || true
@@ -82,10 +111,31 @@ cp "$W/bin"/nexis-*.sh /usr/local/bin/ 2>/dev/null || true
 chmod +x /usr/local/bin/nexis-*.sh 2>/dev/null || true
 
 step "6. nginx (listen IP rewritten to $IP)"
+# Prove the EXISTING config is healthy before we touch anything. If another
+# system on this box already has a broken nginx, stop — don't take the blame.
+if ! nginx -t >/dev/null 2>&1; then
+  echo "  ABORT: nginx config was ALREADY invalid before we started. Not touching it."
+  nginx -t; exit 1
+fi
+PLACED=()
 for f in "$W/nginx"/*.conf; do
-  b=$(basename "$f"); sed -E "s/listen [0-9.]+:(80|443)/listen $IP:\1/g" "$f" > "/etc/nginx/conf.d/$b"
+  b=$(basename "$f")
+  if [ -e "/etc/nginx/conf.d/$b" ]; then
+    echo "  skip $b — a file with that name already exists (not overwriting)"; continue
+  fi
+  sed -E "s/listen [0-9.]+:(80|443)/listen $IP:\1/g" "$f" > "/etc/nginx/conf.d/$b"
+  PLACED+=("/etc/nginx/conf.d/$b"); echo "  added $b"
 done
-nginx -t
+# If OUR vhosts break the config, remove them again so the other systems on this
+# box are left exactly as we found them.
+if ! nginx -t >/dev/null 2>&1; then
+  echo "  nginx test FAILED with our vhosts — rolling them back:"
+  nginx -t 2>&1 | sed 's/^/    /'
+  [ ${#PLACED[@]} -gt 0 ] && rm -f "${PLACED[@]}"
+  nginx -t && echo "  rolled back; existing nginx config is valid and untouched."
+  exit 1
+fi
+echo "  nginx config valid (ours + existing)"
 
 step "7. certificates (DNS-01, works before DNS is repointed)"
 CF=/root/.secrets/cloudflare-studionexis.ini
