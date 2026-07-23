@@ -74,6 +74,10 @@ cp -a /usr/local/bin/nexis-*.sh "$W/bin/" 2>/dev/null || true
 ok
 
 say "9/9 packing"
+# Ship the installer at the bundle ROOT so it is runnable straight after
+# extraction (it also lives inside code/nexis.tar.gz, but not usefully).
+cp -a "$(dirname "$0")/migrate-install.sh" "$W/migrate-install.sh" 2>/dev/null || true
+chmod +x "$W/migrate-install.sh" 2>/dev/null || true
 cat > "$W/MANIFEST.txt" <<EOF
 Studio Nexis — full system migration bundle
 from       : $(hostname) $(ip -4 route get 1.1.1.1 2>/dev/null | awk '{for(i=1;i<=NF;i++) if($i=="src") print $(i+1)}' | head -1)
