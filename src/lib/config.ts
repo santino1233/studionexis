@@ -1,18 +1,18 @@
 // Per-deployment configuration. Base domains are the one thing that differs
-// between environments (prod = nexis.revsports.ca, staging = stg.nexis.revsports.ca,
-// and the studionexis.com move). Everything host-related derives from them, so a
-// new environment or a domain migration only needs env changes, no code changes.
+// between environments (prod = studionexis.com, staging = stg.studionexis.com).
+// Everything host-related derives from them, so a new environment or a domain
+// migration only needs env changes, no code changes.
 //
 // NEXT_PUBLIC_ is inlined into the client bundle at build time AND readable on the
 // server/edge at runtime, so these cover middleware, server code and client
 // components alike. Unset → production default.
 //
-// A deployment can serve MORE THAN ONE base domain at once (e.g. during the
-// studionexis.com migration both studionexis.com and nexis.revsports.ca are live).
+// A deployment can serve MORE THAN ONE base domain at once (used during a domain
+// migration, when the old and new domain are both live).
 // NEXT_PUBLIC_BASE_DOMAINS is a comma-separated list; the FIRST entry is the
 // canonical one used to build outbound links. NEXT_PUBLIC_BASE_DOMAIN (singular)
 // is still honoured for backwards compatibility.
-const RAW = process.env.NEXT_PUBLIC_BASE_DOMAINS ?? process.env.NEXT_PUBLIC_BASE_DOMAIN ?? "nexis.revsports.ca";
+const RAW = process.env.NEXT_PUBLIC_BASE_DOMAINS ?? process.env.NEXT_PUBLIC_BASE_DOMAIN ?? "studionexis.com";
 
 export const BASE_DOMAINS = RAW.split(",").map((s) => s.trim().toLowerCase()).filter(Boolean);
 

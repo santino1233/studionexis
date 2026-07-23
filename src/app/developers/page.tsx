@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { ApiKeyBox, TryIt, type TryParam } from "@/components/dev/try-it";
+import { APP_ORIGIN, BASE_DOMAIN } from "@/lib/config";
 
 export const metadata: Metadata = {
   title: "StudioNexis API — Developer Documentation",
@@ -30,7 +31,7 @@ const SECTIONS: Section[] = [
       response: `{
   "id": "cl…", "name": "Dev Studio", "slug": "dev-studio",
   "currency": "USD", "timezone": "Asia/Bangkok",
-  "plan": "starter", "bookingUrl": "https://dev-studio.nexis.revsports.ca/book"
+  "plan": "starter", "bookingUrl": "https://dev-studio.${BASE_DOMAIN}/book"
 }`,
     }],
   },
@@ -257,7 +258,7 @@ export default function DevelopersPage() {
               Use it from your own tools, spreadsheets, or no-code platforms like <b>Make.com</b> and <b>Zapier</b>.
               All requests use JSON over HTTPS.
             </p>
-            <Code>{`Base URL:  https://app.nexis.revsports.ca/api/v1`}</Code>
+            <Code>{`Base URL:  ${APP_ORIGIN}/api/v1`}</Code>
             <div className="mt-5"><ApiKeyBox /></div>
           </section>
 
@@ -268,7 +269,7 @@ export default function DevelopersPage() {
               <code className="mx-1 rounded bg-line-2 px-1.5 py-0.5 font-mono text-[12px]">Authorization</code> header.
               The key grants full access to that one studio — treat it like a password and regenerate it if it leaks.
             </p>
-            <Code>{`curl https://app.nexis.revsports.ca/api/v1/me \\
+            <Code>{`curl ${APP_ORIGIN}/api/v1/me \\
   -H "Authorization: Bearer nx_live_your_key_here"`}</Code>
           </section>
 

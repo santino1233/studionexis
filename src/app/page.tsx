@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import Landing from "@/components/site/landing";
 import { baseForHost } from "@/lib/config";
 
-// The apex host of any of our base domains (e.g. nexis.revsports.ca / www, and
+// The apex host of any of our base domains (e.g. studionexis.com / www, and
 // studionexis.com once added) serves the public marketing site. The admin app
 // lives on app.<base> — hitting "/" there means a signed-in user, so send them
 // to their dashboard. Middleware already gates access.

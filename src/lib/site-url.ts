@@ -1,7 +1,7 @@
 // Canonical public URL for a studio's booking/website. Every "view your site"
 // link in the app must go through here so we never leak the internal
 // /s/<slug> form. Custom domain wins when configured; otherwise the studio's
-// subdomain <slug>.nexis.revsports.ca. Pure (no db) so it's safe in client
+// subdomain <slug>.<base domain>. Pure (no db) so it's safe in client
 // components too.
 import { BASE_DOMAIN } from "@/lib/config";
 

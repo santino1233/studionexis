@@ -1,5 +1,6 @@
 import nodemailer from "nodemailer";
 import { db } from "@/lib/db";
+import { BASE_DOMAIN } from "@/lib/config";
 
 // SMTP is optional. Without SMTP_HOST every send is recorded in EmailLog
 // as "skipped" so the product behaves identically and flipping on real
@@ -20,7 +21,7 @@ export async function sendEmail(opts: { tenantId: string; to: string; subject: s
   if (t) {
     try {
       await t.sendMail({
-        from: process.env.SMTP_FROM ?? "no-reply@nexis.revsports.ca",
+        from: process.env.SMTP_FROM ?? `no-reply@${BASE_DOMAIN}`,
         to: opts.to,
         subject: opts.subject,
         text: opts.body,

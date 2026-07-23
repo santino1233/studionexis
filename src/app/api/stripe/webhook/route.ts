@@ -5,7 +5,7 @@ import { db } from "@/lib/db";
 import { platformStripe } from "@/lib/stripe";
 
 // Platform webhook (SaaS subscriptions). Configure in the Stripe dashboard:
-// endpoint https://app.nexis.revsports.ca/api/stripe/webhook with
+// endpoint https://app.studionexis.com/api/stripe/webhook with
 // STRIPE_WEBHOOK_SECRET in .env. Dormant until both env keys exist.
 export async function POST(req: Request) {
   const stripe = platformStripe();

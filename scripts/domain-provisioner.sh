@@ -9,7 +9,10 @@
 # Also removes vhosts for domains no longer in the database.
 set -uo pipefail
 
-IP="72.62.69.9"
+# This server's public IP. Auto-detected so the script keeps working after a
+# server migration; override with NEXIS_PUBLIC_IP if the box is behind NAT.
+IP="${NEXIS_PUBLIC_IP:-$(ip -4 route get 1.1.1.1 2>/dev/null | awk '{for(i=1;i<=NF;i++) if($i=="src") print $(i+1)}' | head -1)}"
+if [ -z "$IP" ]; then echo "$(date -Is) FATAL: could not determine public IP" >> /var/log/nexis-domains.log; exit 1; fi
 UPSTREAM="127.0.0.1:3105"
 CONF_DIR="/etc/nginx/conf.d"
 PREFIX="custom-domain-"
