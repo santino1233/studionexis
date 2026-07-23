@@ -46,17 +46,24 @@ docker exec -i nexis-postgres pg_restore -U nexis -d nexis --clean --if-exists <
 [ -s "$W/db/nexis_staging.dump" ] && docker exec -i nexis-postgres pg_restore -U nexis -d nexis_staging --clean --if-exists < "$W/db/nexis_staging.dump" 2>/dev/null || true
 echo "  tenants restored: $(docker exec nexis-postgres psql -U nexis -d nexis -tAc 'SELECT count(*) FROM "Tenant";')"
 
-step "3. code + env + uploads"
+step "3. code (live + staging, with git history) + env + uploads + backups"
 mkdir -p /opt/nexis /opt/nexis-staging
 tar -xzf "$W/code/nexis.tar.gz" -C /opt/nexis
-cp -r /opt/nexis/. /opt/nexis-staging/ 2>/dev/null || true
+# staging is its own checkout on the `staging` branch — restore it as such,
+# never as a copy of live (they intentionally diverge).
+if [ -f "$W/code/nexis-staging.tar.gz" ]; then
+  tar -xzf "$W/code/nexis-staging.tar.gz" -C /opt/nexis-staging
+fi
 cp "$W/env/prod.env" /opt/nexis/.env
 [ -f "$W/env/prod.local.secrets" ] && cp "$W/env/prod.local.secrets" /opt/nexis/.env.local.secrets
 [ -f "$W/env/staging.env" ] && cp "$W/env/staging.env" /opt/nexis-staging/.env
 mkdir -p /root/.secrets && cp -a "$W/env/secrets/." /root/.secrets/ 2>/dev/null || true
 chmod 600 /root/.secrets/* /opt/nexis/.env* /opt/nexis-staging/.env 2>/dev/null || true
-tar -xzf "$W/uploads/uploads.tar.gz" -C /opt/nexis 2>/dev/null || true
-cp -r /opt/nexis/uploads /opt/nexis-staging/ 2>/dev/null || true
+tar -xzf "$W/uploads/nexis.tar.gz" -C /opt/nexis 2>/dev/null || true
+tar -xzf "$W/uploads/nexis-staging.tar.gz" -C /opt/nexis-staging 2>/dev/null || true
+mkdir -p /opt/nexis/backups && cp -a "$W/backups/." /opt/nexis/backups/ 2>/dev/null || true
+echo "  live git    : $(git -C /opt/nexis rev-parse --short HEAD 2>/dev/null) ($(git -C /opt/nexis branch --show-current 2>/dev/null))"
+echo "  staging git : $(git -C /opt/nexis-staging rev-parse --short HEAD 2>/dev/null) ($(git -C /opt/nexis-staging branch --show-current 2>/dev/null))"
 
 step "4. build (a few minutes)"
 for d in /opt/nexis /opt/nexis-staging; do
@@ -69,8 +76,10 @@ cp "$W/systemd"/*.service /etc/systemd/system/
 systemctl daemon-reload
 systemctl enable --now nexis-next
 [ -f /opt/nexis-staging/.env ] && systemctl enable --now nexis-staging
-cp "$W/cron"/nexis-backup "$W/cron"/nexis-reminders "$W/cron"/nexis-staging-sync /etc/cron.d/ 2>/dev/null || true
-cp "$W/cron"/nexis-domains /etc/cron.d/ 2>/dev/null || true
+cp "$W/cron"/nexis-* /etc/cron.d/ 2>/dev/null || true
+chmod 644 /etc/cron.d/nexis-* 2>/dev/null || true
+cp "$W/bin"/nexis-*.sh /usr/local/bin/ 2>/dev/null || true
+chmod +x /usr/local/bin/nexis-*.sh 2>/dev/null || true
 
 step "6. nginx (listen IP rewritten to $IP)"
 for f in "$W/nginx"/*.conf; do
