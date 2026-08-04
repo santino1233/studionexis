@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import { readFile } from "fs/promises";
 import path from "path";
 
-const ROOT = "/opt/nexis/uploads";
+import { UPLOADS_ROOT } from "@/lib/uploads";
+const ROOT = UPLOADS_ROOT;
 const MIME: Record<string, string> = { ".jpg": "image/jpeg", ".png": "image/png", ".webp": "image/webp" };
 
 export async function GET(_req: Request, { params }: { params: Promise<{ tenant: string; file: string }> }) {

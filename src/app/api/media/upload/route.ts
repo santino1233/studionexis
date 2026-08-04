@@ -6,7 +6,8 @@ import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { externalUrl } from "@/lib/request-url";
 
-const ROOT = "/opt/nexis/uploads";
+import { UPLOADS_ROOT } from "@/lib/uploads";
+const ROOT = UPLOADS_ROOT;
 const TYPES: Record<string, string> = { "image/jpeg": ".jpg", "image/png": ".png", "image/webp": ".webp" };
 const MAX_BYTES = 12 * 1024 * 1024;
 const MAX_GALLERY = 8;

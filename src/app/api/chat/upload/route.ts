@@ -10,7 +10,8 @@ import { appsOf } from "@/lib/webhooks";
 // Shared photo-attachment upload for every chat surface. Returns { url } that
 // callers include as the message's `image`. Files land in the target tenant's
 // uploads folder and are served publicly by /api/media/[tenant]/[file].
-const ROOT = "/opt/nexis/uploads";
+import { UPLOADS_ROOT } from "@/lib/uploads";
+const ROOT = UPLOADS_ROOT;
 const TYPES: Record<string, string> = { "image/jpeg": ".jpg", "image/png": ".png", "image/webp": ".webp" };
 const MAX_BYTES = 8 * 1024 * 1024;
 
