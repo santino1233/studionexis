@@ -487,14 +487,26 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
         )}
       </div>
 
-      {/* Legend */}
-      {view !== "month" && legendTypes.length > 0 && (
-        <div className="mt-4 flex flex-wrap items-center gap-4 px-1">
-          {legendTypes.map((t) => (
-            <span key={t.id} className="inline-flex items-center gap-1.5 text-[11.5px] font-semibold text-muted">
-              <span className="size-2.5 rounded-full" style={{ background: t.color }} /> {t.name}
-            </span>
-          ))}
+      {/* Legend — reflects the active colour mode so the block colours are always explained. */}
+      {view !== "month" && sessions.length > 0 && (
+        <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 px-1">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-muted">
+            {colorBy === "status" ? "Status colours" : "Class colours"}
+          </span>
+          {colorBy === "status" ? (
+            <>
+              <span className="inline-flex items-center gap-1.5 text-[11.5px] font-semibold text-muted"><span className="size-2.5 rounded-full" style={{ background: "#3B82F6" }} /> Booking open</span>
+              <span className="inline-flex items-center gap-1.5 text-[11.5px] font-semibold text-muted"><span className="size-2.5 rounded-full" style={{ background: "#F97316" }} /> Full</span>
+              <span className="inline-flex items-center gap-1.5 text-[11.5px] font-semibold text-muted"><span className="size-2.5 rounded-full" style={{ background: "#22A565" }} /> Completed</span>
+              <span className="inline-flex items-center gap-1.5 text-[11.5px] font-semibold text-muted"><span className="size-2.5 rounded-full" style={{ background: "#E5484D" }} /> Blocked</span>
+            </>
+          ) : (
+            legendTypes.map((t) => (
+              <span key={t.id} className="inline-flex items-center gap-1.5 text-[11.5px] font-semibold text-muted">
+                <span className="size-2.5 rounded-full" style={{ background: t.color }} /> {t.name}
+              </span>
+            ))
+          )}
           <span className="ml-2 inline-flex items-center gap-1.5 text-[11.5px] font-semibold text-muted"><Check className="size-3.5" /> Completed</span>
           <span className="inline-flex items-center gap-1.5 text-[11.5px] font-semibold text-muted"><Lock className="size-3.5" /> Blocked</span>
           <span className="inline-flex items-center gap-1.5 text-[11.5px] font-semibold text-amber-600"><span className="nx-attention inline-block size-2.5 rounded-full bg-amber-500/30" /> Needs completion</span>

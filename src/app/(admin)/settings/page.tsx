@@ -39,7 +39,12 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
   const { saved, error, tab: tabRaw } = await searchParams;
   const tab = TABS.some(([id]) => id === tabRaw) ? tabRaw! : "general";
   const tenant = await getCurrentTenant();
-  const pol = (tenant.policies ?? {}) as { cancelWindowGroupHours?: number; cancelWindowPrivateHours?: number; waitlistEnabled?: boolean; payAtStudio?: boolean; upsell?: { groupPackageId?: string | null; privatePackageId?: string | null; hideIfActive?: boolean } };
+  const pol = (tenant.policies ?? {}) as { cancelWindowGroupHours?: number; cancelWindowPrivateHours?: number; waitlistEnabled?: boolean; payAtStudio?: boolean; upsell?: { groupPackageId?: string | null; privatePackageId?: string | null; hideIfActive?: boolean }; payment?: { mode?: "at_studio" | "deposit" | "full"; depositType?: "percent" | "fixed"; depositValue?: number; depositFee?: number; fullFee?: number } };
+  // Payment collection (Money tab). Default = pay at studio. Deposit / pay-in-full
+  // require an active online payment method (Stripe). `payAtStudio` is kept in
+  // sync as the derived boolean the booking flow already reads.
+  const payMode = pol.payment?.mode ?? (pol.payAtStudio === false ? "full" : "at_studio");
+  const payCfg = pol.payment ?? {};
   const allPackages = tab === "money" ? await db.package.findMany({ where: { tenantId: tenant.id, active: true }, orderBy: [{ kind: "asc" }, { price: "asc" }] }) : [];
 
   return (
@@ -326,6 +331,60 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
         })()}
       </Card>
 
+      {(() => {
+        const online = !!studioStripeConfig(tenant).secretKey;
+        const optCls = (on: boolean) => `flex items-start gap-2.5 rounded-xl border p-3.5 text-[13.5px] font-medium ${on ? "border-line-2 text-ink" : "cursor-not-allowed border-line-2/60 text-muted opacity-60"}`;
+        return (
+          <Card className="mt-5">
+            <CardHeader eyebrow="Money" title="Payment collection" sub="How clients pay when they book — one option is always on" />
+            <form method="post" action="/api/settings" className="space-y-3 p-6">
+              <input type="hidden" name="section" value="payment" />
+              {!online && (
+                <p className="rounded-xl border border-brand/20 bg-brand-wash px-4 py-2.5 text-[12.5px] font-medium text-ink-2">
+                  Deposit and Pay-in-full need an online payment method — connect Stripe above to enable them. &ldquo;Pay at the studio&rdquo; works without one.
+                </p>
+              )}
+
+              <label className={optCls(true)}>
+                <input type="radio" name="mode" value="at_studio" defaultChecked={payMode === "at_studio"} className="mt-0.5 size-4 accent-[#F97316]" />
+                <span>Pay at the studio<span className="block text-[12px] font-normal text-muted">Clients reserve now and pay in person — no card required up front.</span></span>
+              </label>
+
+              <label className={optCls(online)}>
+                <input type="radio" name="mode" value="deposit" defaultChecked={payMode === "deposit"} disabled={!online} className="mt-0.5 size-4 accent-[#F97316]" />
+                <span className="flex-1">
+                  Take a deposit<span className="block text-[12px] font-normal text-muted">Charge part of the price to hold the spot; the rest is paid at the studio.</span>
+                  <span className="mt-2.5 flex flex-wrap items-center gap-2">
+                    <select name="depositType" defaultValue={payCfg.depositType ?? "percent"} disabled={!online} className="h-9 rounded-lg border border-line bg-surface px-2 text-[12.5px] outline-none focus:border-brand">
+                      <option value="percent">Percent %</option>
+                      <option value="fixed">Fixed amount</option>
+                    </select>
+                    <input name="depositValue" type="number" min="0" step="0.01" defaultValue={payCfg.depositValue ?? 20} disabled={!online} className="h-9 w-28 rounded-lg border border-line bg-surface px-2 text-[12.5px] outline-none focus:border-brand" placeholder="Amount" />
+                    <span className="text-[12px] text-muted">+ booking fee</span>
+                    <input name="depositFee" type="number" min="0" step="0.01" defaultValue={payCfg.depositFee ?? 0} disabled={!online} className="h-9 w-24 rounded-lg border border-line bg-surface px-2 text-[12.5px] outline-none focus:border-brand" placeholder="0" />
+                  </span>
+                </span>
+              </label>
+
+              <label className={optCls(online)}>
+                <input type="radio" name="mode" value="full" defaultChecked={payMode === "full"} disabled={!online} className="mt-0.5 size-4 accent-[#F97316]" />
+                <span className="flex-1">
+                  Pay in full<span className="block text-[12px] font-normal text-muted">Charge the whole price online at the time of booking.</span>
+                  <span className="mt-2.5 flex flex-wrap items-center gap-2">
+                    <span className="text-[12px] text-muted">+ booking fee</span>
+                    <input name="fullFee" type="number" min="0" step="0.01" defaultValue={payCfg.fullFee ?? 0} disabled={!online} className="h-9 w-24 rounded-lg border border-line bg-surface px-2 text-[12.5px] outline-none focus:border-brand" placeholder="0" />
+                  </span>
+                </span>
+              </label>
+
+              <div className="flex justify-end">
+                <button className="rounded-[10px] bg-brand px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-brand-ink">Save payment collection</button>
+              </div>
+            </form>
+          </Card>
+        );
+      })()}
+
       <Card className="mt-5">
         <CardHeader eyebrow="Selling" title="Booking upsell" sub="Offer a package while clients book — shown when it helps, hidden when it nags" />
         <form method="post" action="/api/settings" className="space-y-4 p-6">
@@ -505,10 +564,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
             <input name="waitlistEnabled" type="checkbox" defaultChecked={pol.waitlistEnabled ?? true} className="size-4 accent-[#F97316]" />
             Waitlist full classes automatically
           </label>
-          <label className="flex items-start gap-2.5 text-[13.5px] font-medium text-ink">
-            <input name="payAtStudio" type="checkbox" defaultChecked={pol.payAtStudio ?? true} className="mt-0.5 size-4 accent-[#F97316]" />
-            <span>Allow &ldquo;pay at the studio&rdquo; bookings<span className="block text-[12px] font-normal text-muted">Turn off to require credits or online payment up front — cuts down no-shows.</span></span>
-          </label>
+          <p className="text-[12px] text-muted">Looking for &ldquo;pay at the studio&rdquo;? It moved to <a href="/settings?tab=money" className="font-bold text-brand hover:underline">Money → Payment collection</a>, alongside deposits and pay-in-full.</p>
           <div className="flex justify-end">
             <button className="rounded-[10px] bg-brand px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-brand-ink">Save policies</button>
           </div>

@@ -52,6 +52,11 @@ export default async function BookPage({ params, searchParams }: {
     const next = days.find((day) => forDay(day).length > 0);
     if (next && next !== todayKey) { showingDay = next; list = forDay(next); rolled = true; }
   }
+  // Next day (with the current filters applied) that actually has classes, for
+  // the empty-state jump link.
+  const nextAvailableDay = list.length === 0
+    ? days.find((day) => day > showingDay && forDay(day).length > 0)
+    : undefined;
 
   const creditRows = authed
     ? await db.clientPackage.findMany({
@@ -244,7 +249,22 @@ export default async function BookPage({ params, searchParams }: {
             <div className="rounded-2xl border border-line-2 bg-surface p-12 text-center text-sm text-muted shadow-[var(--shadow-card)]">
               {all.length === 0
                 ? "No classes scheduled yet — check back soon!"
-                : <>No classes match this day{lvl ? " and level" : ""} — try another.</>}
+                : <>
+                    <p>No classes match this day{lvl ? " and level" : ""}.</p>
+                    {nextAvailableDay ? (
+                      <Link
+                        href={qsHere({ d: nextAvailableDay, sd: undefined })}
+                        className="mt-4 inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-[13px] font-bold text-white transition-opacity hover:opacity-90"
+                        style={{ background: brand }}
+                      >
+                        <Calendar className="size-4" />
+                        Go to next available day{" · "}
+                        {new Date(`${nextAvailableDay}T12:00:00Z`).toLocaleDateString("en-US", { timeZone: "UTC", weekday: "short", month: "short", day: "numeric" })}
+                      </Link>
+                    ) : (
+                      <p className="mt-1 text-[13px]">No upcoming classes with these filters over the next two weeks — try another level or class type.</p>
+                    )}
+                  </>}
             </div>
           )}
         </div>

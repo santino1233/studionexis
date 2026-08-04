@@ -3,7 +3,7 @@ import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { externalUrl } from "@/lib/request-url";
-import { verifyStripeKey } from "@/lib/stripe";
+import { verifyStripeKey, studioStripeConfig } from "@/lib/stripe";
 import { BASE_DOMAIN } from "@/lib/config";
 import { randomBytes } from "crypto";
 import { WEBHOOK_EVENTS, webhooksOf, appsOf } from "@/lib/webhooks";
@@ -247,9 +247,31 @@ export async function POST(req: Request) {
           cancelWindowGroupHours: Math.max(0, Number(form.get("cancelWindowGroupHours") ?? 3) || 0),
           cancelWindowPrivateHours: Math.max(0, Number(form.get("cancelWindowPrivateHours") ?? 3) || 0),
           waitlistEnabled: form.get("waitlistEnabled") === "on",
-          payAtStudio: form.get("payAtStudio") === "on",
+          // payAtStudio moved to Money → Payment collection (section "payment").
         },
       },
+    });
+  } else if (section === "payment") {
+    // Payment collection (Money tab). One mode is always selected. Deposit /
+    // pay-in-full require an online payment method; if none is connected we fall
+    // back to "at_studio" so a studio can't accidentally require a card it can't
+    // charge. `payAtStudio` is kept in sync for the existing booking flow.
+    const prev = (tenant.policies ?? {}) as Record<string, unknown>;
+    const online = !!studioStripeConfig(tenant).secretKey;
+    const raw = String(form.get("mode") ?? "at_studio");
+    const mode = (raw === "deposit" || raw === "full") && online ? raw : "at_studio";
+    const depositType = String(form.get("depositType") ?? "percent") === "fixed" ? "fixed" : "percent";
+    const num = (k: string) => Math.max(0, Number(form.get(k) ?? 0) || 0);
+    const payment = {
+      mode,
+      depositType,
+      depositValue: num("depositValue"),
+      depositFee: num("depositFee"),
+      fullFee: num("fullFee"),
+    };
+    await db.tenant.update({
+      where: { id: tenant.id },
+      data: { policies: { ...prev, payment, payAtStudio: mode === "at_studio" } },
     });
   }
   const nextRaw = String(form.get("next") ?? "");
