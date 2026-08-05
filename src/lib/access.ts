@@ -18,7 +18,7 @@ const DENY: Record<string, string[]> = {
   OWNER: [],
   MANAGER: ["/billing", "/team", "/payroll", "/locations"],
   STAFF: ["/billing", "/team", "/payroll", "/analytics", "/expenses", "/settings", "/website", "/class-types", "/my-earnings", "/locations"],
-  INSTRUCTOR: ["/billing", "/team", "/payroll", "/analytics", "/expenses", "/settings", "/website", "/class-types", "/pos", "/products", "/invoices", "/clients", "/bookings", "/welcome", "/inbox", "/locations"],
+  INSTRUCTOR: ["/billing", "/team", "/payroll", "/analytics", "/expenses", "/settings", "/website", "/class-types", "/pos", "/products", "/gift-cards", "/invoices", "/clients", "/bookings", "/welcome", "/inbox", "/locations"],
 };
 
 export function deniedPaths(role: string): string[] {

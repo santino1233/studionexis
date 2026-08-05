@@ -52,6 +52,7 @@ model Tenant {
   pageViews      PageView[]
   supportTickets SupportTicket[]
   chats          ChatConversation[]
+  giftCards      GiftCard[]
   organization   Organization?      @relation(fields: [organizationId], references: [id], onDelete: SetNull)
 }
 
@@ -531,4 +532,57 @@ model ChatConversation {
   @@index([tenantId, lastMessageAt])
   @@index([tenantId, visitorId])
   @@index([channel, lastMessageAt])
+}
+
+// ── Gift cards ────────────────────────────────────────────────────────────────
+// A gift card is a bearer instrument scoped to one tenant (never redeemable
+// across studios). `balance` is the single source of truth; every movement is
+// mirrored in a GiftCardTxn ledger row so the total is always auditable. See
+// lib/gift-cards.ts for the atomic, double-spend-safe redemption path.
+enum GiftCardStatus {
+  ACTIVE
+  REDEEMED // balance fully drawn down
+  VOID // cancelled by staff
+  EXPIRED
+}
+
+enum GiftCardTxnType {
+  PURCHASE // funded (online payment or manual issue)
+  REDEEM // drawn down at checkout — always a negative amount
+  ADJUST // manual correction / void marker
+}
+
+model GiftCard {
+  id              String         @id @default(cuid())
+  tenantId        String
+  tenant          Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  code            String // human-friendly, e.g. GIFT-4KPA-7Z3M-QF9T
+  initialAmount   Decimal        @db.Decimal(12, 2)
+  balance         Decimal        @db.Decimal(12, 2)
+  currency        String
+  purchaserEmail  String?
+  recipientEmail  String?
+  message         String?
+  status          GiftCardStatus @default(ACTIVE)
+  expiresAt       DateTime?
+  stripeSessionId String?        @unique // idempotency for online purchases
+  createdAt       DateTime       @default(now())
+
+  txns GiftCardTxn[]
+
+  @@unique([tenantId, code]) // code unique within a tenant — prevents cross-tenant reuse
+  @@index([tenantId, createdAt])
+}
+
+model GiftCardTxn {
+  id         String          @id @default(cuid())
+  giftCardId String
+  giftCard   GiftCard        @relation(fields: [giftCardId], references: [id], onDelete: Cascade)
+  amount     Decimal         @db.Decimal(12, 2) // + credit, - redemption
+  type       GiftCardTxnType
+  bookingId  String? // set when redeemed against a specific booking
+  note       String?
+  createdAt  DateTime        @default(now())
+
+  @@index([giftCardId, createdAt])
 }
