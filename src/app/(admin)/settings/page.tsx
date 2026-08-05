@@ -8,6 +8,8 @@ import { hasFeature } from "@/lib/features";
 import { publicSiteUrl } from "@/lib/site-url";
 import { securityOf } from "@/lib/login-verify";
 import { getTemplate } from "@/lib/email-templates";
+import { hoursOf, defaultWeek, WEEKDAY_KEYS, WEEKDAY_LABELS } from "@/lib/hours";
+import { UpsellSettings } from "@/components/settings/upsell-preview";
 
 export const dynamic = "force-dynamic";
 
@@ -385,35 +387,17 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
         );
       })()}
 
-      <Card className="mt-5">
-        <CardHeader eyebrow="Selling" title="Booking upsell" sub="Offer a package while clients book — shown when it helps, hidden when it nags" />
-        <form method="post" action="/api/settings" className="space-y-4 p-6">
-          <input type="hidden" name="section" value="upsell" />
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div>
-              <label className={label}>Upsell for group classes</label>
-              <select name="groupPackageId" defaultValue={pol.upsell?.groupPackageId ?? ""} className={field}>
-                <option value="">— Don&apos;t upsell —</option>
-                {allPackages.filter((p) => p.kind === "GROUP").map((p) => <option key={p.id} value={p.id}>{p.name} — ${Number(p.price)}{p.interval === "month" ? "/mo" : p.interval === "year" ? "/yr" : ""}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className={label}>Upsell for private sessions</label>
-              <select name="privatePackageId" defaultValue={pol.upsell?.privatePackageId ?? ""} className={field}>
-                <option value="">— Don&apos;t upsell —</option>
-                {allPackages.filter((p) => p.kind === "PRIVATE").map((p) => <option key={p.id} value={p.id}>{p.name} — ${Number(p.price)}{p.interval === "month" ? "/mo" : p.interval === "year" ? "/yr" : ""}</option>)}
-              </select>
-            </div>
-          </div>
-          <label className="flex items-center gap-2.5 text-[13.5px] font-medium text-ink">
-            <input name="hideIfActive" type="checkbox" defaultChecked={pol.upsell?.hideIfActive ?? true} className="size-4 accent-[#F97316]" />
-            Hide the upsell when the client already has an active package
-          </label>
-          <div className="flex justify-end">
-            <button className="rounded-[10px] bg-brand px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-brand-ink">Save upsell</button>
-          </div>
-        </form>
-      </Card>
+      <UpsellSettings
+        brand={tenant.brandColor}
+        currency={tenant.currency}
+        initial={{
+          groupPackageId: pol.upsell?.groupPackageId ?? "",
+          privatePackageId: pol.upsell?.privatePackageId ?? "",
+          hideIfActive: pol.upsell?.hideIfActive ?? true,
+        }}
+        groupPackages={allPackages.filter((p) => p.kind === "GROUP").map((p) => ({ id: p.id, name: p.name, price: Number(p.price), credits: p.credits, interval: p.interval }))}
+        privatePackages={allPackages.filter((p) => p.kind === "PRIVATE").map((p) => ({ id: p.id, name: p.name, price: Number(p.price), credits: p.credits, interval: p.interval }))}
+      />
 
       <Card className="mt-5">
         <CardHeader eyebrow="Money" title="Expense categories" sub="The choices in your expense form — make them match how you think" />
@@ -567,6 +551,36 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
           <p className="text-[12px] text-muted">Looking for &ldquo;pay at the studio&rdquo;? It moved to <a href="/settings?tab=money" className="font-bold text-brand hover:underline">Money → Payment collection</a>, alongside deposits and pay-in-full.</p>
           <div className="flex justify-end">
             <button className="rounded-[10px] bg-brand px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-brand-ink">Save policies</button>
+          </div>
+        </form>
+      </Card>
+
+      <Card className="mt-5">
+        <CardHeader eyebrow="Hours" title="Opening hours" sub="Your weekly operating window — sets the calendar bounds and marks closed days" />
+        <form method="post" action="/api/settings" className="space-y-2.5 p-6">
+          <input type="hidden" name="section" value="hours" />
+          {(() => {
+            const wh = hoursOf(tenant.policies) ?? defaultWeek();
+            return WEEKDAY_KEYS.map((k) => {
+              const dh = wh[k];
+              return (
+                <div key={k} className="flex flex-wrap items-center gap-3 rounded-xl border border-line-2 px-3.5 py-2.5">
+                  <span className="w-24 shrink-0 text-[13px] font-bold text-ink">{WEEKDAY_LABELS[k]}</span>
+                  <label className="flex items-center gap-2 text-[12.5px] font-semibold text-ink-2">
+                    <input type="checkbox" name={`${k}_closed`} defaultChecked={dh.closed} className="size-4 accent-[#F97316]" /> Closed
+                  </label>
+                  <span className="flex items-center gap-2 text-[12.5px] text-muted">
+                    <input type="time" name={`${k}_open`} defaultValue={dh.open} className="h-9 rounded-lg border border-line bg-surface px-2 text-[12.5px] outline-none focus:border-brand" />
+                    <span>to</span>
+                    <input type="time" name={`${k}_close`} defaultValue={dh.close} className="h-9 rounded-lg border border-line bg-surface px-2 text-[12.5px] outline-none focus:border-brand" />
+                  </span>
+                </div>
+              );
+            });
+          })()}
+          <p className="pt-1 text-[12px] text-muted">Closed days and out-of-hours times are greyed on your calendar and can&apos;t be booked into. Existing classes outside these hours still show, so nothing is ever hidden.</p>
+          <div className="flex justify-end">
+            <button className="rounded-[10px] bg-brand px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-brand-ink">Save hours</button>
           </div>
         </form>
       </Card>

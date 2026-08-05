@@ -4,11 +4,17 @@ import { db } from "@/lib/db";
 import { getCurrentTenant, moneyFormatter } from "@/lib/tenant";
 import { computeSessionFinancials } from "@/lib/earnings";
 import { dayKeyInTz, timeInTz, weekDays } from "@/lib/tz";
+import { hoursOf, openHourRange, weekdayKeyOf, toMin } from "@/lib/hours";
 import { CheckoutPanel } from "@/components/pos/checkout-panel";
 
 export const dynamic = "force-dynamic";
 
 const PX_PER_HOUR = 84;
+
+// Diagonal hatch used to grey out closed days / out-of-hours bands on the
+// week & day time grids — same visual language as blocked time.
+const OOH_BG =
+  "repeating-linear-gradient(45deg, color-mix(in srgb, var(--color-muted) 12%, var(--color-surface)), color-mix(in srgb, var(--color-muted) 12%, var(--color-surface)) 6px, var(--color-surface) 6px, var(--color-surface) 12px)";
 
 const statusTone: Record<string, string> = {
   BOOKED: "bg-blue-wash text-blue",
@@ -107,7 +113,14 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
     return h * 60 + m;
   };
 
-  let minH = 8, maxH = 20;
+  // Operating hours (policies.hours). When configured, the calendar window
+  // follows the widest open range across open days; when unset we keep the
+  // historical 8am–8pm default. Either way the range still stretches to fit any
+  // session/block that falls outside it, so no existing booking is ever clipped.
+  const weekHours = hoursOf(tenant.policies);
+  const openRange = openHourRange(weekHours);
+  let minH = openRange ? openRange.minH : 8;
+  let maxH = openRange ? openRange.maxH : 20;
   const byDay = new Map<string, typeof sessions>();
   for (const s of sessions) {
     const k = dayKeyInTz(s.startsAt, tenant.timezone);
@@ -284,11 +297,30 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
                 </div>
                 {days.map((d) => {
                   const isToday = d === todayKey;
+                  // Operating hours for this weekday (null when hours unset → all bookable).
+                  const dayH = weekHours ? weekHours[weekdayKeyOf(d)] : null;
+                  const closedAllDay = !!dayH && dayH.closed;
+                  const openMin = dayH && !dayH.closed ? toMin(dayH.open) : null;
+                  const closeMin = dayH && !dayH.closed ? toMin(dayH.close) : null;
+                  const bookable = (h: number) =>
+                    !weekHours ? true : !closedAllDay && openMin != null && closeMin != null && h * 60 >= openMin && h * 60 < closeMin;
                   return (
                     <div key={d} className={`relative border-l border-line-2 ${isToday ? "bg-brand/[0.03]" : ""}`} style={{ height: gridH }}>
                       {hours.map((h, n) => n > 0 && <div key={h} className="absolute inset-x-0 border-t border-line-2" style={{ top: n * PX_PER_HOUR }} />)}
-                      {/* Click an empty slot → add a class or block it (Z2c) */}
-                      {hours.map((h, n) => (
+                      {/* Operating-hours shading: closed day, or bands before open / after close. */}
+                      {closedAllDay && (
+                        <div className="pointer-events-none absolute inset-0 z-0 flex justify-center pt-2" style={{ background: OOH_BG }}>
+                          <span className="rounded-full bg-surface/80 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-muted">Closed</span>
+                        </div>
+                      )}
+                      {!closedAllDay && openMin != null && openMin / 60 > minH && (
+                        <div className="pointer-events-none absolute inset-x-0 top-0 z-0" style={{ height: (openMin / 60 - minH) * PX_PER_HOUR, background: OOH_BG }} />
+                      )}
+                      {!closedAllDay && closeMin != null && closeMin / 60 < maxH && (
+                        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-0" style={{ top: (closeMin / 60 - minH) * PX_PER_HOUR, background: OOH_BG }} />
+                      )}
+                      {/* Click an empty slot → add a class or block it (Z2c). Out-of-hours slots aren't bookable. */}
+                      {hours.map((h, n) => bookable(h) && (
                         <Link key={`slot-${h}`} href={qs({ slot: `${d}T${String(h).padStart(2, "0")}:00`, sel: undefined })} title="Add a class or block this time"
                           className="group/slot absolute inset-x-0 z-0" style={{ top: n * PX_PER_HOUR, height: PX_PER_HOUR }}>
                           <span className="pointer-events-none absolute inset-0.5 hidden place-items-center rounded-lg border border-dashed border-brand/40 bg-brand/[0.05] text-[11px] font-bold text-brand group-hover/slot:grid">+ {hourLabel(h)}</span>
