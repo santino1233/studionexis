@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getCurrentTenant } from "@/lib/tenant";
 import { getSession } from "@/lib/auth";
+import { guardCap } from "@/lib/rbac-server";
 
 // Backing store for the advanced (GrapesJS) editor. The custom page lives in
 // website.custom = { html, css, enabled } and replaces the template on /s/[slug]
@@ -24,6 +25,8 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
+  const __denied = await guardCap(req, "manage_website");
+  if (__denied) return __denied;
   const auth = await getSession();
   if (!auth || (auth.role !== "OWNER" && auth.role !== "MANAGER")) return NextResponse.json({ error: "forbidden" }, { status: 403 });
   const tenant = await getCurrentTenant();

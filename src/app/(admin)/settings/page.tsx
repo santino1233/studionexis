@@ -1,6 +1,8 @@
 import { Card, CardHeader } from "@/components/ui/card";
 import { Check, Globe } from "lucide-react";
 import { getCurrentTenant } from "@/lib/tenant";
+import { sessionCapabilities } from "@/lib/rbac-server";
+import { CAPABILITIES, EDITABLE_ROLES, effectiveRoleCapabilities, can } from "@/lib/rbac";
 import { db } from "@/lib/db";
 import { classFormats, difficultyLevels } from "@/lib/class-config";
 import { studioStripeConfig } from "@/lib/stripe";
@@ -39,8 +41,15 @@ function mask(key: string) {
 
 export default async function SettingsPage({ searchParams }: { searchParams: Promise<{ saved?: string; error?: string; tab?: string }> }) {
   const { saved, error, tab: tabRaw } = await searchParams;
-  const tab = TABS.some(([id]) => id === tabRaw) ? tabRaw! : "general";
+  const { caps: myCaps } = await sessionCapabilities();
+  const canManageTeam = can(myCaps, "manage_team");
+  const tab = (TABS.some(([id]) => id === tabRaw) || (tabRaw === "roles" && canManageTeam)) ? tabRaw! : "general";
   const tenant = await getCurrentTenant();
+  const roleTeam = canManageTeam && tab === "roles"
+    ? await db.user.findMany({ where: { tenantId: tenant.id }, orderBy: [{ role: "asc" }, { name: "asc" }] })
+    : [];
+  const effCaps = effectiveRoleCapabilities(tenant.policies);
+  const capGroups = Array.from(new Set(CAPABILITIES.map((c) => c.group)));
   const pol = (tenant.policies ?? {}) as { cancelWindowGroupHours?: number; cancelWindowPrivateHours?: number; waitlistEnabled?: boolean; payAtStudio?: boolean; upsell?: { groupPackageId?: string | null; privatePackageId?: string | null; hideIfActive?: boolean }; payment?: { mode?: "at_studio" | "deposit" | "full"; depositType?: "percent" | "fixed"; depositValue?: number; depositFee?: number; fullFee?: number } };
   // Payment collection (Money tab). Default = pay at studio. Deposit / pay-in-full
   // require an active online payment method (Stripe). `payAtStudio` is kept in
@@ -61,6 +70,12 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
             {label}
           </a>
         ))}
+        {canManageTeam && (
+          <a href="/settings?tab=roles"
+            className={"rounded-t-[10px] px-4 py-2.5 text-[13px] font-bold " + (tab === "roles" ? "border border-b-0 border-line-2 bg-surface text-ink" : "text-muted hover:text-ink")}>
+            Roles
+          </a>
+        )}
       </div>
 
       {saved && <div className="mt-4 rounded-xl border border-green/20 bg-green-wash px-3.5 py-2.5 text-[13px] font-bold text-green">Saved.</div>}
@@ -584,6 +599,81 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
           </div>
         </form>
       </Card>
+      </>)}
+
+      {tab === "roles" && (<>
+      <Card className="mt-6">
+        <CardHeader eyebrow="Access" title="Roles & permissions" sub="Tune exactly what each role can do — changes apply to everyone with that role" />
+        <div className="p-6 pt-2">
+          {roleTeam.length > 0 ? (
+            <div className="space-y-2.5">
+              <div className="text-[12.5px] font-bold uppercase tracking-wider text-muted">Assign roles to members</div>
+              {roleTeam.map((u) => (
+                <div key={u.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-line-2 bg-raised px-4 py-3">
+                  <div>
+                    <div className="text-[14px] font-semibold text-ink">{u.name}</div>
+                    <div className="text-[12px] text-muted">{u.email}</div>
+                  </div>
+                  {u.role === "OWNER" ? (
+                    <span className="rounded-full bg-brand-wash px-3 py-1 text-[11px] font-bold text-brand">Owner — full access</span>
+                  ) : (
+                    <form method="post" action="/api/team/roles" className="flex items-center gap-2">
+                      <input type="hidden" name="action" value="assign" />
+                      <input type="hidden" name="userId" value={u.id} />
+                      <select name="role" defaultValue={u.role} className="h-9 rounded-[10px] border border-line bg-surface px-2.5 text-[13px] outline-none focus:border-brand">
+                        {EDITABLE_ROLES.map((r) => <option key={r.key} value={r.key}>{r.label}</option>)}
+                      </select>
+                      <button className="rounded-lg bg-line-2 px-3 py-1.5 text-[11.5px] font-bold text-ink-2 hover:text-ink">Save</button>
+                    </form>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-[13px] text-muted">No team members yet — add them from <a href="/team" className="font-bold text-brand hover:underline">Team</a>.</p>
+          )}
+        </div>
+      </Card>
+
+      <Card className="mt-5">
+        <CardHeader eyebrow="Owner" title="Owner" sub="The owner account always has full access and can't be limited" />
+        <div className="flex flex-wrap gap-1.5 p-6 pt-2">
+          {CAPABILITIES.map((c) => (
+            <span key={c.key} className="rounded-full bg-green-wash px-2.5 py-1 text-[11px] font-bold text-green">{c.label}</span>
+          ))}
+        </div>
+      </Card>
+
+      {EDITABLE_ROLES.map((r) => (
+        <Card key={r.key} className="mt-5">
+          <CardHeader eyebrow="Role" title={r.label} sub={r.hint} />
+          <form method="post" action="/api/team/roles" className="p-6 pt-2">
+            <input type="hidden" name="action" value="role" />
+            <input type="hidden" name="role" value={r.key} />
+            <div className="space-y-4">
+              {capGroups.map((grp) => (
+                <div key={grp}>
+                  <div className="mb-1.5 text-[11px] font-bold uppercase tracking-wider text-muted">{grp}</div>
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    {CAPABILITIES.filter((c) => c.group === grp).map((c) => (
+                      <label key={c.key} className="flex items-start gap-2.5 rounded-xl border border-line-2 p-3 has-[:checked]:border-brand has-[:checked]:bg-brand-wash/40">
+                        <input type="checkbox" name="cap" value={c.key} defaultChecked={effCaps[r.key]?.includes(c.key)} className="mt-0.5 size-4 accent-[#F97316]" />
+                        <span>
+                          <span className="block text-[13px] font-semibold text-ink">{c.label}</span>
+                          <span className="block text-[11.5px] text-muted">{c.desc}</span>
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="mt-4 flex justify-end">
+              <button className="rounded-[10px] bg-brand px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-brand-ink">Save {r.label} permissions</button>
+            </div>
+          </form>
+        </Card>
+      ))}
       </>)}
     </div>
   );

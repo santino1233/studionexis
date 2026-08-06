@@ -6,6 +6,7 @@ import { getCurrentTenant } from "@/lib/tenant";
 import { getSession } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { publicSiteUrl } from "@/lib/site-url";
+import { capabilitiesForRole } from "@/lib/rbac";
 import { Wrench, ShieldAlert, Rocket, Megaphone } from "lucide-react";
 
 function PlanBanner({ status, trialEndsAt }: { status: string; trialEndsAt: Date | null }) {
@@ -31,6 +32,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const tenant = await getCurrentTenant();
   const session = await getSession();
   const role = session?.role ?? "OWNER";
+  // Effective capabilities for this member on this tenant (preset or the
+  // tenant's customized policies.roles) — drives nav visibility.
+  const caps = capabilitiesForRole(role, tenant.policies);
   // Platform broadcasts + maintenance banner (Wave 16 B5)
   const [annRows, gset] = await Promise.all([
     db.announcement.findMany({ where: { activeFrom: { lte: new Date() }, OR: [{ activeUntil: null }, { activeUntil: { gt: new Date() } }] }, orderBy: { createdAt: "desc" }, take: 10 }),
@@ -49,8 +53,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     : [];
   return (
     <div className="nx-admin flex h-screen overflow-hidden bg-canvas text-ink">
-      <Sidebar slug={tenant.slug} role={role} chatUnread={chatUnread} supportUnread={supportUnread} siteUrl={publicSiteUrl(tenant)} locations={locations} />
-      <MobileNav slug={tenant.slug} role={role} locations={locations} siteUrl={publicSiteUrl(tenant)} />
+      <Sidebar slug={tenant.slug} role={role} caps={caps} chatUnread={chatUnread} supportUnread={supportUnread} siteUrl={publicSiteUrl(tenant)} locations={locations} />
+      <MobileNav slug={tenant.slug} role={role} caps={caps} locations={locations} siteUrl={publicSiteUrl(tenant)} />
       <div className="flex min-w-0 flex-1 flex-col">
         {maint && <div className="flex items-center justify-center gap-1.5 border-b border-rose/20 bg-rose/5 px-6 py-2 text-center text-[12.5px] font-bold text-rose"><Wrench className="size-3.5" /> {maint}</div>}
         {anns.map((a) => {
@@ -69,3 +73,4 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     </div>
   );
 }
+

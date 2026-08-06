@@ -4,8 +4,11 @@ import { getSession } from "@/lib/auth";
 import { externalUrl } from "@/lib/request-url";
 import { utcFromZoned } from "@/lib/tz";
 import { computeSessionFinancials } from "@/lib/earnings";
+import { guardCap } from "@/lib/rbac-server";
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const __denied = await guardCap(req, "manage_schedule");
+  if (__denied) return __denied;
   const auth = await getSession();
   if (!auth) return NextResponse.redirect(externalUrl(req, "/login"), 303);
 

@@ -3,11 +3,14 @@ import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { externalUrl } from "@/lib/request-url";
 import { Prisma } from "@prisma/client";
+import { guardCap } from "@/lib/rbac-server";
 
 // Copy the current location's class-type catalog to the account's other
 // locations. Class types carry no money, so this is a safe sync. Only adds
 // types missing (by name) at each sibling — never overwrites or deletes.
 export async function POST(req: Request) {
+  const __denied = await guardCap(req, "manage_locations");
+  if (__denied) return __denied;
   const auth = await getSession();
   if (!auth || auth.role !== "OWNER") return NextResponse.redirect(externalUrl(req, "/login"), 303);
   const current = await db.tenant.findUnique({ where: { id: auth.tenantId } });

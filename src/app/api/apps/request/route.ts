@@ -4,10 +4,13 @@ import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { externalUrl } from "@/lib/request-url";
 import { featureRequests } from "@/lib/features";
+import { guardCap } from "@/lib/rbac-server";
 
 // "Request an app" from the App Store — lands in the HQ Feature Requests queue
 // so we can see which integrations studios want next.
 export async function POST(req: Request) {
+  const __denied = await guardCap(req, "manage_apps");
+  if (__denied) return __denied;
   const auth = await getSession();
   if (!auth || auth.role !== "OWNER") return NextResponse.redirect(externalUrl(req, "/login"), 303);
 

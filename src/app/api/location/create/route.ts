@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getSession, createSession } from "@/lib/auth";
 import { externalUrl } from "@/lib/request-url";
+import { guardCap } from "@/lib/rbac-server";
 
 const RESERVED = ["app", "new", "www", "hq", "api", "mail", "admin"];
 const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40);
@@ -10,6 +11,8 @@ const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").repla
 // isolated tenant (own clients, schedule, credits) grouped under one
 // Organization — nothing is shared unless a sync is later turned on.
 export async function POST(req: Request) {
+  const __denied = await guardCap(req, "manage_locations");
+  if (__denied) return __denied;
   const auth = await getSession();
   if (!auth || auth.role !== "OWNER") return NextResponse.redirect(externalUrl(req, "/login"), 303);
   const form = await req.formData();

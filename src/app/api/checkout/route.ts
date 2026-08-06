@@ -2,10 +2,13 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { initialExpiry } from "@/lib/memberships";
+import { guardCap } from "@/lib/rbac-server";
 
 type Item = { kind: "package" | "product"; refId: string; qty: number };
 
 export async function POST(req: Request) {
+  const __denied = await guardCap(req, "run_pos");
+  if (__denied) return __denied;
   const auth = await getSession();
   if (!auth) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 

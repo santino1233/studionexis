@@ -4,10 +4,13 @@ import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { externalUrl } from "@/lib/request-url";
 import { PLANS } from "@/lib/plans";
+import { guardCap } from "@/lib/rbac-server";
 
 // Saves the studio's plan choice. Stripe checkout attaches here once API
 // keys exist; until then paid status is managed from HQ.
 export async function POST(req: Request) {
+  const __denied = await guardCap(req, "manage_billing");
+  if (__denied) return __denied;
   const auth = await getSession();
   if (!auth || auth.role !== "OWNER") return NextResponse.redirect(externalUrl(req, "/login"), 303);
 

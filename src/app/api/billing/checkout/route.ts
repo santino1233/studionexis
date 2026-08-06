@@ -4,9 +4,12 @@ import { getSession } from "@/lib/auth";
 import { externalUrl } from "@/lib/request-url";
 import { platformStripe } from "@/lib/stripe";
 import { PLANS, annualMonthly } from "@/lib/plans";
+import { guardCap } from "@/lib/rbac-server";
 
 // SaaS plan subscription via the PLATFORM Stripe account (env keys).
 export async function POST(req: Request) {
+  const __denied = await guardCap(req, "manage_billing");
+  if (__denied) return __denied;
   const auth = await getSession();
   if (!auth || auth.role !== "OWNER") return NextResponse.redirect(externalUrl(req, "/login"), 303);
 

@@ -4,9 +4,12 @@ import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { externalUrl } from "@/lib/request-url";
 import { featureRequests } from "@/lib/features";
+import { guardCap } from "@/lib/rbac-server";
 
 // Studio asks for a bespoke feature — lands in the HQ review queue.
 export async function POST(req: Request) {
+  const __denied = await guardCap(req, "manage_billing");
+  if (__denied) return __denied;
   const auth = await getSession();
   if (!auth || auth.role !== "OWNER") return NextResponse.redirect(externalUrl(req, "/login"), 303);
 

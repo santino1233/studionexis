@@ -4,10 +4,13 @@ import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { externalUrl } from "@/lib/request-url";
 import { SECTION_IDS, type SectionId } from "@/components/site/types";
+import { guardCap } from "@/lib/rbac-server";
 
 // The mini website builder (Wave 11 Y2): every POST merges one section's
 // content into the tenant.website JSON blob — never replaces it wholesale.
 export async function POST(req: Request) {
+  const __denied = await guardCap(req, "manage_website");
+  if (__denied) return __denied;
   const auth = await getSession();
   if (!auth || ["STAFF", "INSTRUCTOR"].includes(auth.role)) return NextResponse.redirect(externalUrl(req, "/login"), 303);
 
