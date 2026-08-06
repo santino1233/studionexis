@@ -4,6 +4,7 @@ import { sendEmail } from "@/lib/mailer";
 import { sendSms } from "@/lib/sms";
 import { timeInTz } from "@/lib/tz";
 import { publicSiteUrl } from "@/lib/site-url";
+import { buildEmail } from "@/lib/email-templates";
 
 // Hit hourly by system cron with the shared secret. Emails clients whose
 // class starts within the next 24h and hasn't been reminded yet.
@@ -36,12 +37,17 @@ export async function POST(req: Request) {
       sent++;
       continue;
     }
-    await sendEmail({
-      tenantId: b.tenantId,
-      to: b.client.email!,
-      subject: `Reminder: ${b.session.classType.name} at ${b.tenant.name}`,
-      body: `Hi ${b.client.name},\n\nSee you at ${b.session.classType.name} — ${b.session.startsAt.toLocaleDateString("en-US", { timeZone: b.tenant.timezone, weekday: "long", month: "long", day: "numeric" })} at ${timeInTz(b.session.startsAt, b.tenant.timezone)}.\n\nNeed to change plans? Manage your booking: ${publicSiteUrl(b.tenant, "/bookings")}\n\n${b.tenant.name}`,
+    const dateTime = `${b.session.startsAt.toLocaleDateString("en-US", { timeZone: b.tenant.timezone, weekday: "long", month: "long", day: "numeric" })} at ${timeInTz(b.session.startsAt, b.tenant.timezone)}`;
+    const mail = buildEmail(b.tenant, "reminder", {
+      studioName: b.tenant.name,
+      studio: b.tenant.name,
+      clientName: b.client.name,
+      name: b.client.name,
+      className: b.session.classType.name,
+      dateTime,
+      manageUrl: publicSiteUrl(b.tenant, "/bookings"),
     });
+    await sendEmail({ tenantId: b.tenantId, to: b.client.email!, subject: mail.subject, body: mail.body, html: mail.html });
     await db.booking.update({ where: { id: b.id }, data: { remindedAt: new Date() } });
     sent++;
   }

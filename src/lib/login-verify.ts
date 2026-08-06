@@ -2,7 +2,7 @@ import { createHash } from "crypto";
 import type { Tenant, User } from "@prisma/client";
 import { sendEmail } from "@/lib/mailer";
 import { sendSms } from "@/lib/sms";
-import { getTemplate, renderTemplate } from "@/lib/email-templates";
+import { buildEmail } from "@/lib/email-templates";
 
 // Login verification (2FA). Safe by design: it only ever engages when the
 // studio has it enabled AND a delivery channel is actually configured for the
@@ -43,8 +43,8 @@ export function hashCode(code: string): string {
 
 export async function sendLoginCode(tenant: Tenant, user: Pick<User, "name">, channel: Channel, contact: string, code: string) {
   if (channel === "email") {
-    const tpl = renderTemplate(getTemplate(tenant, "loginCode"), { studio: tenant.name, name: user.name, code, minutes: CODE_TTL_MIN });
-    await sendEmail({ tenantId: tenant.id, to: contact, subject: tpl.subject, body: tpl.body });
+    const mail = buildEmail(tenant, "loginCode", { studio: tenant.name, name: user.name, code, minutes: CODE_TTL_MIN });
+    await sendEmail({ tenantId: tenant.id, to: contact, subject: mail.subject, body: mail.body, html: mail.html });
   } else {
     await sendSms({ tenantId: tenant.id, to: contact, kind: "verification", body: `${tenant.name}: your verification code is ${code}. Expires in ${CODE_TTL_MIN} min.` });
   }

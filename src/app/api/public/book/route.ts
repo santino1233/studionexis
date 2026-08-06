@@ -11,6 +11,7 @@ import { sendSms } from "@/lib/sms";
 import { timeInTz } from "@/lib/tz";
 import { studioStripe, toStripeAmount } from "@/lib/stripe";
 import { publicSiteUrl } from "@/lib/site-url";
+import { buildEmail } from "@/lib/email-templates";
 
 export async function POST(req: Request) {
   if (!rateLimit(req, "pubbook", 15, 60)) {
@@ -159,12 +160,17 @@ export async function POST(req: Request) {
     } else if (result.client.email) {
       const s = result.session;
       const cls = await db.classType.findUnique({ where: { id: s.classTypeId } });
-      await sendEmail({
-        tenantId: tenant.id,
-        to: result.client.email,
-        subject: `${result.outcome === "booked" ? "Booking confirmed" : "You're on the waitlist"} — ${cls?.name ?? "class"} at ${tenant.name}`,
-        body: `Hi ${result.client.name},\n\n${result.outcome === "booked" ? "You're booked for" : "You're waitlisted for"} ${cls?.name ?? "class"} on ${s.startsAt.toLocaleDateString("en-US", { timeZone: tenant.timezone, weekday: "long", month: "long", day: "numeric" })} at ${timeInTz(s.startsAt, tenant.timezone)}.\n\nManage your bookings: ${publicSiteUrl(tenant, "/bookings")}\n\n${tenant.name}`,
+      const dateTime = `${s.startsAt.toLocaleDateString("en-US", { timeZone: tenant.timezone, weekday: "long", month: "long", day: "numeric" })} at ${timeInTz(s.startsAt, tenant.timezone)}`;
+      const mail = buildEmail(tenant, result.outcome === "booked" ? "bookingConfirmation" : "waitlist", {
+        studioName: tenant.name,
+        studio: tenant.name,
+        clientName: result.client.name,
+        name: result.client.name,
+        className: cls?.name ?? "class",
+        dateTime,
+        manageUrl: publicSiteUrl(tenant, "/bookings"),
       });
+      await sendEmail({ tenantId: tenant.id, to: result.client.email, subject: mail.subject, body: mail.body, html: mail.html });
     }
     emitEvent(tenant.id, "booking.created", {
       bookingId: result.bookingId, clientName: result.client.name, className: (await db.classType.findUnique({ where: { id: result.session.classTypeId } }))?.name ?? "class",
