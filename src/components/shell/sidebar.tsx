@@ -7,7 +7,7 @@ import { BASE_DOMAIN } from "@/lib/config";
 import { ThemeToggle } from "@/components/shell/theme-toggle";
 import {
   LayoutGrid, Calendar, Star, ClipboardList, BookOpen, Users, CreditCard,
-  Hexagon, FileText, UserCog, LineChart, Settings, Wallet, LogOut, Globe, Coins, MapPin, FlaskConical,
+  Hexagon, FileText, UserCog, LineChart, Settings, Wallet, LogOut, Globe, Coins, MapPin, FlaskConical, Gift,
 } from "lucide-react";
 import { canAccess } from "@/lib/access";
 import { pathAllowedByCaps, type Capability } from "@/lib/rbac";
@@ -30,6 +30,7 @@ const groups: Group[] = [
   { label: "Sales", items: [
     { href: "/pos", label: "Point of Sale", icon: CreditCard },
     { href: "/products", label: "Products & Packages", icon: Hexagon },
+    { href: "/gift-cards", label: "Gift Cards", icon: Gift },
     { href: "/invoices", label: "Invoices", icon: FileText },
   ]},
   { label: "Team & Insights", items: [

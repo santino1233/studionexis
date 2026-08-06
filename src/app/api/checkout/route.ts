@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { initialExpiry } from "@/lib/memberships";
 import { guardCap } from "@/lib/rbac-server";
+import { redeemGiftCard } from "@/lib/gift-cards";
 
 type Item = { kind: "package" | "product"; refId: string; qty: number };
 
@@ -12,13 +13,14 @@ export async function POST(req: Request) {
   const auth = await getSession();
   if (!auth) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
-  let body: { clientId?: string; method?: string; items?: Item[]; voucherCode?: string };
+  let body: { clientId?: string; method?: string; items?: Item[]; voucherCode?: string; giftCardCode?: string };
   try {
     body = await req.json();
   } catch {
     return NextResponse.json({ error: "bad json" }, { status: 400 });
   }
   const voucherCode = String(body.voucherCode ?? "").trim().toUpperCase().replace(/\s+/g, "");
+  const giftCardCode = String(body.giftCardCode ?? "").trim();
   const items = (body.items ?? []).filter((i) => i && i.refId && i.qty > 0);
   const method = ["cash", "transfer", "card"].includes(body.method ?? "") ? body.method! : "cash";
   const clientId = body.clientId || null;
@@ -102,9 +104,31 @@ export async function POST(req: Request) {
           await tx.product.update({ where: { id: i.refId }, data: { stock: { decrement: i.qty } } });
         }
       }
-      return order;
+
+      // Gift-card tender: draw the balance down atomically (partial supported).
+      // A bad/empty code aborts the whole sale so nothing is half-completed.
+      let giftApplied = 0;
+      if (giftCardCode && payable > 0) {
+        const r = await redeemGiftCard(tx, {
+          tenantId: auth.tenantId,
+          code: giftCardCode,
+          requested: payable,
+          note: `Order #${order.number}`,
+        });
+        if (!r.ok) {
+          throw new Error(
+            r.reason === "not_found" ? "That gift card code isn't valid"
+              : r.reason === "expired" ? "That gift card has expired"
+              : r.reason === "inactive" ? "That gift card is no longer active"
+              : "That gift card has no balance left",
+          );
+        }
+        giftApplied = r.applied;
+      }
+      return { order, giftApplied };
     });
-    return NextResponse.json({ ok: true, orderId: order.id, number: order.number, total: Number(order.total), discount: Number(order.discount) });
+    const remainingDue = Number((Number(order.order.total) - order.giftApplied).toFixed(2));
+    return NextResponse.json({ ok: true, orderId: order.order.id, number: order.order.number, total: Number(order.order.total), discount: Number(order.order.discount), giftApplied: order.giftApplied, remainingDue });
   } catch (e) {
     return NextResponse.json({ error: e instanceof Error ? e.message : "checkout failed" }, { status: 400 });
   }

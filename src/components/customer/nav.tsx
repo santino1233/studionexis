@@ -5,6 +5,7 @@ import { User } from "lucide-react";
 const tabs = [
   ["book", "Book a Class"],
   ["packages", "Buy Packages"],
+  ["gift-cards", "Gift Cards"],
   ["bookings", "My Bookings"],
   ["my-packages", "My Packages"],
 ] as const;
