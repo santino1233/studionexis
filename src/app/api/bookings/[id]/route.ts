@@ -4,8 +4,11 @@ import { emitEvent } from "@/lib/webhooks";
 import { getSession } from "@/lib/auth";
 import { externalUrl } from "@/lib/request-url";
 import { promoteWaitlist } from "@/lib/bookings";
+import { guardCap } from "@/lib/rbac-server";
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const __denied = await guardCap(req, "manage_bookings");
+  if (__denied) return __denied;
   const auth = await getSession();
   if (!auth) return NextResponse.redirect(externalUrl(req, "/login"), 303);
 

@@ -2,9 +2,12 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { externalUrl } from "@/lib/request-url";
+import { guardCap } from "@/lib/rbac-server";
 
 // Clicking a blocked range on the calendar unblocks it.
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const __denied = await guardCap(req, "manage_schedule");
+  if (__denied) return __denied;
   const auth = await getSession();
   if (!auth || auth.role === "INSTRUCTOR") return NextResponse.redirect(externalUrl(req, "/login"), 303);
 

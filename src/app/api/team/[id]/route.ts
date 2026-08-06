@@ -3,8 +3,11 @@ import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { externalUrl } from "@/lib/request-url";
+import { guardCap } from "@/lib/rbac-server";
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const __denied = await guardCap(req, "manage_team");
+  if (__denied) return __denied;
   const auth = await getSession();
   if (!auth || auth.role !== "OWNER") return NextResponse.redirect(externalUrl(req, "/login"), 303);
 

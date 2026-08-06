@@ -3,8 +3,11 @@ import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { externalUrl } from "@/lib/request-url";
 import { checkBookingLimit, checkClientLimit } from "@/lib/plans";
+import { guardCap } from "@/lib/rbac-server";
 
 export async function POST(req: Request) {
+  const __denied = await guardCap(req, "manage_bookings");
+  if (__denied) return __denied;
   const auth = await getSession();
   if (!auth) return NextResponse.redirect(externalUrl(req, "/login"), 303);
 

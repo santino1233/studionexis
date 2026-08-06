@@ -5,12 +5,15 @@ import { getSession } from "@/lib/auth";
 import { externalUrl } from "@/lib/request-url";
 import { materialiseClassType, slotsOf, type RecurringSlot } from "@/lib/blueprint";
 import { classFormats, isValidDifficulty } from "@/lib/class-config";
+import { guardCap } from "@/lib/rbac-server";
 
 function csv(v: FormDataEntryValue | null): string[] {
   return String(v ?? "").split(",").map((s) => s.trim()).filter(Boolean);
 }
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const __denied = await guardCap(req, "manage_class_types");
+  if (__denied) return __denied;
   const auth = await getSession();
   if (!auth || auth.role === "INSTRUCTOR") return NextResponse.redirect(externalUrl(req, "/login"), 303);
 

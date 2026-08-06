@@ -6,7 +6,7 @@ import { Menu, X } from "lucide-react";
 import { Sidebar } from "@/components/shell/sidebar";
 
 type Loc = { id: string; label: string; current: boolean };
-export function MobileNav({ slug = "", role = "OWNER", locations = [], siteUrl = "" }: { slug?: string; role?: string; locations?: Loc[]; siteUrl?: string }) {
+export function MobileNav({ slug = "", role = "OWNER", caps, locations = [], siteUrl = "" }: { slug?: string; role?: string; caps?: string[]; locations?: Loc[]; siteUrl?: string }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
@@ -27,7 +27,7 @@ export function MobileNav({ slug = "", role = "OWNER", locations = [], siteUrl =
         <div className="fixed inset-0 z-50 lg:hidden">
           <div className="absolute inset-0 bg-ink/30 backdrop-blur-[2px]" onClick={() => setOpen(false)} />
           <div className="absolute inset-y-0 left-0 w-[280px] shadow-2xl">
-            <Sidebar mobile slug={slug} role={role} locations={locations} siteUrl={siteUrl} />
+            <Sidebar mobile slug={slug} role={role} caps={caps} locations={locations} siteUrl={siteUrl} />
             <button
               onClick={() => setOpen(false)}
               className="absolute right-3 top-4 grid size-9 place-items-center rounded-xl text-ink-2 hover:bg-line-2"
@@ -41,3 +41,4 @@ export function MobileNav({ slug = "", role = "OWNER", locations = [], siteUrl =
     </>
   );
 }
+

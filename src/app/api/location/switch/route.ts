@@ -2,11 +2,14 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getSession, createSession } from "@/lib/auth";
 import { externalUrl } from "@/lib/request-url";
+import { guardCap } from "@/lib/rbac-server";
 
 // Hop to another location in the same account. Only the org owner (matched by
 // email having an OWNER user at the target) may switch, and only within the
 // same Organization — no cross-account jumps.
 export async function POST(req: Request) {
+  const __denied = await guardCap(req, "manage_locations");
+  if (__denied) return __denied;
   const auth = await getSession();
   if (!auth || auth.role !== "OWNER") return NextResponse.redirect(externalUrl(req, "/login"), 303);
   const form = await req.formData();

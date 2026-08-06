@@ -7,10 +7,13 @@ import { verifyStripeKey, studioStripeConfig } from "@/lib/stripe";
 import { BASE_DOMAIN } from "@/lib/config";
 import { randomBytes } from "crypto";
 import { WEBHOOK_EVENTS, webhooksOf, appsOf } from "@/lib/webhooks";
+import { guardCap } from "@/lib/rbac-server";
 
 const CURRENCIES = ["USD", "EUR", "GBP", "AUD", "CAD", "SGD", "THB", "VND", "IDR", "PHP", "MYR", "JPY", "KRW", "AED", "INR"];
 
 export async function POST(req: Request) {
+  const __denied = await guardCap(req, "manage_settings");
+  if (__denied) return __denied;
   const auth = await getSession();
   if (!auth || ["STAFF", "INSTRUCTOR"].includes(auth.role)) return NextResponse.redirect(externalUrl(req, "/login"), 303);
 

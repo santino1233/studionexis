@@ -10,6 +10,7 @@ import {
   Hexagon, FileText, UserCog, LineChart, Settings, Wallet, LogOut, Globe, Coins, MapPin, FlaskConical,
 } from "lucide-react";
 import { canAccess } from "@/lib/access";
+import { pathAllowedByCaps, type Capability } from "@/lib/rbac";
 
 type Item = { href: string; label: string; icon: React.ComponentType<{ className?: string }> };
 type Group = { label: string; items: Item[] };
@@ -48,14 +49,18 @@ const groups: Group[] = [
 ];
 
 type Loc = { id: string; label: string; current: boolean };
-export function Sidebar({ mobile = false, slug = "", role = "OWNER", chatUnread = 0, supportUnread = 0, siteUrl = "", locations = [] }: { mobile?: boolean; slug?: string; role?: string; chatUnread?: number; supportUnread?: number; siteUrl?: string; locations?: Loc[] }) {
+export function Sidebar({ mobile = false, slug = "", role = "OWNER", caps, chatUnread = 0, supportUnread = 0, siteUrl = "", locations = [] }: { mobile?: boolean; slug?: string; role?: string; caps?: string[]; chatUnread?: number; supportUnread?: number; siteUrl?: string; locations?: Loc[] }) {
   const pathname = usePathname();
+  // Coarse role gate (canAccess) keeps every legacy behavior; when the server
+  // supplies the resolved capability list we ALSO hide anything the (possibly
+  // tenant-customized) role can't do. Server actions enforce this for real.
+  const capList = (caps ?? []) as Capability[];
   const visible = groups
     .map((g) => ({
       ...g,
       items: g.items
         .concat(g.label === "My Portal" && role === "INSTRUCTOR" ? [{ href: "/my-earnings", label: "My Earnings", icon: Coins }] : [])
-        .filter((it) => canAccess(role, it.href)),
+        .filter((it) => canAccess(role, it.href) && (caps === undefined || pathAllowedByCaps(capList, it.href))),
     }))
     .filter((g) => g.items.length > 0);
   return (
@@ -130,3 +135,4 @@ export function Sidebar({ mobile = false, slug = "", role = "OWNER", chatUnread 
     </aside>
   );
 }
+

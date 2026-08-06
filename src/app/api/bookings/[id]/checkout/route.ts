@@ -4,11 +4,14 @@ import { emitEvent } from "@/lib/webhooks";
 import { getSession } from "@/lib/auth";
 import { externalUrl } from "@/lib/request-url";
 import { initialExpiry } from "@/lib/memberships";
+import { guardCap } from "@/lib/rbac-server";
 
 // The calendar's mini-POS: settle an attendee's payment and check them in.
 // mode=credit  → consume a package credit
 // mode=charge  → cash/transfer/card for the drop-in (+ products, voucher)
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const __denied = await guardCap(req, "run_pos");
+  if (__denied) return __denied;
   const auth = await getSession();
   if (!auth || auth.role === "INSTRUCTOR") return NextResponse.redirect(externalUrl(req, "/login"), 303);
 

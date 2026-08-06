@@ -3,8 +3,11 @@ import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { externalUrl } from "@/lib/request-url";
 import { utcFromZoned } from "@/lib/tz";
+import { guardCap } from "@/lib/rbac-server";
 
 export async function POST(req: Request) {
+  const __denied = await guardCap(req, "manage_schedule");
+  if (__denied) return __denied;
   const session = await getSession();
   if (!session) return NextResponse.redirect(externalUrl(req, "/login"), 303);
 
