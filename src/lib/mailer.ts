@@ -15,7 +15,10 @@ function transport() {
   });
 }
 
-export async function sendEmail(opts: { tenantId: string; to: string; subject: string; body: string }) {
+// `html` is optional: when a send path provides a branded HTML version (see
+// lib/email-templates.buildEmail) it is delivered as the rich part with `body`
+// as the plain-text fallback. EmailLog only ever stores the plain-text `body`.
+export async function sendEmail(opts: { tenantId: string; to: string; subject: string; body: string; html?: string }) {
   const t = transport();
   let status = "skipped";
   if (t) {
@@ -25,12 +28,15 @@ export async function sendEmail(opts: { tenantId: string; to: string; subject: s
         to: opts.to,
         subject: opts.subject,
         text: opts.body,
+        ...(opts.html ? { html: opts.html } : {}),
       });
       status = "sent";
     } catch {
       status = "failed";
     }
   }
-  await db.emailLog.create({ data: { ...opts, status } });
+  await db.emailLog.create({
+    data: { tenantId: opts.tenantId, to: opts.to, subject: opts.subject, body: opts.body, status },
+  });
   return status;
 }

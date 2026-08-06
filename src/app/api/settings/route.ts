@@ -7,6 +7,7 @@ import { verifyStripeKey, studioStripeConfig } from "@/lib/stripe";
 import { BASE_DOMAIN } from "@/lib/config";
 import { randomBytes } from "crypto";
 import { WEBHOOK_EVENTS, webhooksOf, appsOf } from "@/lib/webhooks";
+import { isTemplateKey } from "@/lib/email-templates";
 
 const CURRENCIES = ["USD", "EUR", "GBP", "AUD", "CAD", "SGD", "THB", "VND", "IDR", "PHP", "MYR", "JPY", "KRW", "AED", "INR"];
 
@@ -171,6 +172,25 @@ export async function POST(req: Request) {
     }
     await db.tenant.update({ where: { id: tenant.id }, data: { policies: { ...prev, security, emailTemplates: templates } as Prisma.InputJsonValue } });
     return NextResponse.redirect(externalUrl(req, "/settings?tab=security&saved=1"), 303);
+  } else if (section === "emailtpl") {
+    // Per-template transactional email override (Settings → Email templates).
+    // Stored on policies.emailTemplates.<key>; "reset" removes the override so
+    // the built-in default takes over again. Validated against the template
+    // registry so only known keys can ever be written.
+    if (["STAFF", "INSTRUCTOR"].includes(auth.role)) return NextResponse.redirect(externalUrl(req, "/login"), 303);
+    const key = String(form.get("key") ?? "");
+    if (!isTemplateKey(key)) return NextResponse.redirect(externalUrl(req, "/settings?tab=emails"), 303);
+    const prev = (tenant.policies ?? {}) as Record<string, unknown>;
+    const templates = { ...((prev.emailTemplates as Record<string, unknown>) ?? {}) };
+    if (String(form.get("action")) === "reset") {
+      delete templates[key];
+    } else {
+      templates[key] = {
+        subject: String(form.get("tplSubject") ?? "").slice(0, 200),
+        body: String(form.get("tplBody") ?? "").slice(0, 4000),
+      };
+    }
+    await db.tenant.update({ where: { id: tenant.id }, data: { policies: { ...prev, emailTemplates: templates } as Prisma.InputJsonValue } });
   } else if (section === "org-sync") {
     if (auth.role !== "OWNER" || !tenant.organizationId) return NextResponse.redirect(externalUrl(req, "/locations"), 303);
     const org = await db.organization.findUnique({ where: { id: tenant.organizationId } });

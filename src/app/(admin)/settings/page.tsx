@@ -7,7 +7,8 @@ import { studioStripeConfig } from "@/lib/stripe";
 import { hasFeature } from "@/lib/features";
 import { publicSiteUrl } from "@/lib/site-url";
 import { securityOf } from "@/lib/login-verify";
-import { getTemplate } from "@/lib/email-templates";
+import { TEMPLATE_META, getTemplate, hasOverride } from "@/lib/email-templates";
+import EmailTemplatesEditor from "@/components/settings/email-templates-editor";
 
 export const dynamic = "force-dynamic";
 
@@ -28,6 +29,7 @@ const TABS = [
   ["domain", "Domain"],
   ["money", "Money"],
   ["security", "Security"],
+  ["emails", "Email Templates"],
   ["api", "API"],
 ] as const;
 
@@ -436,7 +438,6 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
       {tab === "security" && (() => {
         const sec = securityOf(tenant);
         const mode = sec.loginVerification ?? "any";
-        const tpl = getTemplate(tenant, "loginCode");
         const emailLive = !!process.env.SMTP_HOST;
         const smsLive = !!process.env.TWILIO_ACCOUNT_SID;
         const anyLive = emailLive || smsLive;
@@ -468,22 +469,40 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
           </div>
         </Card>
         <Card className="mt-5">
-          <CardHeader eyebrow="Email templates" title="Verification code email" sub="Edit the email staff receive — {{studio}}, {{name}}, {{code}}, {{minutes}} are filled in" />
-          <form method="post" action="/api/settings" className="p-6 pt-0 space-y-3">
-            <input type="hidden" name="section" value="security" />
-            <input type="hidden" name="next" value="/settings?tab=security&saved=1" />
-            <div>
-              <label className="mb-1 block text-[11px] font-bold uppercase tracking-wider text-muted">Subject</label>
-              <input name="tplSubject" defaultValue={tpl.subject} className="h-11 w-full rounded-[10px] border border-line bg-surface px-3.5 text-sm outline-none focus:border-brand" />
-            </div>
-            <div>
-              <label className="mb-1 block text-[11px] font-bold uppercase tracking-wider text-muted">Body</label>
-              <textarea name="tplBody" defaultValue={tpl.body} rows={10} className="w-full rounded-[10px] border border-line bg-surface px-3.5 py-2.5 font-mono text-[12.5px] outline-none focus:border-brand" />
-            </div>
-            <button className="rounded-[10px] bg-brand px-5 py-2.5 text-[13px] font-bold text-white hover:bg-brand-ink">Save template</button>
-          </form>
+          <CardHeader eyebrow="Email templates" title="Verification code email" sub="The wording of the code email now lives with all your other emails" />
+          <div className="p-6 pt-0">
+            <a href="/settings?tab=emails" className="inline-flex items-center gap-1.5 rounded-[10px] bg-brand px-5 py-2.5 text-[13px] font-bold text-white hover:bg-brand-ink">Edit in Email Templates →</a>
+          </div>
         </Card>
         </>
+        );
+      })()}
+
+      {tab === "emails" && (() => {
+        const templates = TEMPLATE_META.map((m) => ({
+          key: m.key,
+          label: m.label,
+          description: m.description,
+          vars: m.vars,
+          default: m.default,
+          current: getTemplate(tenant, m.key),
+          overridden: hasOverride(tenant, m.key),
+        }));
+        return (
+          <Card className="mt-6">
+            <CardHeader
+              eyebrow="Email templates"
+              title="Transactional emails"
+              sub="Edit the emails your studio sends — subject, wording, variables and logo. Each has a live preview and a one-click reset."
+            />
+            <div className="p-6">
+              <EmailTemplatesEditor
+                templates={templates}
+                brand={{ name: tenant.name, logoUrl: tenant.logoUrl ?? null, brandColor: tenant.brandColor }}
+                savedKey={saved}
+              />
+            </div>
+          </Card>
         );
       })()}
 
