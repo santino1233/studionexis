@@ -7,6 +7,7 @@ import { verifyStripeKey, studioStripeConfig } from "@/lib/stripe";
 import { BASE_DOMAIN } from "@/lib/config";
 import { randomBytes } from "crypto";
 import { WEBHOOK_EVENTS, webhooksOf, appsOf } from "@/lib/webhooks";
+import { WEEKDAY_KEYS, isTime, DEFAULT_DAY } from "@/lib/hours";
 
 const CURRENCIES = ["USD", "EUR", "GBP", "AUD", "CAD", "SGD", "THB", "VND", "IDR", "PHP", "MYR", "JPY", "KRW", "AED", "INR"];
 
@@ -251,6 +252,22 @@ export async function POST(req: Request) {
         },
       },
     });
+  } else if (section === "hours") {
+    // Structured weekly operating hours. Merge into the JSON policies blob so
+    // nothing else is disturbed. Times are validated per field; a bad value
+    // falls back to the sensible default rather than rejecting the whole save.
+    const prev = (tenant.policies ?? {}) as Record<string, unknown>;
+    const hours: Record<string, { open: string; close: string; closed: boolean }> = {};
+    for (const k of WEEKDAY_KEYS) {
+      const open = String(form.get(`${k}_open`) ?? "");
+      const close = String(form.get(`${k}_close`) ?? "");
+      hours[k] = {
+        open: isTime(open) ? open : DEFAULT_DAY.open,
+        close: isTime(close) ? close : DEFAULT_DAY.close,
+        closed: form.get(`${k}_closed`) === "on",
+      };
+    }
+    await db.tenant.update({ where: { id: tenant.id }, data: { policies: { ...prev, hours } } });
   } else if (section === "payment") {
     // Payment collection (Money tab). One mode is always selected. Deposit /
     // pay-in-full require an online payment method; if none is connected we fall
