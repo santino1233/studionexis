@@ -147,6 +147,7 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
   const selWaitlist = selected?.bookings.filter((b) => b.status === "WAITLIST") ?? [];
   const selActiveQty = selActive.reduce((n, b) => n + b.qty, 0);
   const selWaitQty = selWaitlist.reduce((n, b) => n + b.qty, 0);
+  const selSpotsLeft = selected ? Math.max(0, selected.capacity - selActiveQty) : 0;
   const legendTypes = [...new Map(sessions.map((s) => [s.classType.id, s.classType])).values()].slice(0, 8);
   const fin = selected
     ? selected.status === "COMPLETED" && selected.revenue != null
@@ -410,13 +411,19 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
                 <AlertTriangle className="inline size-4 -mt-0.5 shrink-0" /> This class needs completing — check everyone in, take payment, then <b>Mark class completed</b> so the instructor gets paid.
               </div>
             )}
-            <div className="space-y-1.5 border-b border-line-2 p-5 text-[13px] text-ink-2">
-              <div className="flex items-center gap-1.5"><CalIcon className="size-3.5 shrink-0 text-muted" /> {selected.startsAt.toLocaleDateString("en-US", { timeZone: tenant.timezone, weekday: "short", month: "short", day: "numeric", year: "numeric" })}</div>
-              <div className="flex items-center gap-1.5"><Clock className="size-3.5 shrink-0 text-muted" /> {timeInTz(selected.startsAt, tenant.timezone)} – {timeInTz(selected.endsAt, tenant.timezone)}</div>
-              {selected.instructor && <div className="flex items-center gap-1.5"><User className="size-3.5 shrink-0 text-muted" /> {selected.instructor.name}</div>}
-              <div className="flex items-center gap-1.5"><Users className="size-3.5 shrink-0 text-muted" /> <b className="text-ink">{selActiveQty} / {selected.capacity}</b> booked{selWaitQty > 0 ? ` · ${selWaitQty} waitlisted` : ""}</div>
-              {selected.location && <div className="flex items-center gap-1.5"><MapPin className="size-3.5 shrink-0 text-muted" /> {selected.location}</div>}
-              {selected.note && <div className="flex items-center gap-1.5"><StickyNote className="size-3.5 shrink-0 text-muted" /> {selected.note}</div>}
+            <div className="space-y-2.5 border-b border-line-2 p-5 text-[13px] text-ink-2">
+              <div className="flex items-center gap-2"><CalIcon className="size-4 shrink-0 text-muted" /> {selected.startsAt.toLocaleDateString("en-US", { timeZone: tenant.timezone, weekday: "short", month: "short", day: "numeric", year: "numeric" })}</div>
+              <div className="flex items-center gap-2"><Clock className="size-4 shrink-0 text-muted" /> {timeInTz(selected.startsAt, tenant.timezone)} – {timeInTz(selected.endsAt, tenant.timezone)}</div>
+              {selected.instructor && <div className="flex items-center gap-2"><User className="size-4 shrink-0 text-muted" /> <span className="font-semibold text-ink">{selected.instructor.name}</span></div>}
+              <div className="flex items-center gap-2">
+                <Users className="size-4 shrink-0 text-muted" />
+                <span><b className="text-ink">{selActiveQty} / {selected.capacity}</b> booked{selWaitQty > 0 ? <span className="text-muted"> · {selWaitQty} waitlisted</span> : ""}</span>
+                {selected.status !== "BLOCKED" && (
+                  <span className={`ml-auto shrink-0 rounded-full px-2 py-0.5 text-[10.5px] font-bold ${selSpotsLeft === 0 ? "bg-brand-wash text-brand" : "bg-green-wash text-green"}`}>{selSpotsLeft > 0 ? `${selSpotsLeft} spot${selSpotsLeft === 1 ? "" : "s"} left` : "Full"}</span>
+                )}
+              </div>
+              {selected.location && <div className="flex items-center gap-2"><MapPin className="size-4 shrink-0 text-muted" /> {selected.location}</div>}
+              {selected.note && <div className="flex items-start gap-2"><StickyNote className="size-4 shrink-0 text-muted" /> <span>{selected.note}</span></div>}
             </div>
             {fin && (
               <div className="grid grid-cols-2 gap-3 border-b border-line-2 p-4">

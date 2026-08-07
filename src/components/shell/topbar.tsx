@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { Search, MapPin } from "lucide-react";
+import { MapPin } from "lucide-react";
 import { getSession } from "@/lib/auth";
 import { getCurrentTenant } from "@/lib/tenant";
 import { db } from "@/lib/db";
 import { QuickAdd } from "@/components/shell/quick-add";
+import { ShellSearch } from "@/components/shell/shell-search";
 
 export async function Topbar() {
   const session = await getSession();
@@ -25,14 +26,7 @@ export async function Topbar() {
           <MapPin className="size-3.5" /> {tenant.locationLabel || tenant.name}
         </Link>
       )}
-      <form action="/clients" method="get" className="relative ml-auto hidden w-[280px] md:block">
-        <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted" />
-        <input
-          name="q"
-          placeholder="Find a client…"
-          className="h-9 w-full rounded-xl border border-line-2 bg-surface pl-9 pr-3 text-sm outline-none placeholder:text-muted focus:border-brand focus:ring-4 focus:ring-brand/10"
-        />
-      </form>
+      <ShellSearch />
       <span className="hidden text-[13px] font-medium text-muted sm:block">{date}</span>
       {canQuickAdd && <QuickAdd classTypes={classTypes} instructors={instructors} today={today} />}
       <div className="grid size-9 place-items-center rounded-full bg-brand text-sm font-bold text-white" title={session?.name ?? ""}>{initial}</div>
