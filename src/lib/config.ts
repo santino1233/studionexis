@@ -36,3 +36,14 @@ export function baseForHost(host: string): string | null {
   }
   return best;
 }
+
+// ── Custom-domain provisioning targets ────────────────────────────────────
+// What a studio must point its own domain at for us to serve it. The A-record
+// IP is this server's public address; the CNAME host is a name that already
+// resolves here (covered by the wildcard cert). Both are configurable per
+// deployment so a server migration is an env change, not a code change.
+// NEXT_PUBLIC_ so the Settings UI (client) can show the exact record to create.
+export const DOMAIN_TARGET_IP =
+  process.env.NEXT_PUBLIC_DOMAIN_TARGET_IP ?? "51.79.226.215";
+export const DOMAIN_TARGET_HOST =
+  process.env.NEXT_PUBLIC_DOMAIN_TARGET_HOST ?? `app.${BASE_DOMAIN}`;

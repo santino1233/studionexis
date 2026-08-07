@@ -7,7 +7,8 @@ import { db } from "@/lib/db";
 import { classFormats, difficultyLevels } from "@/lib/class-config";
 import { studioStripeConfig } from "@/lib/stripe";
 import { studioPayPalConfig } from "@/lib/paypal";
-import { BASE_DOMAIN } from "@/lib/config";
+import { BASE_DOMAIN, DOMAIN_TARGET_IP, DOMAIN_TARGET_HOST } from "@/lib/config";
+import { domainPolicyOf } from "@/lib/domain";
 import { hasFeature } from "@/lib/features";
 import { publicSiteUrl } from "@/lib/site-url";
 import { securityOf } from "@/lib/login-verify";
@@ -43,8 +44,8 @@ function mask(key: string) {
   return `${key.slice(0, 11)}…${key.slice(-4)}`;
 }
 
-export default async function SettingsPage({ searchParams }: { searchParams: Promise<{ saved?: string; error?: string; tab?: string }> }) {
-  const { saved, error, tab: tabRaw } = await searchParams;
+export default async function SettingsPage({ searchParams }: { searchParams: Promise<{ saved?: string; error?: string; tab?: string; verified?: string }> }) {
+  const { saved, error, tab: tabRaw, verified } = await searchParams;
   const { caps: myCaps } = await sessionCapabilities();
   const canManageTeam = can(myCaps, "manage_team");
   const tab = (TABS.some(([id]) => id === tabRaw) || (tabRaw === "roles" && canManageTeam)) ? tabRaw! : "general";
@@ -297,25 +298,46 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
           <input type="hidden" name="section" value="domain" />
           {error === "domain" && <div className="rounded-xl border border-rose/20 bg-rose/5 px-3.5 py-2.5 text-[13px] font-medium text-rose">That doesn&apos;t look like a domain (e.g. www.yourstudio.com).</div>}
           {error === "domaintaken" && <div className="rounded-xl border border-rose/20 bg-rose/5 px-3.5 py-2.5 text-[13px] font-medium text-rose">That domain is already connected to another studio.</div>}
+          {verified && (() => {
+            const msg: Record<string, string> = {
+              VERIFYING: "DNS looks good — we’re issuing your certificate and switching the domain on. This usually takes a few minutes.",
+              LIVE: "Your domain is live.",
+              PENDING: "We can’t see your DNS record yet. It can take a little while to propagate — try again shortly.",
+              FAILED: "Your domain isn’t pointing at us yet. Double-check the A record below, then verify again.",
+            };
+            const m = msg[verified]; if (!m) return null;
+            const good = verified === "LIVE" || verified === "VERIFYING";
+            return <div className={`rounded-xl border px-3.5 py-2.5 text-[13px] font-medium ${good ? "border-green/20 bg-green-wash text-green" : "border-brand/20 bg-brand-wash text-brand"}`}>{m}</div>;
+          })()}
           <div>
             <label className={label}>Your domain</label>
             <div className="flex items-center gap-2">
               <input name="customDomain" defaultValue={tenant.customDomain ?? ""} placeholder="www.yourstudio.com" className={field} />
               {(() => {
-                const d = ((tenant.policies ?? {}) as { domain?: { status?: string; error?: string } }).domain;
-                if (!tenant.customDomain || !d?.status) return null;
+                const d = domainPolicyOf(tenant.policies);
+                if (!tenant.customDomain || !d) return null;
                 if (d.status === "LIVE") return <span className="shrink-0 rounded-full bg-green-wash px-3 py-1.5 text-[11px] font-bold text-green">● Live</span>;
-                if (d.status === "PENDING_DNS") return <span className="shrink-0 rounded-full bg-brand-wash px-3 py-1.5 text-[11px] font-bold text-brand">Waiting for DNS…</span>;
-                return <span className="shrink-0 rounded-full bg-rose/10 px-3 py-1.5 text-[11px] font-bold text-rose" title={d.error ?? ""}>Problem — we&apos;re on it</span>;
+                if (d.status === "VERIFYING") return <span className="shrink-0 rounded-full bg-brand-wash px-3 py-1.5 text-[11px] font-bold text-brand">Setting up…</span>;
+                if (d.status === "PENDING") return <span className="shrink-0 rounded-full bg-brand-wash px-3 py-1.5 text-[11px] font-bold text-brand">Waiting for DNS…</span>;
+                return <span className="shrink-0 rounded-full bg-rose/10 px-3 py-1.5 text-[11px] font-bold text-rose" title={d.error ?? ""}>Not connected</span>;
               })()}
             </div>
+            {(() => {
+              const d = domainPolicyOf(tenant.policies);
+              if (d?.status === "FAILED" && d.error) return <p className="mt-1.5 text-[12px] text-rose">{d.error}</p>;
+              return null;
+            })()}
           </div>
-          <ol className="list-decimal space-y-1 pl-5 text-[12.5px] text-muted">
-            <li>At your domain provider, add an <b>A record</b> pointing to <b className="font-mono">72.62.69.9</b>.</li>
-            <li>Save here — that&apos;s it. We check every few minutes, and once your DNS points at us we issue the security certificate and switch your domain on automatically.</li>
-            <li>Your website, booking pages and client portal then work on your domain.</li>
-          </ol>
-          <div className="flex justify-end">
+          <div className="rounded-xl border border-line bg-surface-2 p-4">
+            <p className="mb-2 text-[12.5px] font-semibold text-ink-2">Point your domain at us, then verify:</p>
+            <ol className="list-decimal space-y-1 pl-5 text-[12.5px] text-muted">
+              <li>At your domain provider, add an <b>A record</b> for your domain pointing to <b className="font-mono">{DOMAIN_TARGET_IP}</b>.</li>
+              <li>Or, for a subdomain like <span className="font-mono">book.yourstudio.com</span>, add a <b>CNAME</b> to <b className="font-mono">{DOMAIN_TARGET_HOST}</b>.</li>
+              <li>Save the domain here, then press <b>Verify now</b>. Once we confirm it points at us we issue a free security certificate and switch your domain on automatically — usually within a few minutes.</li>
+            </ol>
+          </div>
+          <div className="flex items-center justify-between">
+            <button formAction="/api/settings/domain/verify" className="rounded-[10px] border border-line bg-surface px-5 py-2.5 text-sm font-bold text-ink transition-colors hover:border-brand disabled:opacity-40" disabled={!tenant.customDomain}>Verify now</button>
             <button className="rounded-[10px] bg-brand px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-brand-ink">Save domain</button>
           </div>
         </form>

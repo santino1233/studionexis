@@ -1,0 +1,14 @@
+# Studio Nexis custom-domain automation.
+# Install as root:  cp scripts/nexis-domains.cron /etc/cron.d/nexis-domains && systemctl restart cron
+# Both jobs are safe to run repeatedly (idempotent).
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+# Every 5 min: issue certs + nginx vhosts for newly-pointed domains, re-check
+# live ones, and mark FAILED any that stopped pointing here (needs root).
+*/5 * * * * root NEXIS_PUBLIC_IP=51.79.226.215 /opt/nexis/scripts/domain-provisioner.sh
+
+# Every 5 min (offset): root-free DNS re-check via the app, so the UI reflects
+# PENDING→VERIFYING and LIVE→FAILED between provisioner runs. Replace TOKEN with
+# the value of CRON_TOKEN from /opt/nexis/.env.
+2-59/5 * * * * root curl -fsS -X POST "http://127.0.0.1:3105/api/cron/domains?token=CRON_TOKEN" >/dev/null 2>&1

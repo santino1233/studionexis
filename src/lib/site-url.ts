@@ -10,17 +10,15 @@
 // mis-pointed / cert-less) domain would hijack every booking link and break
 // them. So we gate on that status here.
 import { BASE_DOMAIN } from "@/lib/config";
+import { isDomainLive } from "@/lib/domain";
 
 const BASE = BASE_DOMAIN;
-
-type DomainPolicy = { domain?: { status?: string } | null } | null | undefined;
 
 export function publicSiteUrl(
   tenant: { slug: string; customDomain?: string | null; policies?: unknown },
   path = "",
 ): string {
-  const domainLive =
-    (tenant.policies as DomainPolicy)?.domain?.status === "LIVE";
+  const domainLive = isDomainLive(tenant.policies);
   const origin =
     tenant.customDomain && domainLive
       ? `https://${tenant.customDomain}`

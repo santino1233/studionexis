@@ -11,6 +11,7 @@ import { WEBHOOK_EVENTS, webhooksOf, appsOf } from "@/lib/webhooks";
 import { WEEKDAY_KEYS, isTime, DEFAULT_DAY } from "@/lib/hours";
 import { guardCap } from "@/lib/rbac-server";
 import { isTemplateKey } from "@/lib/email-templates";
+import { normalizeDomain, isValidCustomDomain, makeDomainPolicy } from "@/lib/domain";
 
 const CURRENCIES = ["USD", "EUR", "GBP", "AUD", "CAD", "SGD", "THB", "VND", "IDR", "PHP", "MYR", "JPY", "KRW", "AED", "INR"];
 
@@ -43,20 +44,28 @@ export async function POST(req: Request) {
       },
     });
   } else if (section === "domain") {
-    const raw = String(form.get("customDomain") ?? "").trim().toLowerCase().replace(/^https?:\/\//, "").replace(/\/.*$/, "");
+    const raw = normalizeDomain(String(form.get("customDomain") ?? ""));
     const prevPol = (tenant.policies ?? {}) as Record<string, unknown>;
     if (raw === "") {
+      // Clearing the domain reverts the studio to its <slug>.<base> subdomain.
       delete prevPol.domain;
       await db.tenant.update({ where: { id: tenant.id }, data: { customDomain: null, policies: prevPol as object } });
     } else {
-      if (!/^(?!-)[a-z0-9-]+(\.[a-z0-9-]+)+$/.test(raw) || raw.endsWith(BASE_DOMAIN)) {
-        return NextResponse.redirect(externalUrl(req, "/settings?error=domain"), 303);
+      // Reject junk and any attempt to claim one of our own base domains.
+      if (!isValidCustomDomain(raw) || raw === BASE_DOMAIN || raw.endsWith(`.${BASE_DOMAIN}`)) {
+        return NextResponse.redirect(externalUrl(req, "/settings?tab=domain&error=domain"), 303);
       }
+      // One domain per tenant: never let two studios claim the same host.
       const taken = await db.tenant.findFirst({ where: { customDomain: raw, id: { not: tenant.id } } });
-      if (taken) return NextResponse.redirect(externalUrl(req, "/settings?error=domaintaken"), 303);
+      if (taken) return NextResponse.redirect(externalUrl(req, "/settings?tab=domain&error=domaintaken"), 303);
+      // Unchanged domain? Keep whatever lifecycle state it already has.
+      const policy =
+        raw === tenant.customDomain && prevPol.domain
+          ? (prevPol.domain as object)
+          : makeDomainPolicy("PENDING");
       await db.tenant.update({
         where: { id: tenant.id },
-        data: { customDomain: raw, policies: { ...prevPol, domain: { status: "PENDING_DNS" } } as object },
+        data: { customDomain: raw, policies: { ...prevPol, domain: policy } as Prisma.InputJsonValue },
       });
     }
   } else if (section === "categories") {
