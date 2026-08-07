@@ -6,6 +6,8 @@ import { CAPABILITIES, EDITABLE_ROLES, effectiveRoleCapabilities, can } from "@/
 import { db } from "@/lib/db";
 import { classFormats, difficultyLevels } from "@/lib/class-config";
 import { studioStripeConfig } from "@/lib/stripe";
+import { studioPayPalConfig } from "@/lib/paypal";
+import { BASE_DOMAIN } from "@/lib/config";
 import { hasFeature } from "@/lib/features";
 import { publicSiteUrl } from "@/lib/site-url";
 import { securityOf } from "@/lib/login-verify";
@@ -345,6 +347,61 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
                 <button className="shrink-0 rounded-[10px] bg-brand px-5 text-sm font-bold text-white hover:bg-brand-ink">{sc.secretKey ? "Replace key" : "Connect"}</button>
               </form>
               {error === "stripekey" && <p className="text-[12.5px] font-medium text-rose">Stripe rejected that key — copy the secret key exactly.</p>}
+            </div>
+          );
+        })()}
+      </Card>
+
+      <Card className="mt-5">
+        <CardHeader eyebrow="Online payments" title="PayPal" sub="An alternative to Stripe — let clients check out with PayPal or a card" />
+        {(() => {
+          const pc = studioPayPalConfig(tenant);
+          const hasCreds = !!(pc.clientId && pc.secret);
+          const live = !!(pc.enabled && hasCreds);
+          return (
+            <div className="space-y-4 p-6">
+              {hasCreds && (
+                <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-line-2 bg-raised px-4 py-3">
+                  <div className="text-[13.5px] font-bold">
+                    {live
+                      ? <span className="text-green"><Check className="inline size-3.5 -mt-0.5" /> Accepting PayPal{pc.accountLabel ? ` — ${pc.accountLabel}` : ""}</span>
+                      : <span className="text-ink-2">Connected but paused{pc.accountLabel ? ` — ${pc.accountLabel}` : ""}</span>}
+                    <span className="ml-2 rounded-full bg-line-2 px-2 py-0.5 text-[10.5px] font-bold uppercase tracking-wider text-ink-2">{pc.mode === "live" ? "Live" : "Sandbox"}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <form method="post" action="/api/settings">
+                      <input type="hidden" name="section" value="paypal" />
+                      <input type="hidden" name="action" value={live ? "disable" : "enable"} />
+                      <button className={`rounded-lg px-3 py-1.5 text-[11.5px] font-bold ${live ? "bg-line-2 text-ink-2 hover:bg-amber/10" : "bg-brand text-white hover:bg-brand-ink"}`}>{live ? "Pause" : "Turn on"}</button>
+                    </form>
+                    <form method="post" action="/api/settings">
+                      <input type="hidden" name="section" value="paypal" />
+                      <input type="hidden" name="action" value="disconnect" />
+                      <button className="rounded-lg bg-line-2 px-3 py-1.5 text-[11.5px] font-bold text-ink-2 hover:bg-rose/10 hover:text-rose">Disconnect</button>
+                    </form>
+                  </div>
+                </div>
+              )}
+              {!hasCreds && (
+                <p className="text-[13px] text-muted">Create a REST app at <b>developer.paypal.com</b> → My Apps &amp; Credentials, then paste its <b>Client ID</b> and <b>Secret</b> below. Pick Sandbox to test or Live to accept real money. Nothing charges until you turn PayPal on.</p>
+              )}
+              <form method="post" action="/api/settings" className="space-y-2.5">
+                <input type="hidden" name="section" value="paypal" />
+                <div className="flex flex-wrap gap-2">
+                  <input name="clientId" type="text" required placeholder="PayPal Client ID" defaultValue={pc.clientId ?? ""} className={field} />
+                  <input name="secret" type="password" required placeholder="PayPal Secret" className={field} />
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <select name="mode" defaultValue={pc.mode ?? "sandbox"} className="h-11 rounded-[10px] border border-line bg-surface px-3 text-sm outline-none focus:border-brand">
+                    <option value="sandbox">Sandbox (testing)</option>
+                    <option value="live">Live (real payments)</option>
+                  </select>
+                  <input name="webhookId" type="text" placeholder="Webhook ID (optional)" defaultValue={pc.webhookId ?? ""} className={field} />
+                  <button className="shrink-0 rounded-[10px] bg-brand px-5 text-sm font-bold text-white hover:bg-brand-ink">{hasCreds ? "Replace credentials" : "Connect"}</button>
+                </div>
+                <p className="text-[11.5px] text-muted">Optional: to have PayPal notify us if a customer closes the tab after paying, register this webhook URL in your PayPal app and paste the Webhook ID above — <code className="rounded bg-line-2 px-1 py-0.5 text-[11px]">{`https://${tenant.customDomain || `${tenant.slug}.` + BASE_DOMAIN}/api/public/paypal/webhook`}</code></p>
+              </form>
+              {error === "paypalkey" && <p className="text-[12.5px] font-medium text-rose">PayPal rejected those credentials — check the Client ID, Secret, and Sandbox/Live setting.</p>}
             </div>
           );
         })()}

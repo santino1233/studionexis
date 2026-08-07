@@ -337,6 +337,7 @@ model Order {
   method    String // cash / transfer / card / online / stripe / membership
   status    OrderStatus @default(PAID)
   stripeSessionId String? @unique // set when paid through Stripe Checkout
+  paypalOrderId String? @unique // set when paid through PayPal Orders v2
   createdAt DateTime    @default(now())
 
   items    OrderItem[]
@@ -589,11 +590,35 @@ model GiftCard {
   status          GiftCardStatus @default(ACTIVE)
   expiresAt       DateTime?
   stripeSessionId String?        @unique // idempotency for online purchases
+  paypalOrderId   String?        @unique // idempotency for online PayPal purchases
   createdAt       DateTime       @default(now())
 
   txns GiftCardTxn[]
 
   @@unique([tenantId, code]) // code unique within a tenant — prevents cross-tenant reuse
+  @@index([tenantId, createdAt])
+}
+
+// Server-side intent for a PayPal Orders-v2 purchase. Written when we create the
+// PayPal order (create-order route) with the SERVER-computed amount and the
+// identity of what to grant; read back at capture/webhook time so fulfilment is
+// driven entirely by trusted server state, never by the client. Purely additive.
+model PayPalOrder {
+  id             String   @id @default(cuid())
+  paypalId       String   @unique // the PayPal order id
+  tenantId       String
+  kind           String // "package" | "giftcard"
+  clientId       String? // package purchases: who to credit
+  packageId      String? // package purchases: what was bought
+  amount         Decimal  @db.Decimal(12, 2)
+  currency       String
+  recipientEmail String? // gift-card purchases
+  purchaserEmail String?
+  message        String?
+  status         String   @default("CREATED") // CREATED | CAPTURED
+  captureId      String?
+  createdAt      DateTime @default(now())
+
   @@index([tenantId, createdAt])
 }
 

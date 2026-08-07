@@ -4,8 +4,10 @@ import { Gift, Check } from "lucide-react";
 import { db } from "@/lib/db";
 import { tenantBySlugOrDomain } from "@/lib/public-tenant";
 import { studioStripeEnabled } from "@/lib/stripe";
+import { studioPayPalPublic } from "@/lib/paypal";
 import { moneyFormatter } from "@/lib/tenant";
 import { CustomerNav } from "@/components/customer/nav";
+import { GiftCardCheckout } from "@/components/customer/gift-card-checkout";
 import { normaliseCode, giftCardStatusLabel, GIFT_CARD_MIN, GIFT_CARD_MAX } from "@/lib/gift-cards";
 
 export const dynamic = "force-dynamic";
@@ -22,6 +24,7 @@ export default async function GiftCardsBuyPage({ params, searchParams }: {
   if (!tenant || tenant.status === "SUSPENDED") notFound();
   const brand = tenant.brandColor || "#F97316";
   const stripeOn = studioStripeEnabled(tenant);
+  const paypal = studioPayPalPublic(tenant);
   const fmt = moneyFormatter(tenant.currency);
 
   // SSR balance check (?check=CODE) — no client JS needed.
@@ -78,7 +81,21 @@ export default async function GiftCardsBuyPage({ params, searchParams }: {
                 </div>
               </div>
 
-              {stripeOn ? (
+              {paypal ? (
+                <GiftCardCheckout
+                  slug={slug}
+                  studioName={tenant.name}
+                  currency={tenant.currency}
+                  brand={brand}
+                  presets={PRESETS.map((v) => ({ value: v, label: fmt.format(v) }))}
+                  min={GIFT_CARD_MIN}
+                  max={GIFT_CARD_MAX}
+                  minLabel={fmt.format(GIFT_CARD_MIN)}
+                  maxLabel={fmt.format(GIFT_CARD_MAX)}
+                  stripeOn={stripeOn}
+                  paypal={paypal}
+                />
+              ) : stripeOn ? (
                 <form method="post" action="/api/public/gift-cards/checkout" className="mt-5 space-y-4">
                   <input type="hidden" name="slug" value={slug} />
                   <div>
