@@ -5,8 +5,10 @@ import { db } from "@/lib/db";
 import { tenantBySlugOrDomain } from "@/lib/public-tenant";
 import { getCustomerSession } from "@/lib/customer-auth";
 import { studioStripeEnabled } from "@/lib/stripe";
+import { studioPayPalPublic } from "@/lib/paypal";
 import { moneyFormatter } from "@/lib/tenant";
 import { CustomerNav } from "@/components/customer/nav";
+import { PayPalPackageButton } from "@/components/customer/paypal-package-button";
 
 export const dynamic = "force-dynamic";
 
@@ -20,6 +22,7 @@ export default async function BuyPackagesPage({ params, searchParams }: {
   if (!tenant || tenant.status === "SUSPENDED") notFound();
   const brand = tenant.brandColor || "#F97316";
   const stripeOn = studioStripeEnabled(tenant);
+  const paypal = studioPayPalPublic(tenant);
   const fmt = moneyFormatter(tenant.currency);
   const cs = await getCustomerSession();
   const authed = cs && cs.tenantId === tenant.id;
@@ -115,6 +118,9 @@ export default async function BuyPackagesPage({ params, searchParams }: {
                       Pay online now
                     </button>
                   </form>
+                )}
+                {paypal && authed && (
+                  <PayPalPackageButton clientId={paypal.clientId} currency={tenant.currency} slug={slug} packageId={p.id} brand={brand} />
                 )}
                 <form method="post" action="/api/public/packages" className={stripeOn && authed ? "mt-2" : "mt-6"}>
                   <input type="hidden" name="slug" value={slug} />

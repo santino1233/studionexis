@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { externalUrl } from "@/lib/request-url";
 import { verifyStripeKey, studioStripeConfig } from "@/lib/stripe";
+import { verifyPayPalCreds } from "@/lib/paypal";
 import { BASE_DOMAIN } from "@/lib/config";
 import { randomBytes } from "crypto";
 import { WEBHOOK_EVENTS, webhooksOf, appsOf } from "@/lib/webhooks";
@@ -250,6 +251,35 @@ export async function POST(req: Request) {
       await db.tenant.update({
         where: { id: tenant.id },
         data: { policies: { ...prev, stripe: { secretKey, accountLabel: check.label, connectedAt: new Date().toISOString() } } },
+      });
+    }
+  } else if (section === "paypal") {
+    // PayPal is a per-studio alternative to Stripe. Creds live in policies.paypal
+    // and it only ever goes live once verified AND explicitly enabled. Never
+    // invents credentials — a bad/empty key round-trips back with ?error=paypalkey.
+    const prev = (tenant.policies ?? {}) as Record<string, unknown>;
+    const prevPp = (prev.paypal ?? {}) as Record<string, unknown>;
+    const action = String(form.get("action") ?? "");
+    if (action === "disconnect") {
+      await db.tenant.update({ where: { id: tenant.id }, data: { policies: { ...prev, paypal: {} } } });
+    } else if (action === "disable") {
+      await db.tenant.update({ where: { id: tenant.id }, data: { policies: { ...prev, paypal: { ...prevPp, enabled: false } } } });
+    } else if (action === "enable") {
+      if (prevPp.clientId && prevPp.secret) {
+        await db.tenant.update({ where: { id: tenant.id }, data: { policies: { ...prev, paypal: { ...prevPp, enabled: true } } } });
+      } else {
+        return NextResponse.redirect(externalUrl(req, "/settings?tab=money&error=paypalkey"), 303);
+      }
+    } else {
+      const clientId = String(form.get("clientId") ?? "").trim();
+      const secret = String(form.get("secret") ?? "").trim();
+      const mode = String(form.get("mode") ?? "sandbox") === "live" ? "live" : "sandbox";
+      const webhookId = String(form.get("webhookId") ?? "").trim();
+      const check = clientId && secret ? await verifyPayPalCreds(clientId, secret, mode) : { ok: false as const };
+      if (!check.ok) return NextResponse.redirect(externalUrl(req, "/settings?tab=money&error=paypalkey"), 303);
+      await db.tenant.update({
+        where: { id: tenant.id },
+        data: { policies: { ...prev, paypal: { clientId, secret, mode, webhookId: webhookId || undefined, enabled: true, accountLabel: check.label, connectedAt: new Date().toISOString() } } },
       });
     }
   } else if (section === "classsetup") {
