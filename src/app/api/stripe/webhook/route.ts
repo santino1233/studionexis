@@ -37,6 +37,14 @@ export async function POST(req: Request) {
           policies: { ...prev, billingCycle: s.metadata.cycle ?? "monthly", stripeSubscriptionId: s.subscription as string } as Prisma.InputJsonValue,
         });
       }
+      // Done-for-you custom website ($99, one-off). The order row was minted at
+      // checkout with amountPaid=0; mark it paid so it enters the HQ fulfilment
+      // queue. Idempotent — a replayed event just re-sets the same amountPaid.
+      if (s.mode === "payment" && s.metadata?.kind === "custom_site") {
+        await db.customSiteOrder
+          .update({ where: { stripeSessionId: s.id }, data: { amountPaid: (s.amount_total ?? 0) / 100 } })
+          .catch(() => {});
+      }
       break;
     }
     case "invoice.payment_failed": {

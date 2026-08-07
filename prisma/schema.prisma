@@ -53,7 +53,30 @@ model Tenant {
   supportTickets SupportTicket[]
   chats          ChatConversation[]
   giftCards      GiftCard[]
+  customSiteOrders CustomSiteOrder[]
   organization   Organization?      @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+}
+
+// "We build it for you" custom-website orders (Wave 12 website suite).
+// A studio pays a flat one-off fee (charged on the PLATFORM / Nexis-HQ Stripe
+// account, never the studio's own) and Nexis HQ builds the site by hand. The
+// row is minted when the studio submits the intake form and marked paid by the
+// platform Stripe webhook (idempotent on the unique stripeSessionId). HQ works
+// it through NEW → IN_PROGRESS → DELIVERED in the HQ fulfilment queue.
+model CustomSiteOrder {
+  id              String   @id @default(cuid())
+  tenantId        String
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  contact         String // "Name · email · phone" for a quick glance in the queue
+  brief           Json     @default("{}") // full intake: goals, style, references, brand assets, extras
+  status          String   @default("NEW") // NEW | IN_PROGRESS | DELIVERED
+  amountPaid      Decimal  @default(0) @db.Decimal(12, 2) // 0 until the Stripe webhook confirms payment
+  stripeSessionId String   @unique // Checkout Session id — idempotency key for the paid mint
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([status, createdAt])
+  @@index([tenantId, createdAt])
 }
 
 model Organization {
