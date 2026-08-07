@@ -91,6 +91,15 @@ export async function POST(req: Request) {
       create: { key: "platform", value: { maintenanceBanner: s("maintenanceBanner").slice(0, 300) } as Prisma.InputJsonValue },
     });
     audit({ actor: auth.name, action: "global-settings", detail: s("maintenanceBanner") ? "maintenance banner set" : "maintenance banner cleared" });
+  } else if (op === "custom-site-status") {
+    const next = s("status");
+    if (["NEW", "IN_PROGRESS", "DELIVERED"].includes(next)) {
+      const o = await db.customSiteOrder.findUnique({ where: { id: s("id") } });
+      if (o) {
+        await db.customSiteOrder.update({ where: { id: o.id }, data: { status: next } });
+        audit({ tenantId: o.tenantId, actor: auth.name, action: "custom-site-status", detail: `${o.id} → ${next}` });
+      }
+    }
   } else if (op === "email-resend") {
     const e = await db.emailLog.findUnique({ where: { id: s("id") } });
     if (e) {

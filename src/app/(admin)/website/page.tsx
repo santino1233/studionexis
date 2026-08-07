@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Blocks, ExternalLink, Eye, EyeOff, Sparkles } from "lucide-react";
+import { Blocks, ExternalLink, Eye, EyeOff, Sparkles, Wand2 } from "lucide-react";
 import { Card, CardHeader } from "@/components/ui/card";
 import { db } from "@/lib/db";
 import { getCurrentTenant } from "@/lib/tenant";
@@ -60,6 +60,7 @@ export default async function WebsiteBuilderPage({ searchParams }: { searchParam
         <div className="flex items-center gap-2">
           <span className="rounded-full bg-line-2 px-3 py-1.5 text-[11.5px] font-bold text-ink-2">Template: {TEMPLATE_META[template]?.name ?? template}</span>
           <Link href="/website/editor" className="rounded-[10px] border border-line-2 px-4 py-2.5 text-[13px] font-bold text-ink-2 hover:text-ink"><Blocks className="inline size-4 -mt-0.5" /> Advanced editor</Link>
+          <Link href="/website/custom" className="rounded-[10px] border border-brand/40 bg-brand-wash px-4 py-2.5 text-[13px] font-bold text-brand hover:bg-brand/15"><Wand2 className="inline size-4 -mt-0.5" /> Let us build it — $99</Link>
           <Link href="/website/setup" className="rounded-[10px] bg-ink px-4 py-2.5 text-[13px] font-bold text-canvas hover:opacity-90"><Sparkles className="inline size-4 -mt-0.5" /> Create my website</Link>
           <a href={publicSiteUrl(tenant)} target="_blank" className="inline-flex items-center gap-1.5 rounded-[10px] bg-brand px-4 py-2.5 text-[13px] font-bold text-white hover:bg-brand-ink">
             <ExternalLink className="size-3.5" /> Open my site

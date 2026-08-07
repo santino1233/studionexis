@@ -3,7 +3,7 @@ import { assertHq } from "@/lib/hq";
 import { db } from "@/lib/db";
 import {
   LayoutGrid, Building2, Ticket, MessagesSquare, Vote, CreditCard, TrendingUp,
-  Megaphone, Activity, ScrollText, Mail, Flag, Rocket, Users, BookOpen, Settings,
+  Megaphone, Activity, ScrollText, Mail, Flag, Rocket, Users, BookOpen, Settings, Palette,
 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -12,6 +12,7 @@ export const dynamic = "force-dynamic";
 const NAV: [string, string, React.ComponentType<{ className?: string }>][] = [
   ["/", "Dashboard", LayoutGrid],
   ["/studios", "Studios", Building2],
+  ["/custom-sites", "Custom Sites", Palette],
   ["/support", "Support", Ticket],
   ["/chats", "Live Chat", MessagesSquare],
   ["/requests", "Feature Requests", Vote],
