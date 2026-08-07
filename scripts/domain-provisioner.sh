@@ -60,8 +60,11 @@ set_status() {
   local tid="$1" status="$2" msg="${3:-}"
   local errsql="null"
   [ -n "$msg" ] && errsql="'$(sql_lit "$msg")'"
+  # jsonb_build_object coerces each value via to_jsonb: text -> JSON string,
+  # SQL NULL -> JSON null, now() -> JSON timestamp string. Matches the shape
+  # lib/domain.ts writes ({status, error, checkedAt}).
   $PG "UPDATE \"Tenant\" SET policies = jsonb_set(coalesce(policies,'{}'::jsonb), '{domain}',
-        jsonb_build_object('status','$status','error',$errsql::text,'checkedAt',to_jsonb(now())::text))
+        jsonb_build_object('status','$status','error',$errsql,'checkedAt',now()))
        WHERE id='$(sql_lit "$tid")'" >/dev/null 2>>"$LOG"
 }
 
